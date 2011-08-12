@@ -1,0 +1,66 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper,12pt]{report}
+% Add 'twoside' to the document class for two-sided
+\input{preamble}
+\setcounter{tocdepth}{1}
+\begin{document}
+
+\pagestyle{empty}
+\setcounter{page}{1}
+\pagenumbering{roman}
+
+\def\localpath{TransferFrontmatter}
+% no need to alter TransferFrontmatter/title.tex
+\input{TransferFrontmatter/title}
+\sglspace
+% edit the words in TransferFrontmatter/abstract.tex
+\input{TransferFrontmatter/abstract}
+
+\tableofcontents
+\newpage
+% edit the words in TransferFrontmatter/acknowledgements.tex
+\input{TransferFrontmatter/acknowledgements}
+\newpage
+% edit the words in TransferFrontmatter/notation.tex
+\input{TransferFrontmatter/notation}
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setcounter{page}{0}
+\pagenumbering{arabic}
+\pagestyle{thesisheadings}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+\def\localpath{Ch1}
+\chapter{Introduction}
+\input{Ch1/chapter1}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+\def\localpath{Ch2}
+\chapter{Review}
+% If you like chapter abstracts ...
+\begin{quote}{\em \input{Ch2/abstract2}}\end{quote}
+\input{Ch2/chapter2}
+
+% Appendices %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\appendix
+%
+\chapter{Dull stuff in the Appendix}
+\def\localpath{ApA}
+\input{ApA/appendixa}
+
+\sglspace
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Bibstuff
+\pagestyle{bibheadings}
+
+\bibliographystyle{Setup/JRSS_no_url}   % For just numbers
+%\bibliographystyle{alpha}   % For initials+year
+%\bibliographystyle{apalike} % For full surname
+\bibliography{refs}
+
+\end{document}
+
+
+
