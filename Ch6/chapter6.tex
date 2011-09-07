@@ -1,9 +1,103 @@
 
 \section{Introduction}
 \label{sec:review:introduction}
+PROGRESS FROM CONFIRMATION REPORT
+\subsection{Registration}
 
-Smurfle, gibber and other random words joined together
+An iterative 2D-3D registration pipeline has been developed for registering rabbit histology images to their associated MRI volume. Since transfer, it has been made clear that the precision of registration required to extract fibre direction far exceeds that which could be achieved with the iterative method. New rat data has become available with two sets of 2D images: a high resolution unregistered histological slice and a related lower resolution image of the surface of the embedded heart block before each slice is cut. The coherent set of wax block images vastly simplify the problem and facilitate far more accurate results.
+
+A full-heart registration pipeline has been developed and downsampled histological volumes generated. An initial manual alignment is followed by rigid and similarity transforms. The quality of the registrations are quite poor at present, and the task at hand is to fine-tune the various parameters that constrain the process: parameter space preconditioning, maximum iterations, maximum and minimum step lengths, number of spatial samples and metric-specific parameters.
+
+In summary, high resolution rat histology volumes have been built; however their accuracy has yet to be fully refined.
+
+  \subsection{Segmentation}
+    Scalar images derived from the raw diffusion tensor data, such as fractional anisotropy and apparent diffusion coefficients, have been segmented using a combination of threshold level set and fast marching filtering techniques. A flow diagram of one pipeline is shown in Figure~\ref{fig:pipeline} and the results of a segmentation are displayed in Figure~\ref{fig:segmentation}. Tetrahedral meshes have been generated from the resulting segmentations, providing a set of rat heart geometries intrinsically coherent with their associated DTMRI data. 
+    Geometry has been extracted and meshed from rat DTMRI volumes.
+    
+    
+\begin{figure}[htbp]
+  \centering
+  % \includegraphics[width=1\textwidth]{1_progress_report/figures/segmentation-pipeline}
+  \caption{A flow diagram of the DTMRI segmentation pipeline. Configuration parameters are shown as smaller text under the name of each filter. The raw DT data is processed to give a scalar value at each point in the heart volume. Seg3D is then used to apply a rough initial tissue segmentation, which is used as the set of seed points for a fast marching filter. After fast marching is applied to expand the pointset slightly, it is used as input the threshold level set filter, along with the fractional isotropy as a feature image. The feature image of a level set filter controls the propagation rate of the frontier, so that regions of high anisotropy, likely to be tissue, are traversed quickly. A final binary threshold filter is applied, providing a segmentation volume.}
+  \label{fig:pipeline}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  % \includegraphics[height=0.47\textwidth]{1_progress_report/figures/segmentation_isosurface}
+  % \includegraphics[height=0.47\textwidth]{1_progress_report/figures/segmentation_isosurface_cutplanes}  
+  \caption{The segmentation surfaces of output from the pipeline in Figure~\ref{fig:pipeline}. On the right, cutplanes expose the inner surfaces and structure of the rat heart.}
+  \label{fig:segmentation}
+\end{figure}
+
+  \subsection{Fibre Extraction}
+    Fibres have been extracted from third party data. Various scalar, vector and tensor data have been derived from the raw DTMRI tensor field. A pipeline has been developed to extract interpolated principal component vectors from the diffusion tensor field at the centroids of tetrahedra composing the rat meshes. Fibre direction at mesh centroids has been extracted from rat DTMRI volumes.
+PROGRESS FROM CONFIRMATION REPORT
 
 
 
+CONFIRMATION REPORT
+\section{Aims}
+  The aim of this chapter is to develop an automated pipeline to register high resolution rat cardiac datasets robustly and accurately, and generate coherent subcellular resolution 3-D cardiac histological images.  Approximately three full rat heart datasets will be processed through the pipeline to provide registered volumes. These images will serve both as an authoritative anatomical reference, and as the basis for anatomically based models in simulation studies.
 
+\section{Methods}
+  Each rat heart was embedded in black wax and serially sliced. For each rat heart, two complimentary datasets have been provided: one of the top surface of the wax block before each slice, and one high resolution image of the rehydrated slice under microscope. The block images are not subject to individual deformations and thus form a coherent 3D data set. The challenge is thus to register the slices with their equivalent block face images in 2-D.
+  
+  The images are downsampled and preprocessed using one of a number of intensity rescaling schemes. Registrations are performed in an iterative fashion, gradually reducing in transformation constraint, starting with a simple rigid transform. Finally, a series of non-rigid bspline registrations are performed at progressively higher resolutions.
+   
+\section{Results}
+  A series of figures will provide visual validation of the results, both of the full heart and more detailed images in regions of interest. Cross-sectional images perpendicular to the slice planes will show the close matching between planes, and segmented surfaces of myocardial walls and larger arteries will be rendered in 3-D. The performance of various registration regimes will be compared.
+CONFIRMATION REPORT
+
+PAPER OUTLINE FROM CONFIRMATION REPORT
+\subsection{Towards Coherent Subcellular Resolution 3D Cardiac Histological Images: Experimental and Computational Methods}
+  This paper will be composed of four main sections: an overview of experimental methods, a review of the architecture of the library developed to register the raw data, a comparison of algorithms and their utility to this end, and finally the results of successful registration, with several colour figures providing visual validation of the methods.
+
+  \subsubsection{Image Acquisition}
+    This section will catalogue the preparation and imaging of the hearts: first the isolation from the rats, then the Langendorff perfusion and fixing, stabilisation in agar and MR scanning, and lastly the dehydration, wax embedding, sectioning and rehydration. Details and figures of both the wax block and the histological slice imaging processes will conclude this section.
+
+    \subsubsection{Software Architecture}
+      An outline of the main problems encountered during the development process will be exhibited, along with the solutions crafted to overcome them.
+      \paragraph{Stacks}
+        Histology data are provided in series of 2D png images. Images within a set can each be of unique size, and slices which were damaged or which have not been imaged yet are missing. Each block image must be paired with its equivalent slice image, and blank images must be interpolated where images are missing. Slices must be transformed independently and by a range of transforms. Binary masks must be generated for each image, so that metrics will only take pixel intensities into account from inside the boundaries of the original untransformed images. A minimum percentage overlap is required for many metrics to function, and for small slice images close to the apex of the heart, block mask areas must be cropped until this constraint is satisfied.
+        
+        The Stack has been developed to encapsulate the solutions to all of these problems. A Stack represents the 3D composition of a set of 2D slices. It handles ROI selection, generic transform storage, image and mask resampling and generation (both for 2D slices and for the 3D volume) and various error handling strategies. There is also an MRI class to solve the complementary problem of extracting arbitrarily oriented slices from a 3D image. However, for these specific datasets the block face images are intrinsically registered to the histological samples.
+  
+      \paragraph{Pipeline Builders}
+        A minimal registration pipeline is composed of several generic actors, including a metric, an optimiser, a transform, and an interpolator. The details of which types of actors are optimal and how they should interact are peculiar to the registration problem at hand. Furthermore, the specific type of each component often requires unique configuration beyond the generic interface of its family. Once several types must be chosen from and configured, even for just one component, an ad hoc procedural approach quickly became unwieldy, but these two requirements colluded combinatorially to demand a great deal of testing, tailoring and configuration in order to achieve registrations of high quality. More often than not, modifications would degrade the registration, and reversing parts of them proved non-trivial.
+
+        At the pipeline level, we developed a heirarchy of `frameworks' employing the Builder pattern, which abstracts away the heavy lifting of wiring up the various components together.  At the component level, a conflation of the Abstract Factory and the Strategy patterns, together with a configuration system using the human-friendly YAML markup language, serves not only to decouple the actors' representations from the minutiae of their construction, but to move these fickle and volatile decisions from compile-time to runtime. These tools vastly reduce the cost of experimentation and testing.
+    
+      \paragraph{Checkpointing and Transform IO}
+        At any stage during the registration process, the vector of transforms held by a given Stack can be persisted to a file or a series of files with a single function call. Just as easily, a new Stack can be initialised with a set of transforms on storage. This machinery facilitates greater process granularity in three dimensions: in the sequence of transforms to be optimised, in the increasing image resolutions to be registered, and spatially in the pairs of slices within the Stack. In the first case, a user can tune one registration stage until they are happy that it is optimal, and then use the results as a starting point for all subsequent runs of the next stage. Moreover, the division of workload and memory is of particular importance when organising jobs on clusters and shared memory machines.
+  
+        \vspace{3 mm}
+
+        Several other aspects of the architecture are not discussed here, including Configuration, File Management, Logging Output, Testing, as well as the opportunities and challenges posed by high performance computing.
+        
+  \subsubsection{Algorithms}
+      \paragraph{Image Curation}
+        Many of the images must be prepared or altered prior to registration. Although every possible step was taken during image acquisition, certain unavoidable experimental practicalities needed correcting for. A handful of images required flipping or rotating; if a slice had been turned upside down between being sheared from the block face and being imaged under the microscope, or if it had diffused beyond 45 degrees from its angle on the block face. Several sets of downsamples of varying factors were generated, the lowest of which were used for debugging and testing, working up in detail, size and computational expense as the techniques were perfected. Images deemed damaged or of unacceptable quality were filtered by hand. On occasion, part way through image acquisition, the block face camera would be moved, relative to the surface of the wax block. All images acquired from then on had to be translated and rotated to compensate for this movement.
+
+      \paragraph{Transforms and Initialisation}
+        The optimisation algorithms used in registration do not assure convergence to the global optimum and are thus sensitive to initialisation and to the presence of local optima in the cost function. A reasonable initialisation, followed by an incrementally increasing transform complexity is necessary for robust and accurate registration. The block face images are already coherent from their acquisition, and the slice images have been closely cropped such that the heart tissue lies at the centre. A simple manual alignment of the stack volumes relative to each other therefore provided adequate initialisation.
+
+        From this starting point, transforms were optimised in the following order, the result of each initialising its successor: a centred rigid 2D transform - a rotation about an arbitrary centre followed by a translation; a centred similarity transform - as before but with a scaling factor; a centred affine transform - an affine transformation around an arbitrary centre followed by a translation; a coarse grid bspline deformable transform; and a fine grid bspline deformable transform. For all centred transforms, the centre of rotation was exposed for optimisation as metric parameters.
+
+      \paragraph{Optimisation}
+      At present, Gradient Descent (GD) and Regular Step Gradient Descent (RSGD) optimisers have been applied, with the RSGD optimiser proving more efficient and robust in most scenarios. In both cases, a maximum and minimum step length and a choice to maximise or minimise the cost function must be chosen, the latter being dependent on both the choice of metric and the preconditioning of the image intensity ranges.
+
+      The optimisation space, as dictated by the transform, must be scaled along each dimension to correct for discrepant effects per unit change of each parameter. For example, a translation of one micron at the epicardium might result from a rotation of just $10^{-5}$ radians about the centre of the slice. This makes the metric space more isotropic, allowing the optimisation algorithm to perform as designed.
+
+      \paragraph{Metrics}
+        Mutual Information (MI) is usually considered to be most effective when registering images from different modalities. However, after a plethora of parameterisations and configurations was explored based on this metric, incrementally simpler and simpler metrics were tested. Each demanded more image preconditioning and tuning, but yielded monotonically closer and more consistent registrations, with a larger capture range, and required fewer iterations to converge. First, a normalised correlation was employed, with the simplest mean squares difference algorithm proving most suitable. It would appear that the simpler the intensity relationship, the smoother the cost landscape, with fewer local minima.
+
+        Typically, large capture regions are associated with low precision for the maximum, so it may prove beneficial to revert to MI for the final bspline registration.
+
+      \paragraph{Intensity Scaling}
+        In order for the mean squares image metric to perform, the intensities of one of the image sets needed to be remapped beforehand such that there was a positive linear intensity correlation between equivalent points in the tissue. To this end, a histogram matching algorithm was applied to the slice volume based on the intensities from the block face volume.
+        
+  \subsubsection{Results}
+    A range of cross-sectional images perpendicular to the slice plane through three hearts will provide visual validation of the method. Lower resolution whole-heart cross-sections will be complemented by high resolution images in regions of interest, both before and after registration, showcasing the close matching of edges such as blood vessel walls and tissue type boundaries in the registered stack.
+
+PAPER OUTLINE FROM CONFIRMATION REPORT

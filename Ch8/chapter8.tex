@@ -1,9 +1,31 @@
-
 \section{Introduction}
 \label{sec:review:introduction}
+CONFIRMATION THESIS
+The previous chapter characterises the geometrical differences between DTMRI and detailed histology. This chapter aims to quantify the functional consequences of incorporating this detail into models, by simulating propagation and arrhythmias on geometries derived from the two modalities, in regions where they differ significantly. Specifically, plane wave propagation and triggered arrhythmias will be simulated over the papillary muscle insertion, the apex, epicardial arteries and the junction of the septum and the free wall.
 
-Smurfle, gibber and other random words joined together
+We examine the hypothesis that heterogeneity such as rapidly varying or discontinuous fibre orientation, tissue type boundaries and non-conducting artefacts such as epicardial arteries act to promote wave curvature and stabilise arrhythmia, based on the findings from the simulations. We quantify the orthotropic effects of sheet structure. We design stimulation protocols and simulation regimes for each region. We run simulations in Chaste. We analyse the lifetimes of reentrant waves, the numbers and interactions of singularity filaments, and the anchoring effect of heterogeneities on filaments. We then run simulations on DTMRI-derived models of the same regions and compare the findings with our previous results, to illuminate whether the detail provided by the histology is important, or whether the noise in the DTI data is significant.
+CONFIRMATION THESIS
 
+PAPER OUTLINE FROM CONFIRMATION THESIS
+\subsection{The Role of Cardiac Microstructure in Propagation Dynamics: A Modelling and Simulation Study}
+\subsubsection{Aims and Hypotheses}
+The previous paper accurately exposed cardiac microstructural geometries, and stood this new information in contrast with geometries obtained from DTMRI data. The main aim of this paper is to characterise the functional consequences of incorporating this detail into models, by simulating arrhythmias in regions of interest, and comparing the findings with analogous simulations based on DTI data. The wider hypothesis, that the inclusion of detail in highly heterogeneous zones promotes wave curvature and breakup and fosters arrhythmia, can be broken down into the following proposals:
+\begin{itemize}
+  \item Sharp discontinuities are present at the papillary insertions and the junction of the septum with the myocardial free wall. Incoherent, crossing fibre directions are observed around the apex of the heart. We propose that rapidly varying fibre direction in these regions promotes wave curvature and helps sustain arrhythmia.
+  \item Leading on from observations in paper 2, we propose that in the region of epicardial arteries, the anchoring effect is mitigated by the insulating tissue on the outside of epicardial arteries, when compared to simulations on the same geometries modelled solely as myocardium.
+  \item \emph{Possibly? We propose that the non-conducting interstitial spaces that divide the myocardium into sheets engender orthotropic conductivity on a macroscopic scale.}
+\end{itemize}
 
+\subsubsection{Methods}
+\paragraph{Models}
+Four types of model will be used: those based solely on histology; those based on registered and segmented DTMRI; those with histological segmented geometry, but with DTMRI-derived fibre orientations; and those with DTMRI geometries and rule-based fibre orientations.
 
+\paragraph{Simulation}
+  Similar protocols to those employed in the first simulation paper will serve on the image-based models. Single stimulation protocols can elucidate the effect of microstructure on wavefront curvature during normal cardiac function. Double stimulation protocols will initiate arrhythmia in ROIs, and times until cessation will be compared between the smooth and the accurate geometries.
+  
+\subsubsection{Results}
+Each hypothesis will be scrutinised in light of the results. Phase singularity filaments will be analysed in terms of their numbers, interactions, breakups and lifetimes.
 
+\subsubsection{Discussion and Conclusions}
+The functional importance of the inclusion of microstructure in models for simulation will be made clear by the results.
+PAPER OUTLINE FROM CONFIRMATION THESIS
