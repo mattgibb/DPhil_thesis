@@ -1,3 +1,7 @@
+\chapter{Coregistration of High Resolution Rat Histology}
+% If you like chapter abstracts ...
+\dblspace
+\begin{quote}{\em \input{Ch6/abstract6}}\end{quote}
 
 \section{Introduction}
 \label{sec:review:introduction}
@@ -113,10 +117,56 @@ PAPER OUTLINE FROM CONFIRMATION REPORT
     
 PAPER OUTLINE FROM CONFIRMATION REPORT
 
+\section{Diffusion Smoothing Algorithm}
+  \subsection{Problem}
+    \begin{itemize}
+      \item Underlying noise in reference images, from changes in camera position and illumination angles and intensities
+      \item Resolution of reference images are 8 times coarser at 8.8$\mu$ 
+      \item Large discontinuities in camera position have already been corrected for in the block reference images, introducing the `banana problem' across the discontinuity
+      \item Small non-rigid deformations when tissue is sliced and rehydrated, different in every slice and not fully represented by an affine transform.
+      \item Registration close, but does not always find the global minimum.
+    \end{itemize}
+    
+  \subsection{Mathematical Treatise}
+    \subsubsection{A 1D Random Walk Analogy}
+    The simplest model of diffusion is one in which a particle may move in one dimension along the integer number line $\mathbb{Z}$, in steps of either $+1$ or $-1$, with equal probability. Taking each step as an independent random variable $Z_1, Z_2,\ldots$, if the particle's position $S$ starts at $S_0 = 0$, we can express the position of the particle $k$ after $n$ steps as
+    \begin{equation}
+      S_n = \sum\limits_{i=1}^n Z_n .
+    \end{equation}
+      
+    % `http://en.wikipedia.org/wiki/Random_walk#One-dimensional_random_walk'
+    1D analogy of diffusion and noise filtering, with sine wave and overlayed noise, and diagram
+      \begin{equation}
+      \label{eq:review:rubbish}
+      a = \int_{0}^{1} x^{47} dx ~,
+      \end{equation}
+      
+      where the binomial coefficient
+      \begin{equation}
+        \label{eq:registration:binomial-coefficient}
+         \binom{n}{k} = \frac{n!}{k!(n-k)!}.
+      \end{equation}
+    \subsubsection{Smoothing Noise on a Sine Wave}
+      
+    \subsubsection{2D Transform Diffusion}
+      
+    
+    
+  \subsection{Results}  
+  
+  \subsection{Evaluation and Weaknesses}
+    Inherently introduces the banana problem across the curvature of the heart (~30 slices - give justification with numbers)
+    Can only be used for small adjustments, given non-commutativity of operators etc.
+    Figures and evaluation of results e.g. examples of great and bad slice-pair registrations, maybe one slice has a large abberation. Works better for different regions? e.g. round blob versus cavity?
+    
+  \subsection{Alternative Implementations}
+    Expensive to rerun slice-pair registrations every iteration, could infer from previous registration. Inaccuracy and instability?
+
 REGISTRATION PAPER
 
-\input{../registration_paper/latex/methods/methods}
-\input{../registration_paper/latex/results/results}
+\input{../registration_paper/latex/methods/test}
+% \input{\rootpath/../registration_paper/latex/methods/methods}
+% \input{\rootpath/../registration_paper/latex/results/results}
 \section{Registration Paper Meeting Notes}
 First, check 5 slices from different sections of the heart, see if the same parameters work for all 5
 Registration of the full rat heart with hires histology level of detail.
@@ -137,6 +187,8 @@ Validate the results of the registration are good enough. Find landmarks like bl
 
 
 REGISTRATION PAPER
+
+
 
 
 TRANSFER THESIS
