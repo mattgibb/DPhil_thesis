@@ -1,3 +1,4 @@
+%!TEX root = ../thesis.tex
 \chapter{Coregistration of High Resolution Rat Histology}
 % If you like chapter abstracts ...
 \dblspace
@@ -5,7 +6,7 @@
 
 \section{Introduction}
 \label{sec:review:introduction}
-PROGRESS FROM CONFIRMATION REPORT
+PROGRESS FROM CONFIRMATION REPORT 
 \subsection{Registration}
 
 An iterative 2D-3D registration pipeline has been developed for registering rabbit histology images to their associated MRI volume. Since transfer, it has been made clear that the precision of registration required to extract fibre direction far exceeds that which could be achieved with the iterative method. New rat data has become available with two sets of 2D images: a high resolution unregistered histological slice and a related lower resolution image of the surface of the embedded heart block before each slice is cut. The coherent set of wax block images vastly simplify the problem and facilitate far more accurate results.
@@ -44,20 +45,140 @@ CONFIRMATION REPORT
 \section{Aims}
   The aim of this chapter is to develop an automated pipeline to register high resolution rat cardiac datasets robustly and accurately, and generate coherent subcellular resolution 3-D cardiac histological images.  Approximately three full rat heart datasets will be processed through the pipeline to provide registered volumes. These images will serve both as an authoritative anatomical reference, and as the basis for anatomically based models in simulation studies.
 
-\section{Methods}
+\section{Methods} % (fold)
+\label{sec:methods}
+  Basic structure of methods section
+  
+  \subsection{Image Preparation and Curation} % (fold)
+  \label{sub:image_preparation_and_curation}
+    downsampling, RGBA, flipping and rotating, a few figures
+  % subsection image_preparation_and_curation (end)
+  
+  \subsection{Rigid Registration} % (fold)
+  \label{sub:rigid_registration}
+    By far most of the registration is done in the first rigid step. Didn't work for lots of reasons, tried PCA, ITKv3 bug, different metrics, optimisers, normalising images etc. loads of figures.
+  % subsection rigid_registration (end)
+  
+  \subsection{Similarity and Affine Registrations} % (fold)
+  \label{sub:similarity_and_affine_registrations}
+    Show instabilities and scaling factor problems
+    
+    further non rigid?
+  % subsection similarity_and_affine_registrations (end)
+  
+  \subsection{Slice-to-Slice Diffusion Smoothing Algorithm} % (fold)
+  \label{sub:slice_to_slice_diffusion_smoothing_algorithm}
+    introductory paragraph says about problems with final affine result
+    \subsubsection{Problem}
+      \begin{itemize}
+        \item Underlying noise in reference images, from changes in camera position and illumination angles and intensities
+        \item Resolution of reference images are 8 times coarser at 8.8$\mu$ 
+        \item Large discontinuities in camera position have already been corrected for in the block reference images, introducing the `banana problem' across the discontinuity
+        \item Small non-rigid deformations when tissue is sliced and rehydrated, different in every slice and not fully represented by an affine transform.
+        \item Registration close, but does not always find the global minimum.
+      \end{itemize}
+
+    \subsubsection{Mathematical Treatise}
+      \paragraph{A 1D Random Walk Analogy}
+      The central limit theorem states that the mean of a sufficiently large number of independent random variables will be approximately normally distributed, regardless of their individual distribution. Indeed, Einstein's theory of the Brownian motion of a diffusive particle is based on this precept. With this in mind, the simplest model of microscopic diffusion is one in which a particle may move in a random walk in one dimension along the integer number line $\mathbb{Z}$, in steps of either $+1$ or $-1$, with equal probability. Taking each step as an independent random variable $Z_1, Z_2,\ldots$, if the particle's position $S$ starts at $S_0 = 0$, we can express the position of the particle after $N$ steps as
+      \begin{equation}
+        S_N = \sum\limits_{i=1}^N Z_i .
+      \end{equation}
+      The probability of taking $k$ positive steps out of a total of $N$ steps is given by
+      \begin{equation}
+        P(k;N) = \binom{N}{k}\left(\frac{1}{2} \right)^N,
+      \end{equation}
+      where the binomial coefficient
+      \begin{equation}
+        \label{eq:registration:binomial-coefficient}
+         \binom{N}{k} = \frac{N!}{k!(N-k)!},
+      \end{equation}
+      since there are $\binom{N}{k}$ possible ways of taking $k$ and $N - k$ steps of $-1$ and $+1$, respectively. At each independent step, the probability of taking one or the other direction is $\frac{1}{2}$, leading to the product $\frac{1}{2}^N$.
+      
+      Applying Stirling's approximation:
+      \begin{align}
+        \label{eq:registration:stirling}
+        \ln \left( n! \right) &= n\ln n - n + O(\ln n) \notag \\
+               &\approx n\ln n - n \quad \text{as}\: n \to \infty,
+      \end{align}
+      
+      \emph{Possibly include proof of de Moivre-Laplace theorem.}
+      % Proof can be found here:
+      % http://en.wikipedia.org/wiki/De_Moivre%E2%80%93Laplace_theorem
+      We can see that in the limit of large $N$, the distribution of $k$ and thus $S_N$ tend to Gaussian:
+      \begin{equation}
+        \label{eq:registration:gaussian-approximation}
+        \binom{N}{k}\left(\frac{1}{2}\right)^N \approx \sqrt{\frac{2}{\pi N}} \
+          e^{-2(k - \frac{N}{2})^2/N}
+      \end{equation}
+      
+      Prove that random walk is binomial distribution, which tends to Gaussian distribution, therefore with enough iterations we are applying gaussian transformational smoothing to the volume.
+      
+      Particles undergoing brownian motion diffuse, hence the name.
+      
+      % `http://en.wikipedia.org/wiki/Random_walk#One-dimensional_random_walk'
+      1D analogy of diffusion and noise filtering, with sine wave and overlayed noise, and diagram
+        
+      \paragraph{Smoothing Noise on a Sine Wave}
+        Figure~\ref{fig:noisy-sine-wave}
+        \begin{figure}[htbp]
+          \centering
+          \includegraphics[height=0.7\textwidth]{Ch6/Figs/process_diagram}
+          \caption{A numerical approximation of a sine wave, on 1000 equispaced points from $0$ to $2\pi$. Random noise from a Gaussian distribution is added, with variance equal to the amplitude of the sine wave.}
+        \end{figure}
+      
+        
+        Show diagrams of half particles stepping once left, half right.
+        
+        It is clear from Equation~\ref{eq:registration:gaussian-approximation} that multiple application of this smoothing operation approximates a Gaussian diffusion smoothing.
+
+      \paragraph{2D Transform Diffusion}
+        This 1-dimensional model is trivially extended to a 2D translation of a slice image aligning with its neighbour, since both of the parameters are mutually orthogonal. But what about the more complex harder with say affine transform. Square root of transform blah blah.
+
+
+    
+  % subsection slice_to_slice_diffusion_smoothing_algorithm (end)
+  
+  \subsection{Regional Registration} % (fold)
+  \label{sub:regional_registration}
+    
+  % subsection regional_registration (end)
+  
+  
   \begin{figure}[htbp]
     \centering
     \includegraphics[height=0.7\textwidth]{Ch6/Figs/process_diagram}
     \caption{A schematic of what's going on.}
   \end{figure}
   
+
+  
   Each rat heart was embedded in black wax and serially sliced. For each rat heart, two complimentary datasets have been provided: one of the top surface of the wax block before each slice, and one high resolution image of the rehydrated slice under microscope. The block images are not subject to individual deformations and thus form a coherent 3D data set. The challenge is thus to register the slices with their equivalent block face images in 2-D.
   
   The images are downsampled and preprocessed using one of a number of intensity rescaling schemes. Registrations are performed in an iterative fashion, gradually reducing in transformation constraint, starting with a simple rigid transform. Finally, a series of non-rigid bspline registrations are performed at progressively higher resolutions.
    
+    \subsection{Diagnostics} % (fold)
+    \label{sub:diagnostics}
+      For a year and a half, very difficult to see why registration was failing. Output of raw parameters got us somewhere, but only for obvious issues e.g. parameter scaling, step length. Huge parameter space. Sports game analogy about result, but no play-by-play. BuildProgressVolumes
+      
+      Before upgrade to ITKv4, registration algorithm would often not optimise i.e. results were much worse. Even though the upgrade shouldn't have affected the results, just the speed of the code, results were much much better.
+    % subsection diagnostics (end)
+% section methods (end)
+   
 \section{Results}
   A series of figures will provide visual validation of the results, both of the full heart and more detailed images in regions of interest. Cross-sectional images perpendicular to the slice planes will show the close matching between planes, and segmented surfaces of myocardial walls and larger arteries will be rendered in 3-D. The performance of various registration regimes will be compared.
 CONFIRMATION REPORT
+
+\section{Evaluation} % (fold)
+\label{sec:evaluation}
+  \subsection{Slice-to-Slice Diffusion Smoothing Algorithm}
+    Inherently introduces the banana problem across the curvature of the heart (~30 slices - give justification with numbers)
+    Can only be used for small adjustments, given non-commutativity of operators etc.
+    Figures and evaluation of results e.g. examples of great and bad slice-pair registrations, maybe one slice has a large abberation. Works better for different regions? e.g. round blob versus cavity?
+    Alternative Implementations: Expensive to rerun slice-pair registrations every iteration, could infer from previous registration. Inaccuracy and instability?
+
+
+% section evaluation (end)
 
 PAPER OUTLINE FROM CONFIRMATION REPORT
 \subsection{Towards Coherent Subcellular Resolution 3D Cardiac Histological Images: Experimental and Computational Methods}
@@ -68,6 +189,7 @@ PAPER OUTLINE FROM CONFIRMATION REPORT
 
     \subsubsection{Software Architecture}
       An outline of the main problems encountered during the development process will be exhibited, along with the solutions crafted to overcome them.
+      
       \paragraph{Stacks}
         Histology data are provided in series of 2D png images. Images within a set can each be of unique size, and slices which were damaged or which have not been imaged yet are missing. Each block image must be paired with its equivalent slice image, and blank images must be interpolated where images are missing. Slices must be transformed independently and by a range of transforms. Binary masks must be generated for each image, so that metrics will only take pixel intensities into account from inside the boundaries of the original untransformed images. A minimum percentage overlap is required for many metrics to function, and for small slice images close to the apex of the heart, block mask areas must be cropped until this constraint is satisfied.
         
@@ -116,51 +238,6 @@ PAPER OUTLINE FROM CONFIRMATION REPORT
     MAYBE PUT SECTION ON FILE MANAGEMENT
     
 PAPER OUTLINE FROM CONFIRMATION REPORT
-
-\section{Diffusion Smoothing Algorithm}
-  \subsection{Problem}
-    \begin{itemize}
-      \item Underlying noise in reference images, from changes in camera position and illumination angles and intensities
-      \item Resolution of reference images are 8 times coarser at 8.8$\mu$ 
-      \item Large discontinuities in camera position have already been corrected for in the block reference images, introducing the `banana problem' across the discontinuity
-      \item Small non-rigid deformations when tissue is sliced and rehydrated, different in every slice and not fully represented by an affine transform.
-      \item Registration close, but does not always find the global minimum.
-    \end{itemize}
-    
-  \subsection{Mathematical Treatise}
-    \subsubsection{A 1D Random Walk Analogy}
-    The simplest model of diffusion is one in which a particle may move in one dimension along the integer number line $\mathbb{Z}$, in steps of either $+1$ or $-1$, with equal probability. Taking each step as an independent random variable $Z_1, Z_2,\ldots$, if the particle's position $S$ starts at $S_0 = 0$, we can express the position of the particle $k$ after $n$ steps as
-    \begin{equation}
-      S_n = \sum\limits_{i=1}^n Z_n .
-    \end{equation}
-      
-    % `http://en.wikipedia.org/wiki/Random_walk#One-dimensional_random_walk'
-    1D analogy of diffusion and noise filtering, with sine wave and overlayed noise, and diagram
-      \begin{equation}
-      \label{eq:review:rubbish}
-      a = \int_{0}^{1} x^{47} dx ~,
-      \end{equation}
-      
-      where the binomial coefficient
-      \begin{equation}
-        \label{eq:registration:binomial-coefficient}
-         \binom{n}{k} = \frac{n!}{k!(n-k)!}.
-      \end{equation}
-    \subsubsection{Smoothing Noise on a Sine Wave}
-      
-    \subsubsection{2D Transform Diffusion}
-      
-    
-    
-  \subsection{Results}  
-  
-  \subsection{Evaluation and Weaknesses}
-    Inherently introduces the banana problem across the curvature of the heart (~30 slices - give justification with numbers)
-    Can only be used for small adjustments, given non-commutativity of operators etc.
-    Figures and evaluation of results e.g. examples of great and bad slice-pair registrations, maybe one slice has a large abberation. Works better for different regions? e.g. round blob versus cavity?
-    
-  \subsection{Alternative Implementations}
-    Expensive to rerun slice-pair registrations every iteration, could infer from previous registration. Inaccuracy and instability?
 
 REGISTRATION PAPER
 
