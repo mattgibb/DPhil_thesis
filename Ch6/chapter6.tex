@@ -176,7 +176,10 @@ CONFIRMATION REPORT
     Can only be used for small adjustments, given non-commutativity of operators etc.
     Figures and evaluation of results e.g. examples of great and bad slice-pair registrations, maybe one slice has a large abberation. Works better for different regions? e.g. round blob versus cavity?
     Alternative Implementations: Expensive to rerun slice-pair registrations every iteration, could infer from previous registration. Inaccuracy and instability?
-
+    
+    The method for optimising registration parameters is a crude and intuitive version of the optimisation algorithms applied to the image registrations. Not easily possible to calculate gradient of metric in parameter space, but can perturb coordinates along basis axes e.g. parameter scaling, choice of metric or optimiser, gradient descent learning rate, RSGD relaxation factor, whether to normalise images etc. 2 approaches: could split the space into two groups of `preferred' axes, and secondary axes, then perform an (exhaustive?) prototype search in the preferred subspace, and for each preferred coordinate perform an iterative optimisation in the secondary space. Alternatively, just perform iterative stochastic search in the whole space.
+    
+    ?NEEDS DEVELOPMENT? Some params like choice of metric have different associated parameter spaces e.g. learning rate vs relaxation factor, and also are likely to lead to widely different optimal spaces along other axes e.g. parameter scaling.
 
 % section evaluation (end)
 
@@ -370,3 +373,5 @@ TRANSFER THESIS
     The presented algorithm does not correct for 3-D out-of-plane deformations, possibly resulting from the wax embedding process. Mansoori et al. \cite{Mansoori:2007p221} believe that these deformations have a negligible effect on the final result, but do not rule out the inclusion of a final 3-D deformable transform when registering other histology datasets.
 
 TRANSFER THESIS
+
+
