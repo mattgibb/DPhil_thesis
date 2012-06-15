@@ -1,6 +1,7 @@
 #!/usr/local/bin/ipython
 # coding=utf-8
 import math
+from os import makedirs
 from os.path import join, realpath
 from shutil import copyfile
 import numpy as np
@@ -8,13 +9,12 @@ import matplotlib.pyplot as plt
 
 n = 200
 timesteps = 300
-alpha = 0.4
 
 # directories
 project_root = realpath(join(__file__, '..', '..'))
 images_path = join(project_root, 'figure_scripts', 'images')
-figures_path = join(project_root, 'Ch6', 'Figs')
-file_string = '1d_noise_%03d.pdf'
+figures_path = join(project_root, 'Ch6', 'Figs', '1d_noise')
+file_string = '%03d.pdf'
 
 def diffuse(series, alpha):
     # calculate nearest neighbour diffusion term with Dirichlet BCs
@@ -38,13 +38,14 @@ def plot_series(x,y,ax):
     # ax.set_ylabel('y')
 
     # ax.set_xticks
-    
+
 x = np.linspace(0.00, 2 * math.pi + 0.1, n)
 sin = np.sin(x)
 noise = np.random.randn(n)
 noise[0] = noise[-1] = 0
 y = sin + noise
 
+# initialise figure and axes
 movie_fig = plt.figure(figsize=(4,3))
 b_border = 0.1
 l_border = 0.035
@@ -54,19 +55,32 @@ ax_size = [0+l_border,            0+b_border,            # left, bottom
            1-l_border - r_border, 1-b_border - t_border] # width, height
 movie_ax = movie_fig.add_axes(ax_size)
 
-for i in range(timesteps):
-    movie_ax.cla()
-    plot_series(x, y, movie_ax)
-    y = diffuse(y, alpha)
-    filename = file_string%i
-    print 'Saving frame', filename
-    filepath = join(images_path, filename)
-    movie_fig.savefig(filepath)
-
-for id_for_figure in (0, 1, 3, 15, 99, 299):
-    filename = file_string % id_for_figure
-    print("Copying " + filename)
-    src = join(images_path, filename)
-    dst = join(figures_path, filename)
-    copyfile(src,dst)
+def save_series(y, alpha):
+    print 'For alpha = %.2f'%alpha
     
+    # make appropriate directories
+    subdir = 'alpha_%.2f'%alpha
+    makedirs(join(images_path, subdir))
+    makedirs(join(figures_path, subdir))
+    
+    # generate all the images
+    for i in range(timesteps):
+        movie_ax.cla()
+        plot_series(x, y, movie_ax)
+        y = diffuse(y, alpha)
+        filename = file_string%i
+        print 'Saving frame', filename
+        filepath = join(images_path, subdir, filename)
+        movie_fig.savefig(filepath)
+        
+    # copy selected images to latex Figs subdirectory
+    for i in (0, 1, 3, 15, 99, 299):
+        filename = file_string % i
+        print("Copying " + filename)
+        src = join(images_path, subdir, filename)
+        dst = join(figures_path, subdir, filename)
+        copyfile(src,dst)
+    
+# run for several alphas
+for alpha in (.4, .49, .5, .51):
+    save_series(y, alpha)
