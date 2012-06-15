@@ -112,6 +112,39 @@ CONFIRMATION REPORT
           e^{-2(k - \frac{N}{2})^2/N}
       \end{equation}
       
+      We might consider a concentration of particles $f$ over a discrete 1-dimensional grid $x$. After a discretised timestep $\Delta t$, a proportion $\alpha$ of the particles have taken a random walk, such that half of them have diffused to the left and half to the right:
+      
+      \begin{align}
+        f(x_i, t_{n+1}) &= f(x_i, t_n) + \alpha (f(x_{i-1}, t_n) - 2f(x_i, t_n) + f(x_{i+1}, t_n)), \\
+        \Delta f(x, t + \Delta t) &= \alpha (f(x - \Delta x, t) - 2f(x, t) + f(x + \Delta x, t)). \end{align}
+      
+      Figure of 1-D diffusion with alpha=0.4:
+      \begin{figure}[htbp]
+        \centering
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise_000}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise_001}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise_003}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise_015}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise_099}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise_299}}
+    		\qquad
+        % \subfigure[][]{\includegraphics[height=55ex]{Ch6/Figs/cylinder}}
+        \caption{\textbf{(a)} A 10µm-thick histological image of rabbit mid-myocardial wall long-axis slice, provided by \cite{Burton:2006p100}. \textbf{(b)} The equipotentials (vertical lines) and field lines (horizontal with arrow heads) of a conducting circle in an infinite uniform field derived from the analytical solution to Eq. \ref{eqn:potential}.}
+    	  \label{fig:1-d_diffusion}
+      \end{figure}
+
+      Figure of 1-D diffusion with alpha=0.5:
+      
+      Figure of 1-D diffusion with alpha=0.51:
+
+      Figure of Transformational diffusion from identity (use Seg3D slices and Paraview surfaces):
+      
+      Figure of Transformational diffusion from translation sine wave:
+      
+      Figure of Transformational diffusion from rotation sine wave:
+      
+      Figure of Transformational diffusion from translation and rotation sine wave:
+      
       Prove that random walk is binomial distribution, which tends to Gaussian distribution, therefore with enough iterations we are applying gaussian transformational smoothing to the volume.
       
       Particles undergoing brownian motion diffuse, hence the name.

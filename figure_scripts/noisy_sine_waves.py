@@ -1,14 +1,20 @@
 #!/usr/local/bin/ipython
-
+# coding=utf-8
 import math
-from os.path import join
+from os.path import join, realpath
+from shutil import copyfile
 import numpy as np
 import matplotlib.pyplot as plt
 
-images_dir = join(__file__, '../../Ch6/Figs/')
-
 n = 200
+timesteps = 300
 alpha = 0.4
+
+# directories
+project_root = realpath(join(__file__, '..', '..'))
+images_path = join(project_root, 'figure_scripts', 'images')
+figures_path = join(project_root, 'Ch6', 'Figs')
+file_string = '1d_noise_%03d.pdf'
 
 def diffuse(series, alpha):
     # calculate nearest neighbour diffusion term with Dirichlet BCs
@@ -25,6 +31,9 @@ def plot_series(x,y,ax):
     ax.plot(x, y)
     ax.set_ylim([-5,5])
     plt.xticks( np.linspace(0.00, 2 * math.pi, 5) )
+    ax.set_xticklabels([u"0", u"π/2", u"π", u"3π/2", u"2π"])
+    plt.xlim([0.00, 2 * math.pi])
+    plt.ylim([-4.5, 4.5])
     # ax.set_xlabel('1000 points between ')
     # ax.set_ylabel('y')
 
@@ -37,11 +46,25 @@ noise[0] = noise[-1] = 0
 y = sin + noise
 
 movie_fig = plt.figure()
-movie_ax = movie_fig.add_subplot(111)
-for i in range(100):
+bl_border = 0.035
+tr_border = 0.01
+ax_size = [0+bl_border,             0+bl_border,             # left, bottom
+           1-bl_border - tr_border, 1-bl_border - tr_border] # width, height
+movie_ax = movie_fig.add_axes(ax_size)
+
+for i in range(timesteps):
     movie_ax.cla()
     plot_series(x, y, movie_ax)
     y = diffuse(y, alpha)
-    filename = '_tmp%03d.png'%i
+    filename = file_string%i
     print 'Saving frame', filename
-    movie_fig.savefig(filename)
+    filepath = join(images_path, filename)
+    movie_fig.savefig(filepath)
+
+for id_for_figure in (0, 1, 3, 15, 99, 299):
+    filename = file_string % id_for_figure
+    print("Copying " + filename)
+    src = join(images_path, filename)
+    dst = join(figures_path, filename)
+    copyfile(src,dst)
+    
