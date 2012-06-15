@@ -45,11 +45,13 @@ noise = np.random.randn(n)
 noise[0] = noise[-1] = 0
 y = sin + noise
 
-movie_fig = plt.figure()
-bl_border = 0.035
-tr_border = 0.01
-ax_size = [0+bl_border,             0+bl_border,             # left, bottom
-           1-bl_border - tr_border, 1-bl_border - tr_border] # width, height
+movie_fig = plt.figure(figsize=(4,3))
+b_border = 0.1
+l_border = 0.035
+t_border = 0.01
+r_border = 0.03
+ax_size = [0+l_border,            0+b_border,            # left, bottom
+           1-l_border - r_border, 1-b_border - t_border] # width, height
 movie_ax = movie_fig.add_axes(ax_size)
 
 for i in range(timesteps):
