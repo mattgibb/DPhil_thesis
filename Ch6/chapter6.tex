@@ -4,55 +4,55 @@
 \dblspace
 \begin{quote}{\em \input{Ch6/abstract6}}\end{quote}
 
-\section{Introduction}
-\label{sec:review:introduction}
-PROGRESS FROM CONFIRMATION REPORT 
-\subsection{Registration}
-
-An iterative 2D-3D registration pipeline has been developed for registering rabbit histology images to their associated MRI volume. Since transfer, it has been made clear that the precision of registration required to extract fibre direction far exceeds that which could be achieved with the iterative method. New rat data has become available with two sets of 2D images: a high resolution unregistered histological slice and a related lower resolution image of the surface of the embedded heart block before each slice is cut. The coherent set of wax block images vastly simplify the problem and facilitate far more accurate results.
-
-A full-heart registration pipeline has been developed and downsampled histological volumes generated. An initial manual alignment is followed by rigid and similarity transforms. The quality of the registrations are quite poor at present, and the task at hand is to fine-tune the various parameters that constrain the process: parameter space preconditioning, maximum iterations, maximum and minimum step lengths, number of spatial samples and metric-specific parameters.
-
-In summary, high resolution rat histology volumes have been built; however their accuracy has yet to be fully refined.
-
-  \subsection{Segmentation}
-    Scalar images derived from the raw diffusion tensor data, such as fractional anisotropy and apparent diffusion coefficients, have been segmented using a combination of threshold level set and fast marching filtering techniques. A flow diagram of one pipeline is shown in Figure~\ref{fig:pipeline} and the results of a segmentation are displayed in Figure~\ref{fig:segmentation}. Tetrahedral meshes have been generated from the resulting segmentations, providing a set of rat heart geometries intrinsically coherent with their associated DTMRI data. 
-    Geometry has been extracted and meshed from rat DTMRI volumes.
-    
-    
-\begin{figure}[htbp]
-  \centering
-  % \includegraphics[width=1\textwidth]{1_progress_report/figures/segmentation-pipeline}
-  \caption{A flow diagram of the DTMRI segmentation pipeline. Configuration parameters are shown as smaller text under the name of each filter. The raw DT data is processed to give a scalar value at each point in the heart volume. Seg3D is then used to apply a rough initial tissue segmentation, which is used as the set of seed points for a fast marching filter. After fast marching is applied to expand the pointset slightly, it is used as input the threshold level set filter, along with the fractional isotropy as a feature image. The feature image of a level set filter controls the propagation rate of the frontier, so that regions of high anisotropy, likely to be tissue, are traversed quickly. A final binary threshold filter is applied, providing a segmentation volume.}
-  \label{fig:pipeline}
-\end{figure}
-
-\begin{figure}[htbp]
-  \centering
-  % \includegraphics[height=0.47\textwidth]{1_progress_report/figures/segmentation_isosurface}
-  % \includegraphics[height=0.47\textwidth]{1_progress_report/figures/segmentation_isosurface_cutplanes}  
-  \caption{The segmentation surfaces of output from the pipeline in Figure~\ref{fig:pipeline}. On the right, cutplanes expose the inner surfaces and structure of the rat heart.}
-  \label{fig:segmentation}
-\end{figure}
-
-  \subsection{Fibre Extraction}
-    Fibres have been extracted from third party data. Various scalar, vector and tensor data have been derived from the raw DTMRI tensor field. A pipeline has been developed to extract interpolated principal component vectors from the diffusion tensor field at the centroids of tetrahedra composing the rat meshes. Fibre direction at mesh centroids has been extracted from rat DTMRI volumes.
-PROGRESS FROM CONFIRMATION REPORT
-
-
-
 CONFIRMATION REPORT
 \section{Aims}
+  MOTIVATION, PROBLEMS, AIMS
+  
+  Intro/Motivation
+  People have tried to align block faces, but can't use certain dyes, transmission problems, lo res with Lo res data.
+  People have tried to align hires stuff, but we know that this is not consistent.
+  ASK VICENTE FOR REFS. MARK BOYETT FIRST AUTHOR OF ONE PAPER. ASK BECKY FOR INTRO/METHODS PAPERS.
+  First attempt to use both sets of data to make coherent hires dyed segmented etc.
+
+  
+  
   The aim of this chapter is to develop an automated pipeline to register high resolution rat cardiac datasets robustly and accurately, and generate coherent subcellular resolution 3-D cardiac histological images.  Approximately three full rat heart datasets will be processed through the pipeline to provide registered volumes. These images will serve both as an authoritative anatomical reference, and as the basis for anatomically based models in simulation studies.
 
 \section{Methods} % (fold)
+
+PROGRESS FROM CONFIRMATION REPORT 
+An iterative 2D-3D registration pipeline has been developed for registering rabbit histology images to their associated MRI volume. Since transfer, it has been made clear that the precision of registration required to extract fibre direction far exceeds that which could be achieved with the iterative method. New rat data has become available with two sets of 2D images: a high resolution unregistered histological slice and a related lower resolution image of the surface of the embedded heart block before each slice is cut. The coherent set of wax block images vastly simplify the problem and facilitate far more accurate results.
+
+END PROGRESS FROM CONFIRMATION REPORT 
+
+
+
 \label{sec:methods}
   Basic structure of methods section
   
   \subsection{Image Preparation and Curation} % (fold)
   \label{sub:image_preparation_and_curation}
     downsampling, RGBA, flipping and rotating, a few figures
+    
+    LoRes adjustments:
+    
+    Figure of full LoRes volume without and with adjustment, with 1 quarter cutaway
+    
   % subsection image_preparation_and_curation (end)
+  
+  \subsection{Initialisation} % (fold)
+  \label{sub:initialisation}
+    Motivational paragraph: registration is sensitive to starting params, prone to trap into local minima...
+      
+    Slice images were flipped and rotated to align approximately with the block images. White space under the microscope surrounding the slices had already been cropped, such that each slice sat approximately central within the bounds of its image. Thusly, slice images were aligned to their common geometric centre.
+    
+    Figure: A naive initialisation of the histological slices, aligning images to their common centre, provides an adequate starting point. VOLUMES ALONG WITH MASKS
+    
+    The initial translation and pixel spacing of the LoRes images were manually tuned to overlap maximally with the HiRes data set.
+    
+    
+    
+  % subsection initialisation (end)
   
   \subsection{Rigid Registration} % (fold)
   \label{sub:rigid_registration}
@@ -66,9 +66,18 @@ CONFIRMATION REPORT
     further non rigid?
   % subsection similarity_and_affine_registrations (end)
   
+  \subsection{Multiresolution Registration} % (fold)
+  \label{sub:multiresolution_registration}
+    Multires was tried. Discuss proposed advantages: faster, smoother cost function...
+  % subsection multiresolution_registration (end)
+  
   \subsection{Slice-to-Slice Diffusion Smoothing Algorithm} % (fold)
   \label{sub:slice_to_slice_diffusion_smoothing_algorithm}
-    introductory paragraph says about problems with final affine result
+    introductory motivational paragraph about problems with final affine result.
+    
+    Figure of zoomed in noise in HiRes result, and of intrinsic LoRes fixed image (jaggedness and changing light.)
+    
+    
     \subsubsection{Problem}
       \begin{itemize}
         \item Underlying noise in reference images, from changes in camera position and illumination angles and intensities
@@ -121,20 +130,58 @@ CONFIRMATION REPORT
       Figure of 1-D diffusion with alpha=0.4:
       \begin{figure}[htbp]
         \centering
-    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise_000}}
-    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise_001}}
-    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise_003}}
-    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise_015}}
-    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise_099}}
-    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise_299}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.40/000}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.40/001}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.40/003}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.40/015}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.40/099}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.40/299}}
         % \subfigure[][]{\includegraphics[height=55ex]{Ch6/Figs/cylinder}}
-        \caption{\textbf{(a)} A 10µm-thick histological image of rabbit mid-myocardial wall long-axis slice, provided by \cite{Burton:2006p100}. \textbf{(b)} The equipotentials (vertical lines) and field lines (horizontal with arrow heads) of a conducting circle in an infinite uniform field derived from the analytical solution to Eq. \ref{eqn:potential}.}
-    	  \label{fig:1-d_diffusion}
+        \caption{$\alpha = 0.4$. \textbf{(a)} Blah \textbf{(b)} blah blah Eq. \ref{eqn:potential}.}
+    	  \label{fig:1d_diffusion_0_40}
+      \end{figure}
+
+      Figure of 1-D diffusion with alpha=0.49:
+      \begin{figure}[htbp]
+        \centering
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.49/000}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.49/001}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.49/003}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.49/015}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.49/099}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.49/299}}
+        % \subfigure[][]{\includegraphics[height=55ex]{Ch6/Figs/cylinder}}
+        \caption{$\alpha = 0.49$. \textbf{(a)} Blah \textbf{(b)} blah blah Eq. \ref{eqn:potential}.}
+    	  \label{fig:1d_diffusion_0_49}
       \end{figure}
 
       Figure of 1-D diffusion with alpha=0.5:
+      \begin{figure}[htbp]
+        \centering
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.50/000}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.50/001}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.50/003}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.50/015}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.50/099}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.50/299}}
+        % \subfigure[][]{\includegraphics[height=55ex]{Ch6/Figs/cylinder}}
+        \caption{$\alpha = 0.5$. Equivalent to saying that all the particles move out of each bin.}
+    	  \label{fig:1d_diffusion_0_50}
+      \end{figure}
       
       Figure of 1-D diffusion with alpha=0.51:
+      \begin{figure}[htbp]
+        \centering
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.51/000}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.51/001}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.51/003}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.51/015}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.51/099}}
+    		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.51/299}}
+        % \subfigure[][]{\includegraphics[height=55ex]{Ch6/Figs/cylinder}}
+        \caption{$\alpha = 0.51$. Unphysical, saying that more than all the particles move out of each bin.}
+    	  \label{fig:1d_diffusion_0_51}
+      \end{figure}
 
       Figure of Transformational diffusion from identity (use Seg3D slices and Paraview surfaces):
       
@@ -143,6 +190,16 @@ CONFIRMATION REPORT
       Figure of Transformational diffusion from rotation sine wave:
       
       Figure of Transformational diffusion from translation and rotation sine wave:
+      
+      Parameters used for noisy dummies were x, y, z. The important factor is whether the slice-to-slice registrations are quickly and robustly successful, and so much greater noise could be filtered by the algorithm, as long as the parameters were tuned for large displacements for the first few iterations, and then smaller displacements for the finer smoothing in the later iterations.
+      
+      Parameter tuning:
+      Initial discussion of 4 parameters in RSGD: 2 behavioural (max step and relaxation factor), and 2 cutoff(min step and gradient magnitude tolerance).
+      Figures need to compare:
+        increase/decrease in behavioural (zigzag if too high because of overshoot)
+      increase/decrease in cutoff (takes too long if low, see tails in plot metric values and differences, doesn't finish if too high, use compare final metric values.py)
+      
+      Increase max step for HiRes pairs registration to 60, and show characteristic zigzagging and jumping out of potential well
       
       Prove that random walk is binomial distribution, which tends to Gaussian distribution, therefore with enough iterations we are applying gaussian transformational smoothing to the volume.
       
@@ -193,6 +250,10 @@ CONFIRMATION REPORT
     \label{sub:diagnostics}
       For a year and a half, very difficult to see why registration was failing. Output of raw parameters got us somewhere, but only for obvious issues e.g. parameter scaling, step length. Huge parameter space. Sports game analogy about result, but no play-by-play. BuildProgressVolumes
       
+      Parameter tuning:
+      
+      Figures of bad params, symptoms and results. e.g. zigzags, overshoot and gradual worsening. Unclear how the gradual worsening happens; could be an oddly shaped v-shaped cost basin, deepening steeply along one dimension and 
+      
       Before upgrade to ITKv4, registration algorithm would often not optimise i.e. results were much worse. Even though the upgrade shouldn't have affected the results, just the speed of the code, results were much much better.
     % subsection diagnostics (end)
 % section methods (end)
@@ -203,11 +264,19 @@ CONFIRMATION REPORT
 
 \section{Evaluation} % (fold)
 \label{sec:evaluation}
+
+\textit{PROGRESS FROM CONFIRMATION REPORT 
+A full-heart registration pipeline has been developed and downsampled histological volumes generated. An initial manual alignment is followed by rigid and similarity transforms. The quality of the registrations are quite poor at present, and the task at hand is to fine-tune the various parameters that constrain the process: parameter space preconditioning, maximum iterations, maximum and minimum step lengths, number of spatial samples and metric-specific parameters.
+END PROGRESS FROM CONFIRMATION REPORT
+}
+
   \subsection{Slice-to-Slice Diffusion Smoothing Algorithm}
     Inherently introduces the banana problem across the curvature of the heart (~30 slices - give justification with numbers)
     Can only be used for small adjustments, given non-commutativity of operators etc.
     Figures and evaluation of results e.g. examples of great and bad slice-pair registrations, maybe one slice has a large abberation. Works better for different regions? e.g. round blob versus cavity?
     Alternative Implementations: Expensive to rerun slice-pair registrations every iteration, could infer from previous registration. Inaccuracy and instability?
+    
+    Talk about ad hoc meta-optimisation of registration parameters, could be more formalised but a great deal more effort and prone to error (e.g. mean final metric values of all slices might decrease, but end result may suck)
     
     The method for optimising registration parameters is a crude and intuitive version of the optimisation algorithms applied to the image registrations. Not easily possible to calculate gradient of metric in parameter space, but can perturb coordinates along basis axes e.g. parameter scaling, choice of metric or optimiser, gradient descent learning rate, RSGD relaxation factor, whether to normalise images etc. 2 approaches: could split the space into two groups of `preferred' axes, and secondary axes, then perform an (exhaustive?) prototype search in the preferred subspace, and for each preferred coordinate perform an iterative optimisation in the secondary space. Alternatively, just perform iterative stochastic search in the whole space.
     
@@ -233,7 +302,7 @@ PAPER OUTLINE FROM CONFIRMATION REPORT
       \paragraph{Pipeline Builders}
         A minimal registration pipeline is composed of several generic actors, including a metric, an optimiser, a transform, and an interpolator. The details of which types of actors are optimal and how they should interact are peculiar to the registration problem at hand. Furthermore, the specific type of each component often requires unique configuration beyond the generic interface of its family. Once several types must be chosen from and configured, even for just one component, an ad hoc procedural approach quickly became unwieldy, but these two requirements colluded combinatorially to demand a great deal of testing, tailoring and configuration in order to achieve registrations of high quality. More often than not, modifications would degrade the registration, and reversing parts of them proved non-trivial.
 
-        At the pipeline level, we developed a heirarchy of `frameworks' employing the Builder pattern, which abstracts away the heavy lifting of wiring up the various components together.  At the component level, a conflation of the Abstract Factory and the Strategy patterns, together with a configuration system using the human-friendly YAML markup language, serves not only to decouple the actors' representations from the minutiae of their construction, but to move these fickle and volatile decisions from compile-time to runtime. These tools vastly reduce the cost of experimentation and testing.
+        At the pipeline level, we developed a heirarchy of `frameworks' employing the Builder pattern, which abstracts away the heavy lifting of wiring up the various components together.  At the component level, a conflation of the Abstract Factory and the Strategy patterns, together with a configuration system using the human-friendly YAML markup language, serves not only to decouple the actors' representations from the minutiae of their construction, but to move these volatile decisions from compile-time to runtime. These tools vastly reduce the cost of experimentation and testing. With all the variables clearly grouped together, with no need to recompile the toolchain or pore through source code to find if and where one can make a change, the feedback from results is faster and less error prone.
       
       \paragraph{Component Builders}
       Should this go in here? or in the paper? 
@@ -244,7 +313,6 @@ PAPER OUTLINE FROM CONFIRMATION REPORT
         \vspace{3 mm}
 
         Several other aspects of the architecture are not discussed here, including Configuration, File Management, Logging Output, Testing, as well as the opportunities and challenges posed by high performance computing.
-        
   \subsubsection{Algorithms}
       \paragraph{Image Curation}
         Many of the images must be prepared or altered prior to registration. Although every possible step was taken during image acquisition, certain unavoidable experimental practicalities needed correcting for. A handful of images required flipping or rotating; if a slice had been turned upside down between being sheared from the block face and being imaged under the microscope, or if it had diffused beyond 45 degrees from its angle on the block face. Several sets of downsamples of varying factors were generated, the lowest of which were used for debugging and testing, working up in detail, size and computational expense as the techniques were perfected. Images deemed damaged or of unacceptable quality were filtered by hand. On occasion, part way through image acquisition, the block face camera would be moved, relative to the surface of the wax block. All images acquired from then on had to be translated and rotated to compensate for this movement.
@@ -272,23 +340,15 @@ PAPER OUTLINE FROM CONFIRMATION REPORT
     
     MAYBE PUT SECTION ON FILE MANAGEMENT
     
+    MAYBE SECTION ON MULTIRESOLUTION, BOTH IN PLANE AND WITH IMAGE LISTS. TALK ABOUT REPRESENTATIVE SETS OF SLICES 100-110 + 200-210 + 300-310 ETC. TALK ABOUT TRACTABILITY WITH IMAGE SIZE AND TIME FOR REGISTRATION, AND HOW EACH ALGORITHM WAS SPLIT UP INTO INDIVIDUAL SLICES
+    
 PAPER OUTLINE FROM CONFIRMATION REPORT
 
 REGISTRATION PAPER
 
-\input{../registration_paper/latex/methods/test}
-% \input{\rootpath/../registration_paper/latex/methods/methods}
-% \input{\rootpath/../registration_paper/latex/results/results}
+% \input{../registration_paper/latex/methods/methods}
+% \input{../registration_paper/latex/results/results}
 \section{Registration Paper Meeting Notes}
-First, check 5 slices from different sections of the heart, see if the same parameters work for all 5
-Registration of the full rat heart with hires histology level of detail.
-
-
-Intro/Motivation
-People have tried to align block faces, but can't use certain dyes, transmission problems, lo res with Lo res data.
-People have tried to align hires stuff, but we know that this is not consistent.
-ASK VICENTE FOR REFS. MARK BOYETT FIRST AUTHOR OF ONE PAPER. ASK BECKY FOR INTRO/METHODS PAPERS.
-First attempt to use both sets of data to make coherent hires dyed segmented etc.
 
 Methods
 Think about figure for whole experimental and computational workflow. Isolated heart, fixation, block phase, MRI?, slice treatment and photography, computational pipeline.
@@ -300,7 +360,7 @@ Validate the results of the registration are good enough. Find landmarks like bl
 
 REGISTRATION PAPER
 
-
+MOTIVATE SOFTWARE QUALITY SECTION, SAY PROBLEMS I HAD, QUOTE VARIOUS SOFTWARE PRINCIPLES E.G. DRY, SINGLE POINT OF TRUTH,
 
 
 TRANSFER THESIS
@@ -405,5 +465,7 @@ TRANSFER THESIS
     The presented algorithm does not correct for 3-D out-of-plane deformations, possibly resulting from the wax embedding process. Mansoori et al. \cite{Mansoori:2007p221} believe that these deformations have a negligible effect on the final result, but do not rule out the inclusion of a final 3-D deformable transform when registering other histology datasets.
 
 TRANSFER THESIS
+
+
 
 

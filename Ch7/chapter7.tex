@@ -164,3 +164,32 @@ PAPER OUTLINE FROM CONFIRMATION REPORT
     
   \subsubsection{Discussion and Conclusions}
 PAPER OUTLINE FROM CONFIRMATION REPORT
+
+PROGRESS FROM CONFIRMATION REPORT ABOUT SEGMENTATION
+
+  \subsection{Segmentation}
+    Scalar images derived from the raw diffusion tensor data, such as fractional anisotropy and apparent diffusion coefficients, have been segmented using a combination of threshold level set and fast marching filtering techniques. A flow diagram of one pipeline is shown in Figure~\ref{fig:pipeline} and the results of a segmentation are displayed in Figure~\ref{fig:segmentation}. Tetrahedral meshes have been generated from the resulting segmentations, providing a set of rat heart geometries intrinsically coherent with their associated DTMRI data. 
+    Geometry has been extracted and meshed from rat DTMRI volumes.
+    
+    
+\begin{figure}[htbp]
+  \centering
+  % \includegraphics[width=1\textwidth]{1_progress_report/figures/segmentation-pipeline}
+  \caption{A flow diagram of the DTMRI segmentation pipeline. Configuration parameters are shown as smaller text under the name of each filter. The raw DT data is processed to give a scalar value at each point in the heart volume. Seg3D is then used to apply a rough initial tissue segmentation, which is used as the set of seed points for a fast marching filter. After fast marching is applied to expand the pointset slightly, it is used as input the threshold level set filter, along with the fractional isotropy as a feature image. The feature image of a level set filter controls the propagation rate of the frontier, so that regions of high anisotropy, likely to be tissue, are traversed quickly. A final binary threshold filter is applied, providing a segmentation volume.}
+  \label{fig:pipeline}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  % \includegraphics[height=0.47\textwidth]{1_progress_report/figures/segmentation_isosurface}
+  % \includegraphics[height=0.47\textwidth]{1_progress_report/figures/segmentation_isosurface_cutplanes}  
+  \caption{The segmentation surfaces of output from the pipeline in Figure~\ref{fig:pipeline}. On the right, cutplanes expose the inner surfaces and structure of the rat heart.}
+  \label{fig:segmentation}
+\end{figure}
+
+\subsection{Fibre Extraction}
+  Fibres have been extracted from third party data. Various scalar, vector and tensor data have been derived from the raw DTMRI tensor field. A pipeline has been developed to extract interpolated principal component vectors from the diffusion tensor field at the centroids of tetrahedra composing the rat meshes. Fibre direction at mesh centroids has been extracted from rat DTMRI volumes.
+
+
+END PROGRESS FROM CONFIRMATION REPORT ABOUT SEGMENTATION
+
