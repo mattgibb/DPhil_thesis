@@ -13,7 +13,7 @@ timesteps = 300
 # directories
 project_root = realpath(join(__file__, '..', '..'))
 images_path = join(project_root, 'figure_scripts', 'images')
-figures_path = join(project_root, 'Ch6', 'Figs', '1d_noise')
+figures_path = join(project_root, 'Ch7', 'Figs', '1d_noise')
 file_string = '%03d.pdf'
 
 def diffuse(series, alpha):
