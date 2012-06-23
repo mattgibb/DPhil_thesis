@@ -13,8 +13,6 @@ CONFIRMATION REPORT
   People have tried to align hires stuff, but we know that this is not consistent.
   ASK VICENTE FOR REFS. MARK BOYETT FIRST AUTHOR OF ONE PAPER. ASK BECKY FOR INTRO/METHODS PAPERS.
   First attempt to use both sets of data to make coherent hires dyed segmented etc.
-
-  
   
   The aim of this chapter is to develop an automated pipeline to register high resolution rat cardiac datasets robustly and accurately, and generate coherent subcellular resolution 3-D cardiac histological images.  Approximately three full rat heart datasets will be processed through the pipeline to provide registered volumes. These images will serve both as an authoritative anatomical reference, and as the basis for anatomically based models in simulation studies.
 
@@ -32,9 +30,19 @@ END PROGRESS FROM CONFIRMATION REPORT
   
   \subsection{Image Preparation and Curation} % (fold)
   \label{sub:image_preparation_and_curation}
-    downsampling, RGBA, flipping and rotating, a few figures
+    \begin{figure}[htbp]
+      \centering
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/LoRes_0_235}}
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/LoRes_without_adjustments_0_235}}
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/LoRes_1_287}}
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/LoRes_without_adjustments_1_287}}
+      \caption{What a nice figure!}
+      \label{fig:LoRes_cross_sections}
+    \end{figure}
     
     Figure of single LoRes slice with equivalent HiRes slice
+
+    downsampling, RGBA, flipping and rotating, a few figures
     
     LoRes adjustments:
     Figure of full LoRes volume without and with adjustment, with 1 quarter cutaway
@@ -51,7 +59,7 @@ END PROGRESS FROM CONFIRMATION REPORT
     
     The initial translation and pixel spacing of the LoRes images were manually tuned to overlap maximally with the HiRes data set.
     
-    
+  fig
     
   % subsection initialisation (end)
   
@@ -135,7 +143,7 @@ PAPER OUTLINE FROM CONFIRMATION REPORT
         At the pipeline level, we developed a heirarchy of `frameworks' employing the Builder pattern, which abstracts away the heavy lifting of wiring up the various components together.  At the component level, a conflation of the Abstract Factory and the Strategy patterns, together with a configuration system using the human-friendly YAML markup language, serves not only to decouple the actors' representations from the minutiae of their construction, but to move these volatile decisions from compile-time to runtime. These tools vastly reduce the cost of experimentation and testing. With all the variables clearly grouped together, with no need to recompile the toolchain or pore through source code to find if and where one can make a change, the feedback from results is faster and less error prone.
       
       \paragraph{Component Builders}
-      Should this go in here? or in the paper? 
+      Should this go in here? or in the paper?
       
       \paragraph{Checkpointing and Transform IO}
         At any stage during the registration process, the vector of transforms held by a given Stack can be persisted to a file or a series of files with a single function call. Just as easily, a new Stack can be initialised with a set of transforms on storage. This machinery facilitates greater process granularity in three dimensions: in the sequence of transforms to be optimised, in the increasing image resolutions to be registered, and spatially in the pairs of slices within the Stack. In the first case, a user can tune one registration stage until they are happy that it is optimal, and then use the results as a starting point for all subsequent runs of the next stage. Moreover, the division of workload and memory is of particular importance when organising jobs on clusters and shared memory machines.

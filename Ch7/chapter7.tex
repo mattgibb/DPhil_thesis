@@ -76,7 +76,6 @@
 		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.40/015}}
 		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.40/099}}
 		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.40/299}}
-    % \subfigure[][]{\includegraphics[height=55ex]{Ch6/Figs/cylinder}}
     \caption{$\alpha = 0.4$. \textbf{(a)} Blah \textbf{(b)} blah blah Eq. \ref{eqn:potential}.}
 	  \label{fig:1d_diffusion_0_40}
   \end{figure}
@@ -90,7 +89,6 @@
 		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.49/015}}
 		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.49/099}}
 		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.49/299}}
-    % \subfigure[][]{\includegraphics[height=55ex]{Ch6/Figs/cylinder}}
     \caption{$\alpha = 0.49$. \textbf{(a)} Blah \textbf{(b)} blah blah Eq. \ref{eqn:potential}.}
 	  \label{fig:1d_diffusion_0_49}
   \end{figure}
@@ -104,7 +102,6 @@
 		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.50/015}}
 		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.50/099}}
 		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.50/299}}
-    % \subfigure[][]{\includegraphics[height=55ex]{Ch6/Figs/cylinder}}
     \caption{$\alpha = 0.5$. Equivalent to saying that all the particles move out of each bin.}
 	  \label{fig:1d_diffusion_0_50}
   \end{figure}
@@ -112,17 +109,17 @@
   Figure of 1-D diffusion with alpha=0.51:
   \begin{figure}[htbp]
     \centering
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/000}}
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/001}}
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/003}}
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/015}}
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/099}}
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/299}}
-    % \subfigure[][]{\includegraphics[height=55ex]{Ch6/Figs/cylinder}}
+  	\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/000}}
+  	\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/001}}
+  	\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/003}}
+  	\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/015}}
+  	\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/099}}
+  	\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/299}}
     \caption{$\alpha = 0.51$. Unphysical, saying that more than all the particles move out of each bin.}
-	  \label{fig:1d_diffusion_0_51}
+    \label{fig:1d_diffusion_0_51}
   \end{figure}
-
+  
+  
   Figure of Transformational diffusion from identity (use Seg3D slices and Paraview surfaces):
   
   Figure of Transformational diffusion from translation sine wave:
@@ -165,6 +162,18 @@
 
 \section{Results} % (fold)
 \label{sec:results}
+  
+  Figures:
+  
+  2 cross-sections and a contour surface of:
+    the straight column, rotation, translation, rotation + translation volumes
+      with perfect, noisy, smoothed 0.4, smoothed 0.3
+        
+  Figure of 0.4 200rt plot\_metric\_values\_and\_differences from the first step, showing that all the registrations are reaching their minimum of around the same low metric value, it's just that the computation of the Adjusted Transforms is unstable.
+  
+  
+  
+  
   \subsection{Regional Registration} % (fold)
   \label{sub:regional_registration}
   
@@ -174,21 +183,21 @@
 
 \section{Discussion} % (fold)
 \label{sec:discussion}
+  GENERAL POINT, `it will be shown later' in introductory paragraphs, to tittilate the reader.
+
+  With a better interpolation scheme, it might be possible to crank alpha up further.
+  
   Inherently introduces the banana problem across the curvature of the heart (~30 slices - give justification with numbers)
   Can only be used for small adjustments, given non-commutativity of operators etc.
   Figures and evaluation of results e.g. examples of great and bad slice-pair registrations, maybe one slice has a large abberation. Works better for different regions? e.g. round blob versus cavity?
-  Alternative Implementations: Expensive to rerun slice-pair registrations every iteration, could infer from previous registration. Inaccuracy and instability?
+  Alternative Implementations:
+  Could register to more than just nearest neighbours at each iteration, although multiple iterations of nearest neighbour is equivalent to this, requires the same total number of slice-to-slice iterations, and is more stable and accurate, as errors from the first nearest neighbour iteration due to e.g. interpolation error, random noise etc. are mitigated by subsequent iterations.
+  Expensive to rerun slice-pair registrations every iteration, could infer from previous registration. Inaccuracy and instability?
   
+  Could be extended easily to more complex transforms such as b-spline, although perhaps a little trickier to think about interpolating transforms other than linearly interpolating their parameters.
 
 % section discussion (end)
 
-
-
-
-
-
-  
-      
 
   
 % subsection slice_to_slice_diffusion_smoothing_algorithm (end)
