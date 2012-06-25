@@ -22,7 +22,7 @@ generate_slice()
 
 # generate 2 perpendicular cross-sections for each experiment and iteration
 for experiment in 200_alpha0.4{,r,t,rt}; do
-  for iteration in {0..2}; do
+  for iteration in {0,1,3,10}; do
     echo experiment: $experiment, iteration: $iteration
     generate_slice $experiment $iteration 0 088
     generate_slice $experiment $iteration 1 107
