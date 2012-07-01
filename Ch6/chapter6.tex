@@ -41,7 +41,7 @@ END PROGRESS FROM CONFIRMATION REPORT
     \end{figure}
     
     Figure of single LoRes slice with equivalent HiRes slice
-
+    
     downsampling, RGBA, flipping and rotating, a few figures
     
     LoRes adjustments:
@@ -53,9 +53,14 @@ END PROGRESS FROM CONFIRMATION REPORT
   \label{sub:initialisation}
     Motivational paragraph: registration is sensitive to starting params, prone to trap into local minima...
       
-    Slice images were flipped and rotated to align approximately with the block images. White space under the microscope surrounding the slices had already been cropped, such that each slice sat approximately central within the bounds of its image. Thusly, slice images were aligned to their common geometric centre.
+    Slice images were flipped and rotated to align approximately with the block images. 
+    
+    
+    White space under the microscope surrounding the slices had already been cropped, such that each slice sat approximately central within the bounds of its image. Thusly, slice images were aligned to their common geometric centre.
     
     Figure: A naive initialisation of the histological slices, aligning images to their common centre, provides an adequate starting point. VOLUMES ALONG WITH MASKS
+    Figure: Cutthroughs and volume with quarter missings of HiRes images before registration
+    % Possible figure: 3/4 volume of image mask to demonstrate geometric centres
     
     The initial translation and pixel spacing of the LoRes images were manually tuned to overlap maximally with the HiRes data set.
     
@@ -99,6 +104,16 @@ END PROGRESS FROM CONFIRMATION REPORT
       Figures of bad params, symptoms and results. e.g. zigzags, overshoot and gradual worsening. Unclear how the gradual worsening happens; could be an oddly shaped v-shaped cost basin, deepening steeply along one dimension and 
       
       Before upgrade to ITKv4, registration algorithm would often not optimise i.e. results were much worse. Even though the upgrade shouldn't have affected the results, just the speed of the code, results were much much better.
+      
+      Parameter tuning:
+      Initial discussion of 4 parameters in RSGD: 2 behavioural (max step and relaxation factor), and 2 cutoff(min step and gradient magnitude tolerance).
+      Figures need to compare:
+        increase/decrease in behavioural (zigzag if too high because of overshoot)
+      increase/decrease in cutoff (takes too long if low, see tails in plot metric values and differences, doesn't finish if too high, use compare final metric values.py)
+
+      Increase max step for HiRes pairs registration to 60, and show characteristic zigzagging and jumping out of potential well
+
+      
     % subsection diagnostics (end)
 % section methods (end)
    
