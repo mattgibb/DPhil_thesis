@@ -69,16 +69,14 @@ perfect_slice = crop_slice(perfect_slice, [155, 171], [424, 455])
 stdout.write("done.\n")
 
 # mean squared difference slice
-stdout.write("calculating mean squared difference...")
+stdout.write("calculating squared difference...")
 noisy_scalar_slice   = VectorMagnitude(noisy_slice)
 perfect_scalar_slice = VectorMagnitude(perfect_slice)
 squared_diff = SquaredDifference(noisy_scalar_slice, perfect_scalar_slice)
 stdout.write("done.\n")
 
-# write images
-def write_and_convert_to_pdf(image, basepath):
-    # write tiff
-    WriteImage(image, tiff_path)
+print "squared difference stats:"
+print Statistics(squared_diff)
 
 # define output basepaths
 images_path = join(PROJECT_ROOT, 'Ch7/Figs/dummies/')
