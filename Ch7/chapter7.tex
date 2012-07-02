@@ -237,20 +237,49 @@
     \label{fig:dummy_cross_sections}
   \end{sidewaysfigure}
   
-  
-  
+  % segmentation mean squared differences 3D
   \begin{sidewaysfigure}[htbp]
     \centering
-    \subfigure[][straight column]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/cross_section_200_alpha0.4rt_0_1_107}}
-    \subfigure[][rotation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/cross_section_200_alpha0.4rt_1_1_107}}
-    \subfigure[][translation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/cross_section_200_alpha0.4rt_3_1_107}}
-    \subfigure[][rotation and translation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/cross_section_200_alpha0.4rt_10_1_107}}
-    \caption{What a nice figure! Notice a quarter of the way up from the base, a bad registration between 1 and 3 has been corrected in 10}
+    \subfigure[][straight column]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_mean_square_differences_3D}}
+    \subfigure[][rotation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_mean_square_differences_3Dr}}
+    \subfigure[][translation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_mean_square_differences_3Dt}}
+    \subfigure[][rotation and translation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_mean_square_differences_3Drt}}
+    \caption{3D evolution of mean squared difference. Discuss how, as is visible in the colour and segmentation mean squared difference slices, even though registration was performed with the colour image, mean squared differences were calculated with the segmentation, and the results are much less noisy and clearer.}
     \label{fig:dummy_cross_sections}
   \end{sidewaysfigure}
   
+  % segmentation mean squared differences 2D
+  \begin{sidewaysfigure}[htbp]
+    \centering
+    \subfigure[][straight column]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_mean_square_differences_2D}}
+    \subfigure[][rotation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_mean_square_differences_2Dr}}
+    \subfigure[][translation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_mean_square_differences_2Dt}}
+    \subfigure[][rotation and translation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_mean_square_differences_2Drt}}
+    \caption{}
+    \label{fig:dummy_cross_sections}
+  \end{sidewaysfigure}
   
+  % colour mean squared differences 3D
+  \begin{sidewaysfigure}[htbp]
+    \centering
+    \subfigure[][straight column]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/colour_mean_square_differences_3D}}
+    \subfigure[][rotation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/colour_mean_square_differences_3Dr}}
+    \subfigure[][translation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/colour_mean_square_differences_3Dt}}
+    \subfigure[][rotation and translation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/colour_mean_square_differences_3Drt}}
+    \caption{}
+    \label{fig:dummy_cross_sections}
+  \end{sidewaysfigure}
   
+  % colour mean squared differences 2D
+  \begin{sidewaysfigure}[htbp]
+    \centering
+    \subfigure[][straight column]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/colour_mean_square_differences_2D}}
+    \subfigure[][rotation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/colour_mean_square_differences_2Dr}}
+    \subfigure[][translation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/colour_mean_square_differences_2Dt}}
+    \subfigure[][rotation and translation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/colour_mean_square_differences_2Drt}}
+    \caption{}
+    \label{fig:dummy_cross_sections}
+  \end{sidewaysfigure}
   It is worth noting that the adjustment algorithm itself is stable with much larger levels of noise than shown here, comparable to those in Figures~\ref{fig:1d_diffusion_0_40}, \ref{fig:1d_diffusion_0_49}, \ref{fig:1d_diffusion_0_50} and \ref{fig:1d_diffusion_0_51}. It is simply that the registration is sensitive, wouldn't work blah blah.
   
   Parameters used for noisy dummies were x, y, z. The important factor is whether the slice-to-slice registrations are quickly and robustly successful, and so much greater noise could be filtered by the algorithm, as long as the parameters were tuned for large displacements for the first few iterations, and then smaller displacements for the finer smoothing in the later iterations.
