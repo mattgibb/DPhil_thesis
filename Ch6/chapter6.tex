@@ -30,15 +30,15 @@ END PROGRESS FROM CONFIRMATION REPORT
   
   \subsection{Image Preparation and Curation} % (fold)
   \label{sub:image_preparation_and_curation}
-    \begin{figure}[htbp]
+    \begin{sidewaysfigure}[htbp]
       \centering
-      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/LoRes_0_235}}
-      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/LoRes_without_adjustments_0_235}}
-      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/LoRes_1_287}}
-      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/LoRes_without_adjustments_1_287}}
+      \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/LoRes_0_235}}
+      \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/LoRes_1_287}}
+      \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/LoRes_without_adjustments_0_235}}
+      \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/LoRes_without_adjustments_1_287}}
       \caption{What a nice figure!}
       \label{fig:LoRes_cross_sections}
-    \end{figure}
+    \end{sidewaysfigure}
     
     Figure of single LoRes slice with equivalent HiRes slice
     
@@ -121,6 +121,26 @@ END PROGRESS FROM CONFIRMATION REPORT
   A series of figures will provide visual validation of the results, both of the full heart and more detailed images in regions of interest. Cross-sectional images perpendicular to the slice planes will show the close matching between planes, and segmented surfaces of myocardial walls and larger arteries will be rendered in 3-D. The performance of various registration regimes will be compared.
 CONFIRMATION REPORT
 
+% x slices
+\begin{figure}[htbp]
+  \centering
+  \subfigure[][]{\includegraphics[height=0.31\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/rigid_0_235}}
+  \subfigure[][]{\includegraphics[height=0.31\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/size_0_235}}
+  \subfigure[][]{\includegraphics[height=0.31\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/affine_0_235}}
+  \caption{What a nice figure!}
+  \label{fig:hires_0_235}
+\end{figure}
+
+% y slices
+\begin{figure}[htbp]
+  \centering
+  \subfigure[][]{\includegraphics[height=0.31\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/rigid_1_287}}
+  \subfigure[][]{\includegraphics[height=0.31\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/size_1_287}}
+  \subfigure[][]{\includegraphics[height=0.31\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/affine_1_287}}
+  \caption{What a nice figure!}
+  \label{fig:hires_1_287}
+\end{figure}
+
 \section{Evaluation} % (fold)
 \label{sec:evaluation}
 
@@ -134,6 +154,8 @@ END PROGRESS FROM CONFIRMATION REPORT
     The method for optimising registration parameters is a crude and intuitive version of the optimisation algorithms applied to the image registrations. Not easily possible to calculate gradient of metric in parameter space, but can perturb coordinates along basis axes e.g. parameter scaling, choice of metric or optimiser, gradient descent learning rate, RSGD relaxation factor, whether to normalise images etc. 2 approaches: could split the space into two groups of `preferred' axes, and secondary axes, then perform an (exhaustive?) prototype search in the preferred subspace, and for each preferred coordinate perform an iterative optimisation in the secondary space. Alternatively, just perform iterative stochastic search in the whole space.
     
     ?NEEDS DEVELOPMENT? Some params like choice of metric have different associated parameter spaces e.g. learning rate vs relaxation factor, and also are likely to lead to widely different optimal spaces along other axes e.g. parameter scaling.
+    
+    Problems about things like histogram matching, Mutual info: for histogram matching there is no monotonic mapping between the intensity in the lores and that of the hires, with tissue /non tissue. With Mutual info, doesn't need to be monotonic, but there isn't even a one-to-one mapping i.e. many regions of tissue in lores occupy the same intensity range as non-tissue.
 
 % section evaluation (end)
 
