@@ -41,6 +41,32 @@ END PROGRESS FROM CONFIRMATION REPORT
     \end{sidewaysfigure}
     
     Figure of single LoRes slice with equivalent HiRes slice
+    \begin{figure}[htbp]
+      \centering
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/LoRes_rgb_downsamples_1_0582}}
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/LoRes_rgb_downsamples_8_0582}}
+      \caption{}
+      \label{fig:original_images}
+    \end{figure}
+    
+    \begin{figure}[htbp]
+      \centering
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/HiRes_downsamples_8_0582}}
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/HiRes_downsamples_64_0582}}
+      \caption{Mention how the slice needs to be flipped and rotated to be in line with the block face image.}
+      \label{fig:original_images}
+    \end{figure}
+    
+    \begin{sidewaysfigure}[htbp]
+      \centering
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/HiRes_downsamples_1_0582_zoom}}
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/HiRes_downsamples_8_0582_zoom}}
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/HiRes_downsamples_64_0582_zoom}}
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/LoRes_rgb_downsamples_1_0582_zoom}}
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/LoRes_rgb_downsamples_8_0582_zoom}}
+      \caption{Mention how the slice needs to be flipped and rotated to be in line with the block face image.}
+      \label{fig:original_images}
+    \end{sidewaysfigure}
     
     downsampling, RGBA, flipping and rotating, a few figures
     
@@ -121,12 +147,13 @@ END PROGRESS FROM CONFIRMATION REPORT
   A series of figures will provide visual validation of the results, both of the full heart and more detailed images in regions of interest. Cross-sectional images perpendicular to the slice planes will show the close matching between planes, and segmented surfaces of myocardial walls and larger arteries will be rendered in 3-D. The performance of various registration regimes will be compared.
 CONFIRMATION REPORT
 
+
 % x slices
 \begin{figure}[htbp]
   \centering
-  \subfigure[][]{\includegraphics[height=0.31\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/rigid_0_235}}
-  \subfigure[][]{\includegraphics[height=0.31\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/size_0_235}}
-  \subfigure[][]{\includegraphics[height=0.31\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/affine_0_235}}
+  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/rigid_0_235}}
+  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/size_0_235}}
+  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/affine_0_235}}
   \caption{Talk about how discontinuities in intensity between slices in the LoRes cutthrough fig are mirrored in the registration}
   \label{fig:hires_0_235}
 \end{figure}
@@ -134,9 +161,9 @@ CONFIRMATION REPORT
 % y slices
 \begin{figure}[htbp]
   \centering
-  \subfigure[][]{\includegraphics[height=0.31\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/rigid_1_287}}
-  \subfigure[][]{\includegraphics[height=0.31\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/size_1_287}}
-  \subfigure[][]{\includegraphics[height=0.31\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/affine_1_287}}
+  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/rigid_1_287}}
+  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/size_1_287}}
+  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/affine_1_287}}
   \caption{What a nice figure!}
   \label{fig:hires_1_287}
 \end{figure}
