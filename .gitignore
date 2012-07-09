@@ -19,3 +19,4 @@ thesis.pdf
 .xvpics
 *.backup
 *~
+*.pyc

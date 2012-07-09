@@ -2,15 +2,7 @@
 
 from paraview.simple import *
 
-# path helpers
-dummy_root = "/Users/Matt/Code/imaging/registration/results/dummy/"
-
-def adjusted_transforms_path(experiment, iteration):
-    return dummy_root + experiment + "/HiResPairs/AdjustedTransforms/CenteredAffineTransform_" + str(iteration) + "/"
-
-def perfect_path(experiment):
-    return dummy_root + "perfect_" + experiment + "/HiResTransforms_4_32/CenteredAffineTransform/"
-    
+import paths
 
 # ParaView heavy lifting
 def extract_contour(directory):
@@ -46,7 +38,7 @@ for extension in ("", "r", "t", "rt"):
         print 'iteration: %d'%iteration
         
         # construct paths
-        directory = adjusted_transforms_path(experiment, iteration)
+        directory = noisy_path(experiment, iteration)
         extract_contour(directory)
     
     # perfect volumes
@@ -54,4 +46,5 @@ for extension in ("", "r", "t", "rt"):
     
     directory = perfect_path(experiment)
     extract_contour(directory)
+    
     
