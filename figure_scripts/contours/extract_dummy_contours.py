@@ -1,6 +1,7 @@
 #!/Users/Matt/Code/imaging/ParaView_build/bin/pvpython
 
-import paths, contours
+from paths import *
+import contours
 
 # create contour in same directory as segmentation
 def extract_contour(directory):
@@ -21,5 +22,3 @@ for extension in ("", "r", "t", "rt"):
     # perfect volumes
     print "perfect volume"
     extract_contour(perfect_path(experiment))
-    
-    
