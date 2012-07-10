@@ -1,6 +1,7 @@
 # path helpers
-dummy_root = "/Users/Matt/Code/imaging/registration/results/dummy/"
-thesis_root = "/Users/Matt/Documents/DPhil/written_work/thesis/"
+results_root = "/Users/Matt/Code/imaging/registration/results/"
+dummy_root   = results_root + "dummy/"
+thesis_root  = "/Users/Matt/Documents/DPhil/written_work/thesis/"
 
 def noisy_path(experiment, iteration):
     return dummy_root + experiment + "/HiResPairs/AdjustedTransforms/CenteredAffineTransform_" + str(iteration) + "/"
