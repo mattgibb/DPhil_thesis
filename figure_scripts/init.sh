@@ -20,18 +20,31 @@ extract_slice() {
 }
 
 # vertical flip raw tiff slices
-# usage: flip_and_convert_slice Ch6/Figs/image.tiff Ch6/Figs/result.pdf
-flip_and_convert_slice() {
+# usage: flip_and_convert_slice Ch6/Figs/image.tiff
+
+flip_slice() {
   # build arguments
   TIFF_PATH=$THESIS_PATH/$1
-  PDF_PATH=$THESIS_PATH/$2
   
   # vertical flip, composed of a horizontal flip and 2 90 degree rotations
   $BINARY_PATH/RotateImage $TIFF_PATH $TIFF_PATH
   $BINARY_PATH/RotateImage $TIFF_PATH $TIFF_PATH
   $BINARY_PATH/FlipImage   $TIFF_PATH $TIFF_PATH
+}
+
+# convert slice from tiff to pdf
+# usage: flip_and_convert_slice Ch6/Figs/image.tiff Ch6/Figs/result.pdf
+convert_slice() {
+  # build arguments
+  TIFF_PATH=$THESIS_PATH/$1
+  PDF_PATH=$THESIS_PATH/$2
   
   # convert tiff file to pdf
   tiff2pdf $TIFF_PATH > $PDF_PATH
   rm $TIFF_PATH
+}
+
+flip_and_convert_slice() {
+  flip_slice $*
+  convert_slice $*
 }
