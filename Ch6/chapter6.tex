@@ -166,6 +166,7 @@ END PROGRESS FROM CONFIRMATION REPORT
    
     \subsection{Diagnostics} % (fold)
     \label{sub:diagnostics}
+    
       For a year and a half, very difficult to see why registration was failing. Output of raw parameters got us somewhere, but only for obvious issues e.g. parameter scaling, step length. Huge parameter space. Sports game analogy about result, but no play-by-play. BuildProgressVolumes
       
       Parameter tuning:
@@ -181,7 +182,35 @@ END PROGRESS FROM CONFIRMATION REPORT
       increase/decrease in cutoff (takes too long if low, see tails in plot metric values and differences, doesn't finish if too high, use compare final metric values.py)
 
       Increase max step for HiRes pairs registration to 60, and show characteristic zigzagging and jumping out of potential well
-
+      
+      \begin{sidewaysfigure}[htbp]
+        \centering
+        \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/rigid_metric_values}
+        \caption{Viewed from below to see clearly all the values. Nearly all curves smoothly and monotonically increase, before reaching a distinct flat maximum. After around slice 600, where blob appears, final metric values decrease almost linearly as the intensity of the blob increases. Slices in the region of 400-600 start from a much lower metric value, and take up to 1500 iterations to maximise. Diagnostics were important here, to see whether all slices had reached maximum. Give times to run 1500 iterations on supercomputer.}
+        \label{fig:rigid_metric_values}
+      \end{sidewaysfigure}
+      
+      \begin{sidewaysfigure}[htbp]
+        \centering
+        \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/similarity_metric_values}
+        \caption{}
+        \label{fig:similarity_metric_values}
+      \end{sidewaysfigure}
+      
+      \begin{sidewaysfigure}[htbp]
+        \centering
+        \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/affine_metric_values}
+        \caption{}
+        \label{fig:affine_metric_values}
+      \end{sidewaysfigure}
+      
+      \begin{sidewaysfigure}[htbp]
+        \centering
+        \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/affine_metric_value_differences}
+        \caption{}
+        \label{fig:affine_metric_value_differences}
+      \end{sidewaysfigure}
+      
       
     % subsection diagnostics (end)
 % section methods (end)
