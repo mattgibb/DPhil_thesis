@@ -24,7 +24,7 @@ generate_perfect_slice() {
   EXPERIMENT=$1
   DIM=$2
   SLICE=$3
-  VOLUME_PATH=results/dummy/perfect_$EXPERIMENT/HiResTransforms_4_32/CenteredAffineTransform/HiRes.mha
+  VOLUME_PATH=results/dummy/perfect_$EXPERIMENT/HiResTransforms_1_8/CenteredAffineTransform/HiRes.mha
   TIFF_PATH=Ch7/Figs/$SLICE.tiff
   PDF_PATH=Ch7/Figs/dummies/cross_section_perfect_${EXPERIMENT}_${DIM}_${SLICE}.pdf
   
@@ -38,16 +38,16 @@ for experiment in 200_alpha0.4{,r,t,rt}; do
   echo experiment: $experiment
   
   # generate noisy slices
-  for iteration in {0,1,3,10}; do
+  for iteration in {0,1,3,8,20}; do
     echo iteration: $iteration
-    generate_noisy_slice $experiment $iteration 0 088
-    generate_noisy_slice $experiment $iteration 1 107
+    generate_noisy_slice $experiment $iteration 0 352
+    generate_noisy_slice $experiment $iteration 1 431
     echo
   done
   
   # generate perfect slices
   echo perfect slice
-  generate_perfect_slice $experiment 0 088
-  generate_perfect_slice $experiment 1 107
+  generate_perfect_slice $experiment 0 352
+  generate_perfect_slice $experiment 1 431
   echo
 done
