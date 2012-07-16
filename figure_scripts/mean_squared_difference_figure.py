@@ -17,7 +17,7 @@ PROJECT_ROOT = str(realpath(join(__file__, '..', '..')))
 BINARY_PATH = "/Users/Matt/Code/imaging/registration/itk_release/"
 DUMMY_PATH  = "/Users/Matt/Code/imaging/registration/results/dummy/"
 noisy_path = DUMMY_PATH + "200_alpha0.4/HiResPairs/AdjustedTransforms/CenteredAffineTransform_0/HiRes_" + image_type + "_1_8.mha"
-perfect_path = DUMMY_PATH + "perfect_200_alpha0.4/HiResTransforms_4_32/CenteredAffineTransform/HiRes_" + image_type + "_1_8.mha"
+perfect_path = DUMMY_PATH + "perfect_200_alpha0.4/HiResTransforms_1_8/CenteredAffineTransform/HiRes_" + image_type + "_1_8.mha"
 
 # extract slices
 # have to use vanilla ITK binary, as SimpleITK doesn't support extraction of vector images
