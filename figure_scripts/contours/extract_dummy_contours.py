@@ -5,8 +5,8 @@ import contours
 
 # create contour in same directory as segmentation
 def extract_contour(directory):
-    segmentation_path = directory + "HiRes_segmentation_1_8.mha"
-    contour_path      = directory + "HiRes_segmentation_1_8_contour.vtp"
+    segmentation_path = directory + "HiRes_segmentation.mha"
+    contour_path      = directory + "HiRes_segmentation_contour.vtp"
     contours.extract_contour(segmentation_path, contour_path, rgb_data=True)
 
 # generate all dummy contours
@@ -15,7 +15,7 @@ for extension in ("", "r", "t", "rt"):
     print experiment
     
     # imperfect iterations
-    for iteration in range(11):
+    for iteration in (0,1,3,8,20):
         print 'iteration: %d'%iteration
         extract_contour(noisy_path(experiment, iteration))
     

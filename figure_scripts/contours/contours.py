@@ -20,19 +20,15 @@ def extract_contour(segmentation_path, contour_path, rgb_data=False):
     
     # intensity is either (3 * 255^2)^0.5, or 1
     if rgb_data:
-        magnitude = 420.0
+        magnitude = 220.0
     else:
         magnitude = 127
     
-    contour = Contour(calculator, guiName="contour", Isosurfaces=[magnitude], ComputeNormals=1, ComputeGradients=0, ComputeScalars=0, ContourBy=['POINTS', 'Result'], PointMergeMethod="Uniform Binning")
+    sys.stdout.write('Updating contour...'); sys.stdout.flush()
+    contour = Contour(calculator, guiName="contour", Isosurfaces=[magnitude], ComputeNormals=1, ComputeGradients=0, ComputeScalars=0, ContourBy=['POINTS', 'contour_input'], PointMergeMethod="Uniform Binning")
     contour.PointMergeMethod.Numberofpointsperbucket = 8
     contour.PointMergeMethod.Divisions = [50, 50, 50]
     
-    sys.stdout.write('Showing contour...'); sys.stdout.flush()
-    Show(contour)
-    print 'done.'
-
-    sys.stdout.write('Updating contour...'); sys.stdout.flush()
     contour.UpdatePipeline()
     print 'done.'
     
