@@ -33,14 +33,6 @@ CONFIRMATION REPORT
     Hearts were isolated from female rats and cannulated via the aorta to a Langendorff perfusion system, in a similar manner to that presented in \cite{Burton2006}. The hearts were then fixed and stabilised in agar, and 26.4 x 26.4 x 26.4$\mu$m MRI scans were performed. The hearts were immersed in increasing concentrations of alcohol, in order to dehydrate them before embedding them in black wax. The wax blocks were then serially sectioned at 10$\mu$m thickness using a microtome, and an image of the top surface of the block with 25$\mu$m resolution was taken after each slicing. Every 5th section was Trichrome stained, labelling connective tissue bluish-green, myocytes pinkish-red and nuclei blue-black. Each slice was relaxed and re-hydrated, before histology imaging was performed using a 5x objective with 1.1$\mu$m resolution.
   % subsection image_acquisition (end)
 
-
-The images are downsampled and preprocessed using one of a number of intensity rescaling schemes. Registrations are performed in an iterative fashion, gradually reducing in transformation constraint, starting with a simple rigid transform. Finally, a series of non-rigid bspline registrations are performed at progressively higher resolutions.
-
-PROGRESS FROM CONFIRMATION REPORT 
-An iterative 2D-3D registration pipeline has been developed for registering rabbit histology images to their associated MRI volume. Since transfer, it has been made clear that the precision of registration required to extract fibre direction far exceeds that which could be achieved with the iterative method. New rat data has become available with two sets of 2D images: a high resolution unregistered histological slice and a related lower resolution image of the surface of the embedded heart block before each slice is cut. The coherent set of wax block images vastly simplify the problem and facilitate far more accurate results.
-
-END PROGRESS FROM CONFIRMATION REPORT 
-  
   \subsection{Image Curation} % (fold)
   \label{sub:image_curation}
     
@@ -48,18 +40,19 @@ END PROGRESS FROM CONFIRMATION REPORT
     
       Many of the images must be prepared or altered prior to registration. Although every possible step was taken during image acquisition, certain unavoidable experimental practicalities needed correcting for. A handful of images required flipping or rotating; if a slice had been turned upside down between being sheared from the block face and being imaged under the microscope, or if it had diffused beyond 45 degrees from its angle on the block face. Several sets of downsamples of varying factors were generated, the lowest of which were used for debugging and testing, working up in detail, size and computational expense as the techniques were perfected. Images deemed damaged or of unacceptable quality were filtered by hand. On occasion, part way through image acquisition, the block face camera would be moved, relative to the surface of the wax block. All images acquired from then on had to be translated and rotated to compensate for this movement.
     
-    \begin{sidewaysfigure}[htbp]
+    \begin{figure}[htbp]
       \centering
-      \includegraphics[width=1.3\textwidth]{Ch6/Figs/damaged_slice}
+      \includegraphics[width=.8\textwidth]{Ch6/Figs/damaged_slice}
       \caption{A damaged slice close to the left extremity of the heart. The tissue is severely damaged and folded in place. There is also a large bubble trapped between the two imaging slides.}
       \label{fig:damaged_slice}
-    \end{sidewaysfigure}
+    \end{figure}
   
     
   % subsection image_curation (end)
   
   \subsection{Image Preparation} % (fold)
   \label{sub:image_preparation}
+    LoRes adjustments:
     % lores cross sections
     \begin{sidewaysfigure}[htbp]
       \centering
@@ -117,16 +110,16 @@ END PROGRESS FROM CONFIRMATION REPORT
     Figure of single LoRes slice with equivalent HiRes slice
     \begin{figure}[htbp]
       \centering
-      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/LoRes_rgb_downsamples_1_0582}}
-      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/LoRes_rgb_downsamples_8_0582}}
-      \caption{}
+      \subfigure[][]{\includegraphics[width=0.8\pagewidth]{Ch6/Figs/LoRes_rgb_downsamples_1_0582}}
+      \subfigure[][]{\includegraphics[width=0.8\pagewidth]{Ch6/Figs/LoRes_rgb_downsamples_8_0582}}
+      \caption{Block face images of slice 582. The original image is shown in \textbf{(a)}, with \textbf{(b)} Gaussian smoothed and downsampled by a factor of 8.}
       \label{fig:original_images}
     \end{figure}
     
     \begin{figure}[htbp]
       \centering
-      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/HiRes_downsamples_8_0582}}
-      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/HiRes_downsamples_64_0582}}
+      \subfigure[][]{\includegraphics[width=0.8\pagewidth]{Ch6/Figs/HiRes_downsamples_8_0582}}
+      \subfigure[][]{\includegraphics[width=0.8\pagewidth]{Ch6/Figs/HiRes_downsamples_64_0582}}
       \caption{Mention how the slice needs to be flipped and rotated to be in line with the block face image.}
       \label{fig:original_images}
     \end{figure}
@@ -142,17 +135,19 @@ END PROGRESS FROM CONFIRMATION REPORT
       \label{fig:original_images}
     \end{sidewaysfigure}
     
-    downsampling, RGBA, flipping and rotating, a few figures
+    RGBA
     
-    LoRes adjustments:
-    Figure of full LoRes volume without and with adjustment, with 1 quarter cutaway
+    flipping and rotating
+    
+    downsampling and smoothing: motivate downsampling with fact that HiRes moving image is needlessly detailed compared to LoRes (include in-plane dims and show that factor of 8 is optimal). Motivate Gaussian smoothing with Nernquist limit, noisiness and with drawing info from other pixels. For the reasons delineated in Section~\ref{ssub:multiresolution_registration},  block-face downsamples were generated of all powers of 2 between 2 and 8, and histology downsamples between 2 and 64.
     
   % subsection image_preparation_and_curation (end)
   
   \subsection{Initialisation} % (fold)
   \label{sub:initialisation}
-    Motivational paragraph: registration is sensitive to starting params, prone to trap into local minima...
-      
+    The optimisation algorithms used in registration do not assure convergence to the global minimum and are thus sensitive to initialisation and to the presence of local minima in the cost function. A reasonable initialisation is necessary for robust and accurate registration. The block face images are already coherent from their acquisition, and the slice images have been closely cropped such that the heart tissue lies at the centre. A simple manual alignment of the stack volumes relative to each other therefore provided adequate initialisation.
+    
+    
     Slice images were flipped and rotated to align approximately with the block images. 
     
     The initial translation and pixel spacing of the LoRes images were manually tuned to overlap maximally with the HiRes data set.
@@ -195,95 +190,89 @@ END PROGRESS FROM CONFIRMATION REPORT
         
   % subsection initialisation (end)
    
-  \subsection{Algorithms} % (fold)
-  \label{sub:algorithms}
+  \subsection{Registration Algorithm} % (fold)
+  \label{sub:registration_algorithm}
     A well-founded registration algorithm must embody three traits: numerically, it must reliably converge to the global minimum; computationally, it must be efficient so as to be tractable; and physically, it must correspond to the process that it was designed to correct for. It is within the context of these three benchmarks that we expound the following techniques.
-
     
-      \paragraph{Transforms and Initialisation}
-        The optimisation algorithms used in registration do not assure convergence to the global optimum and are thus sensitive to initialisation and to the presence of local optima in the cost function. A reasonable initialisation, followed by an incrementally increasing transform complexity is necessary for robust and accurate registration. The block face images are already coherent from their acquisition, and the slice images have been closely cropped such that the heart tissue lies at the centre. A simple manual alignment of the stack volumes relative to each other therefore provided adequate initialisation.
+    \subsubsection{Transforms} % (fold)
+    \label{ssub:transforms}
+      Registrations are performed in an iterative fashion, gradually reducing in transformation constraint, starting with a simple rigid transform.
+      
+SENTENCE ABOUT TRANSFORM COMPLEXITY AND SIZE OF PARAMETER SPACE.  followed by an incrementally increasing transform complexity 
 
-        From this starting point, transforms were optimised in the following order, the result of each initialising its successor: a centred rigid 2D transform - a rotation about an arbitrary centre followed by a translation; a centred similarity transform - as before but with a scaling factor; a centred affine transform - an affine transformation around an arbitrary centre followed by a translation; a coarse grid bspline deformable transform; and a fine grid bspline deformable transform. For all centred transforms, the centre of rotation was exposed for optimisation as metric parameters.
+Completing rigid registration before releasing non-rigid degrees of freedom also helps ensure a good starting point in a high-dimensional non-rigid parameter space. 
 
-      \paragraph{Optimisation}
-      At present, Gradient Descent (GD) and Regular Step Gradient Descent (RSGD) optimisers have been applied, with the RSGD optimiser proving more efficient and robust in most scenarios. In both cases, a maximum and minimum step length and a choice to maximise or minimise the cost function must be chosen, the latter being dependent on both the choice of metric and the preconditioning of the image intensity ranges.
+By far most of the registration is done in the first rigid step. Didn't work for lots of reasons, tried PCA, ITKv3 bug, different metrics, optimisers, normalising images etc. loads of figures.
 
-      The optimisation space, as dictated by the transform, must be scaled along each dimension to correct for discrepant effects per unit change of each parameter. For example, a translation of one micron at the epicardium might result from a rotation of just $10^{-5}$ radians about the centre of the slice. This makes the metric space more isotropic, allowing the optimisation algorithm to perform as designed.
+Show instabilities and scaling factor problems
 
-      \paragraph{Metrics}
-        Mutual Information (MI) is usually considered to be most effective when registering images from different modalities. However, after a plethora of parameterisations and configurations was explored based on this metric, incrementally simpler and simpler metrics were tested. Each demanded more image preconditioning and tuning, but yielded monotonically closer and more consistent registrations, with a larger capture range, and required fewer iterations to converge. First, a normalised correlation was employed, with the simplest mean squares difference algorithm proving most suitable. It would appear that the simpler the intensity relationship, the smoother the cost landscape, with fewer local minima.
-        
-        The mutual information metric is highly suitable for matching different modalities, the downsampling of the images acts to smooth out the optimised function and prevent trapping in local minima, and the optimisation algorithm is a good choice for an unknown topology. 
-        
+The sectioning of the slices introduces 2-D, slice-specific deformation and in some cases damage. The subsequent relaxing and rehydration of each slice causes further deformation. Some of this deformation will be of affine form, blah blah
 
-        Typically, large capture regions are associated with low precision for the maximum, so it may prove beneficial to revert to MI for the final bspline registration.
-
-      \paragraph{Intensity Scaling}
-        In order for the mean squares image metric to perform, the intensities of one of the image sets needed to be remapped beforehand such that there was a positive linear intensity correlation between equivalent points in the tissue. To this end, a histogram matching algorithm was applied to the slice volume based on the intensities from the block face volume.
-
-        \subsubsection{Interpolation} % (fold)
-        \label{sub:interpolation}
-          ITK provides four methods of interpolation: nearest neighbour, linear, B-spline and windowed sinc. Nearest neighbour interpolation simply returns the value of the closest pixel in the image being sampled. This requires the least amount of computation of the four methods, but results in a more jagged optimisation function, which could increase the time to convergence, the exact value converged upon, or in rare cases could prevent convergence to the global minimum. More accurately, but slightly more expensively, the value can be linearly interpolated from the four corners of the containing square or eight of the containing cube. Even more accurately, the image intensity can be calculated using B-spline basis functions. However, values may lie outside the range of input image intensities, causing saturation. Finally, the most accurate is the windowed sinc interpolator. Interpolation is based on the Fourier analysis of a sampled smooth spatial function. The pixel intensity is the result of a convolution of the sinc function with a window of neighbouring pixels. This requires by a stretch the most computation. For our purposes, linear interpolation provided the best compromise between efficiency and accuracy.
-
-        \subsubsection{Metric} % (fold)
-        \label{sub:metric}
-          The metrics available in ITK compare the gray-scale intensity of two images to measure how well they are aligned. Masks can be set for both the fixed and moving images to restrict evaluation of the metric within a specified region. The choice of metric critically affects the shape of the optimisation function in the parameter space, and some are only suitable to compare images of the same modality. A mean squares metric requires that equivalent points in the two images are at the same intensity in order to function well. A normalised correlation metric is slightly more flexible in its range of application, but still assumes a linear relationship between equivalent intensities in the two images. A mutual information metric assumes no such relationship. The mutual information between two images is a measure of how much information a random intensity from one image confers about the intensity at the equivalent point in the other image. For example, a region could be uniquely dark grey in one image, but uniquely red in the other. Regardless of the colour or intensity, if a randomly selected pixel turns out to be that exact dark grey in the first image, one can be sure that the same point in the second image is red, and vice versa; mutual information is maximised. If for some reason, these regions were misaligned, that certainty is compromised, and the contribution to the mutual information coefficient from that region is reduced. The mutual information approach is ideally suited to the registration of MRI to histology, where the relationship between intensities is highly complex.
-
-
-        \subsubsection{Optimisation} % (fold)
-        \label{sub:optimisation}
-          The optimiser iteratively moves through the space defined by the transform parameters from a set of initial coordinates, in an attempt to minimise the cost function evaluated by the metric. ITK provides a range of algorithms to achieve this task in the most efficient and reliable way possible. Throughout the registration process, a gradient descent optimiser was employed. This optimiser is a robust, general purpose algorithm that requires little configuration.
-
-  
-
-    \subsubsection{Rigid Registration} % (fold)
-    \label{ssub:rigid_registration}
-      Completing rigid registration before releasing non-rigid degrees of freedom also helps ensure a good starting point in a high-dimensional non-rigid parameter space. 
-  
-      By far most of the registration is done in the first rigid step. Didn't work for lots of reasons, tried PCA, ITKv3 bug, different metrics, optimisers, normalising images etc. loads of figures.
-    % subsubsection rigid_registration (end)
+        Transforms were optimised in the following order, the final result of each initialising its successor: a centred rigid 2D transform - a rotation about an arbitrary centre followed by a translation; a centred similarity transform - as before but with a scaling factor; a centred affine transform - an affine transformation around an arbitrary centre followed by a translation; a coarse grid bspline deformable transform; and a fine grid bspline deformable transform. For all centred transforms, the centre of rotation was exposed for optimisation as metric parameters.
+    % subsubsection transforms (end)
     
-    \subsubsection{Similarity and Affine Registrations} % (fold)
-    \label{ssub:similarity_and_affine_registrations}
-      Show instabilities and scaling factor problems
+    \subsubsection{Optimisation} % (fold)
+    \label{ssub:optimisation}
+      Gradient Descent (GD) and Regular Step Gradient Descent (RSGD) optimisers have been applied. RSGD terminates before the maximum number of iterations has passed, and so in simple cases it is computationally more efficient. In most scenarios, however, the GD optimiser often proves more robust. In both cases, a choice to maximise or minimise the cost function must be chosen, the latter being dependent on both the choice of metric and the preconditioning of the image intensity ranges.
+
+      The optimisation space, as dictated by the transform, must be scaled along each dimension to correct for discrepant effects per unit change of each parameter. For example, a translation of one micron at the epicardium might result from a rotation of just $10^{-5}$ radians about the centre of the slice. This makes the metric space more isotropic and reduces the eccentricity of cost function basins, allowing the optimisation algorithm to fall more directly towards minima.
+    % subsubsection optimisation (end)
     
-      The sectioning of the slices introduces 2-D, slice-specific deformation and in some cases damage. The subsequent relaxing and rehydration of each slice causes further deformation. Some of this deformation will be of affine form, blah blah
+    \subsubsection{Metrics} % (fold)
+    \label{ssub:metrics}
+      Mutual Information (MI) is usually considered to be most effective when registering images from different modalities. However, after a plethora of parameterisations and configurations was explored based on this metric, incrementally simpler and simpler metrics were tested. Each demanded more image preconditioning and tuning, but yielded monotonically closer and more consistent registrations, with a larger capture range, and required fewer iterations to converge. First, a normalised correlation was employed, with the simplest mean squares difference algorithm proving most suitable. It would appear that the simpler the intensity relationship, the smoother the cost landscape, with fewer local minima.
+      
+      The mutual information metric is highly suitable for matching different modalities, the downsampling of the images acts to smooth out the optimised function and prevent trapping in local minima, and the optimisation algorithm is a good choice for an unknown topology. 
+      
+      
+      Typically, large capture regions are associated with low precision for the maximum, so it may prove beneficial to revert to MI for the final bspline registration.
+    % subsubsection metrics (end)
     
-      further non rigid?
+    \subsubsection{Intensity Scaling} % (fold)
+    \label{ssub:intensity_scaling}
+      In order for the mean squares image metric to perform, the intensities of one of the image sets needed to be remapped beforehand such that there was a positive linear intensity correlation between equivalent points in the tissue. To this end, a histogram matching algorithm was applied to the slice volume based on the intensities from the block face volume. DISCUSS CONSTRAINTS OF DIFFERENT METRICS
+    % subsubsection intensity_scaling (end)
     
-    % subsubsection similarity_and_affine_registrations (end)
+    \subsubsection{Interpolation} % (fold)
+    \label{ssub:interpolation}
+      ITK provides four methods of interpolation: nearest neighbour, linear, B-spline and windowed sinc. Nearest neighbour interpolation simply returns the value of the closest pixel in the image being sampled. This requires the least amount of computation of the four methods, but results in a more jagged optimisation function, which could increase the time to convergence, the exact value converged upon, or in rare cases could prevent convergence to the global minimum. More accurately, but slightly more expensively, the value can be linearly interpolated from the four corners of the containing square or eight of the containing cube. Even more accurately, the image intensity can be calculated using B-spline basis functions. However, values may lie outside the range of input image intensities, causing saturation. Finally, the most accurate is the windowed sinc interpolator. Interpolation is based on the Fourier analysis of a sampled smooth spatial function. The pixel intensity is the result of a convolution of the sinc function with a window of neighbouring pixels. This requires by a stretch the most computation. For our purposes, linear interpolation provided the best compromise between efficiency and accuracy.
+    % subsubsection interpolation (end)
     
-    \subsubsection{Multiresolution Registration} % (fold)
-    \label{ssub:multiresolution_registration}
+    \subsubsection{Metric} % (fold)
+    \label{ssub:metric}
+      The metrics available in ITK compare the gray-scale intensity of two images to measure how well they are aligned. Masks can be set for both the fixed and moving images to restrict evaluation of the metric within a specified region. The choice of metric critically affects the shape of the optimisation function in the parameter space, and some are only suitable to compare images of the same modality. A mean squares metric requires that equivalent points in the two images are at the same intensity in order to function well. A normalised correlation metric is slightly more flexible in its range of application, but still assumes a linear relationship between equivalent intensities in the two images. A mutual information metric assumes no such relationship. The mutual information between two images is a measure of how much information a random intensity from one image confers about the intensity at the equivalent point in the other image. For example, a region could be uniquely dark grey in one image, but uniquely red in the other. Regardless of the colour or intensity, if a randomly selected pixel turns out to be that exact dark grey in the first image, one can be sure that the same point in the second image is red, and vice versa; mutual information is maximised. If for some reason, these regions were misaligned, that certainty is compromised, and the contribution to the mutual information coefficient from that region is reduced. The mutual information approach is ideally suited to the registration of MRI to histology, where the relationship between intensities is highly complex.
+    % subsubsection metric (end)
     
-      SECTION ON MULTIRESOLUTION, BOTH IN PLANE AND WITH IMAGE LISTS. TALK ABOUT REPRESENTATIVE SETS OF SLICES 100-110 + 200-210 + 300-310 ETC. TALK ABOUT TRACTABILITY WITH IMAGE SIZE AND TIME FOR REGISTRATION, AND HOW EACH ALGORITHM WAS SPLIT UP INTO INDIVIDUAL SLICES
-  
-      Motivate multires: state figures on total size of dataset, and on total times and memory to run 1 registration on a laptop and on a supercomputer. Talk about high dimensionality of parameter space, and the need for rapid feedback if the right parameters are to be found in any reasonable time.
-    
-      There are 2 ways to achieve this: in-plane downsampling and out-of-plane slice selection. Downsampling and Gaussian smoothing not only reduces time, but smooths the cost function and can lead to more robust registration results. In multiresolution registration, the resulting transforms can then be used to initialise a more accurate but more fragile registration at a higher resolution.
-  
-    % subsubsection multiresolution_registration (end)
-  % subsection algorithms (end)
-  
-  
-  \begin{figure}[htbp]
-    \centering
-    \includegraphics[height=0.7\textwidth]{Ch6/Figs/process_diagram}
-    \caption{A schematic of what's going on.}
-  \end{figure}
+    \subsubsection{Optimisation} % (fold)
+    \label{ssub:optimisation}
+      The optimiser iteratively moves through the space defined by the transform parameters from a set of initial coordinates, in an attempt to minimise the cost function evaluated by the metric. ITK provides a range of algorithms to achieve this task in the most efficient and reliable way possible. Throughout the registration process, a gradient descent optimiser was employed. This optimiser is a robust, general purpose algorithm that requires little configuration.
+    % subsubsection optimisation (end)
+  % subsection registration_algorithm (end)
   
   \subsection{Software Architecture} % (fold)
   \label{sub:software_architecture}
-    MOTIVATE SOFTWARE QUALITY SECTION, SAY PROBLEMS I HAD, QUOTE VARIOUS SOFTWARE PRINCIPLES E.G. DRY, SINGLE POINT OF TRUTH,
+    MOTIVATE SOFTWARE QUALITY SECTION, SAY PROBLEMS I HAD, Discuss why, because the final result is unknown, any bugs or errors in calculation are often not apparent, and very difficult to find. Maybe anecdote about a slight error in calculating the initial centre of rotation for transforms went 9 months unnoticed. QUOTE VARIOUS SOFTWARE PRINCIPLES E.G. DRY, SINGLE POINT OF TRUTH,
 
     All file handling and networking algorithms were written in Ruby, a powerful, object-oriented, all-purpose, cross-platform scripting language. YAML (YAML Ain't a Markup Language) was used as a declarative language for configuration files, providing a syntax that is easily human readable and curatable, yet machine parsable. The main use of YAML was to store metadata for each histological slice, such as whether the image was flipped, whether it was trichrome stained, and the nature and extent of any damage or abberation. Source code management and code deployment was implemented in Git. All imaging algorithms were written in C++, using the venerable ITK library. C++ executables were compiled using the cross-platform build system CMake, an open source program and project founded by the same organisation that started ITK.
     
     An outline of the main problems encountered during the development process will be exhibited, along with the solutions crafted to overcome them.
+    
+    \subsubsection{Multiresolution Registration} % (fold)
+    \label{ssub:multiresolution_registration}
+      REFERENCE \ref{}
+      SECTION ON MULTIRESOLUTION, BOTH IN PLANE AND WITH IMAGE LISTS. TALK ABOUT REPRESENTATIVE SETS OF SLICES 100-110 + 200-210 + 300-310 ETC. TALK ABOUT TRACTABILITY WITH IMAGE SIZE AND TIME FOR REGISTRATION, AND HOW EACH ALGORITHM WAS SPLIT UP INTO INDIVIDUAL SLICES
+      
+      Motivate multires: state figures on total size of dataset, and on total times and memory to run 1 registration on a laptop and on a supercomputer. Talk about high dimensionality of parameter space, and the need for rapid feedback if the right parameters are to be found in any reasonable time.
+    
+      There are 2 ways to achieve this: in-plane downsampling and out-of-plane slice selection. Downsampling and Gaussian smoothing not only reduces time, but smooths the cost function and can lead to more robust registration results. In multiresolution registration, the resulting transforms can then be used to initialise a more accurate but more fragile registration at a higher resolution.
+    
+    % subsubsection multiresolution_registration (end)
+    
     \subsubsection{Stacks} % (fold)
     \label{ssub:stacks}
             Histology data are provided in series of 2D png images. Images within a set can each be of unique size, and slices which were damaged or which have not been imaged yet are missing. Each block image must be paired with its equivalent slice image, and blank images must be interpolated where images are missing. Slices must be transformed independently and by a range of transforms. Binary masks must be generated for each image, so that metrics will only take pixel intensities into account from inside the boundaries of the original untransformed images. A minimum percentage overlap is required for many metrics to function, and for small slice images close to the apex of the heart, block mask areas must be cropped until this constraint is satisfied.
 
-            The Stack has been developed to encapsulate the solutions to all of these problems. A Stack represents the 3D composition of a set of 2D slices. It handles ROI selection, generic transform storage, image and mask resampling and generation (both for 2D slices and for the 3D volume) and various error handling strategies. There is also an MRI class to solve the complementary problem of extracting arbitrarily oriented slices from a 3D image. However, for these specific datasets the block face images are intrinsically registered to the histological samples.
+            The Stack has been developed to encapsulate the solutions to all of these problems. A Stack represents the 3D composition of a set of 2D slices. It handles ROI selection, generic transform storage, image and mask resampling and generation (both for 2D slices and for the 3D volume) and various error handling strategies. An MRI class is also available to solve the complementary problem of extracting arbitrarily oriented slices from a 3D image. However, for these specific datasets the block face images are intrinsically registered to the histological samples.
     
       A `mask' is also generated, a binary image of the same dimensions as the volume stack, with value 1 within a histological slice, and zero otherwise. The mask is used by the metric to specify which pixels will be taken into consideration.
     % subsubsection stacks (end)
@@ -478,28 +467,28 @@ blah blah
 % geometric contours
 \begin{sidewaysfigure}[p]
   \centering
-  \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_geometric}}
+  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_geometric}
   \caption{Contour details: threshold segmentation with limits:0 to 240, used original slice images that were Gaussian smoothed by a kernel of std dev 64, because the detail from a simple threshold on nonsmoothed images generated egregiously convoluted surfaces. Because this smoothing only operates within the plane of the slices, individual displacements between edges of adjacent slices is still clearly visible. After segmentation, a label map filter was applied to remove all but the largest connected component. This went some way to removing bubbles and other artefacts obscuring the surface of the heart. y-dimension of geometry bounding box is extended from 575 to 700 to encompass the increased spread of the slices.}
   \label{fig:image1.png}
 \end{sidewaysfigure}
 
 \begin{sidewaysfigure}[p]
   \centering
-  \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_geometric}}
+  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_geometric}
   \caption{}
   \label{fig:image1.png}
 \end{sidewaysfigure}
 
 \begin{sidewaysfigure}[p]
   \centering
-  \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_geometric}}
+  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_geometric}
   \caption{}
   \label{fig:image1.png}
 \end{sidewaysfigure}
 
 \begin{sidewaysfigure}[p]
   \centering
-  \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_geometric}}
+  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_geometric}
   \caption{}
   \label{fig:image1.png}
 \end{sidewaysfigure}
@@ -507,28 +496,28 @@ blah blah
 % rigid contours
 \begin{sidewaysfigure}[p]
   \centering
-  \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_rigid}}
+  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_rigid}
   \caption{}
   \label{fig:image1.png}
 \end{sidewaysfigure}
 
 \begin{sidewaysfigure}[p]
   \centering
-  \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_rigid}}
+  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_rigid}
   \caption{}
   \label{fig:image1.png}
 \end{sidewaysfigure}
 
 \begin{sidewaysfigure}[p]
   \centering
-  \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_rigid}}
+  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_rigid}
   \caption{}
   \label{fig:image1.png}
 \end{sidewaysfigure}
 
 \begin{sidewaysfigure}[p]
   \centering
-  \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_rigid}}
+  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_rigid}
   \caption{}
   \label{fig:image1.png}
 \end{sidewaysfigure}
@@ -536,28 +525,28 @@ blah blah
 % size contours
 \begin{sidewaysfigure}[p]
   \centering
-  \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_size}}
+  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_size}
   \caption{}
   \label{fig:image1.png}
 \end{sidewaysfigure}
 
 \begin{sidewaysfigure}[p]
   \centering
-  \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_size}}
+  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_size}
   \caption{}
   \label{fig:image1.png}
 \end{sidewaysfigure}
 
 \begin{sidewaysfigure}[p]
   \centering
-  \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_size}}
+  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_size}
   \caption{}
   \label{fig:image1.png}
 \end{sidewaysfigure}
 
 \begin{sidewaysfigure}[p]
   \centering
-  \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_size}}
+  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_size}
   \caption{}
   \label{fig:image1.png}
 \end{sidewaysfigure}
@@ -565,35 +554,35 @@ blah blah
 % affine contours
 \begin{sidewaysfigure}[p]
   \centering
-  \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_affine}}
+  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_affine}
   \caption{}
   \label{fig:image1.png}
 \end{sidewaysfigure}
 
 \begin{sidewaysfigure}[p]
   \centering
-  \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_affine}}
+  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_affine}
   \caption{}
   \label{fig:image1.png}
 \end{sidewaysfigure}
 
 \begin{sidewaysfigure}[p]
   \centering
-  \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_affine}}
+  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_affine}
   \caption{}
   \label{fig:image1.png}
 \end{sidewaysfigure}
 
 \begin{sidewaysfigure}[p]
   \centering
-  \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_affine}}
+  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_affine}
   \caption{}
   \label{fig:image1.png}
 \end{sidewaysfigure}
 
 
-\section{Evaluation} % (fold)
-\label{sec:evaluation}
+\section{Discussion} % (fold)
+\label{sec:discussion}
 
 \textit{PROGRESS FROM CONFIRMATION REPORT 
 A full-heart registration pipeline has been developed and downsampled histological volumes generated. An initial manual alignment is followed by rigid and similarity transforms. The quality of the registrations are quite poor at present, and the task at hand is to fine-tune the various parameters that constrain the process: parameter space preconditioning, maximum iterations, maximum and minimum step lengths, number of spatial samples and metric-specific parameters.
@@ -611,7 +600,8 @@ END PROGRESS FROM CONFIRMATION REPORT
     
     Conclude that experimental acquisition techniques have advanced since Rat28 was acquired, and some of the image processing techniques exposed here will perform much better with even higher quality and more homogeneous data.
     
-% section evaluation (end)
+    Dicuss why b-splines didn't work.
+% section discussion (end)
 
 REGISTRATION PAPER
 
