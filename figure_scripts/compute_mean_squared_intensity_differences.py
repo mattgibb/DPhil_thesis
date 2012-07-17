@@ -14,22 +14,18 @@ DUMMY_PATH = '/Users/Matt/Code/imaging/registration/results/dummy'
 # plain, rotation, translation, rotation + translation
 regimes = ('', 'r', 't', 'rt')
 
-# process command-line args
-image_type = argv[1]
-assert(image_type in ["colour", "segmentation"])
-
 def noisy_volume_path(regime, iteration):
     unicode_str = path.join(DUMMY_PATH,
       '200_alpha0.4' + regime,
       'HiResPairs/AdjustedTransforms/CenteredAffineTransform_' + str(iteration),
-      'HiRes_' + image_type + '_4_32.mha')
+      'HiRes_segmentation.mha')
     # ReadImage only accepts ASCII strings
     return str(unicode_str)
 
 def perfect_volume_path(regime):
     unicode_str = path.join(DUMMY_PATH,
       'perfect_200_alpha0.4' + regime,
-      'HiResTransforms_4_32/CenteredAffineTransform/HiRes_' + image_type + '_4_32.mha')
+      'HiResTransforms_1_8/CenteredAffineTransform/HiRes_segmentation.mha')
     # ReadImage only accepts ASCII strings
     return str(unicode_str)
 
@@ -62,22 +58,22 @@ def slice_means(regime, iteration):
 # compute the mean pixel value of each slice for each iteration
 # structure is all_slice_means[regime][iteration][slice]
 for regime in regimes:
-    regime_slice_means = [slice_means(regime, iteration) for iteration in range(11)]
+    regime_slice_means = [slice_means(regime, iteration) for iteration in range(21)]
     regime_slice_means = np.array(regime_slice_means)
     
     # plot comparison of 0th and last iteration
     fig2D = plt.figure(frameon=False)
     ax2D = fig2D.add_subplot(111)
     plt.hold(True)
-    labels={0: 'before smoothing', 10: '10th smoothing iteration'}
+    labels={0: 'before smoothing', 20: '20th smoothing iteration'}
     
-    for i in [0, 10]:
+    for i in [0, 20]:
         ax2D.plot(regime_slice_means[i], label=labels[i])
     
     plt.xlabel('Slice Number', fontsize='large')
     plt.ylabel('Pixel Mean Squared Difference', fontsize='large')
     
-    fig2D.savefig(join(FIGURE_PATH, image_type + '_mean_square_differences_2D' + regime + '.pdf'))
+    fig2D.savefig(join(FIGURE_PATH, 'segmentation_mean_square_differences_2D' + regime + '.pdf'))
     
     # plot 3D lines of mean squared differences for each slice
     fig3D = plt.figure(frameon=False)
@@ -95,4 +91,4 @@ for regime in regimes:
     plt.ylabel("Slice Number", fontsize='large')
     ax3D.set_zlabel("Pixel Mean Sq. Diff.", fontsize='large')
     # ax3D.legend()
-    fig3D.savefig(join(FIGURE_PATH, image_type + '_mean_square_differences_3D' + regime + '.pdf'))
+    fig3D.savefig(join(FIGURE_PATH, 'segmentation_mean_square_differences_3D' + regime + '.pdf'))
