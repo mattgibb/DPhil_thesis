@@ -17,12 +17,24 @@
       \item Small non-rigid deformations when tissue is sliced and rehydrated, different in every slice and not fully represented by an affine transform.
       \item Registration close, but does not always find the global minimum.
     \end{itemize}
-
+    
+    Motivate with banana: Adjacent histological images are, in the main, extremely similar, and register very closely to one another. Previous approaches have done banana blah blah. Because each slice is positioned relative to it's predecessor, the displacement due to any single erroneous registration is propagated to every subsequent slice. Furthermore, CAN ONLY USE RIGID REGISTRATION, AS EVERY SLICE WOULD TAKE THE SHAPE OF THE FIRST.
+    
+    \begin{figure}[htbp]
+      \centering
+      \subfigure[][]{\includegraphics[width=0.9\pagewidth]{Ch7/Figs/banana_0_343}}
+      \subfigure[][]{\includegraphics[width=0.9\pagewidth]{Ch7/Figs/banana_1_301}}
+      \caption{The full histological volume, registered using the banana method. Even when constrained by a rigid transform, in many areas the slice-to-slice registration is accurate enough that detailed tissue structure is clearly visible. Yet, just as the cylinder does not represent the banana, the resulting geometry of the volume is quite unrelated to ground truth.}
+      \label{fig:banana}
+    \end{figure}
+    
 % section aims (end)
 
 \section{Methods} % (fold)
 \label{sec:methods}
   \subsection{A 1D Random Walk Analogy}
+  Figure caption?: A numerical approximation of a sine wave, on 1000 equispaced points from $0$ to $2\pi$. Random noise from a Gaussian distribution is added, with variance equal to the amplitude of the sine wave.
+  
   The central limit theorem states that the mean of a sufficiently large number of independent random variables will be approximately normally distributed, regardless of their individual distribution. Indeed, Einstein's theory of the Brownian motion of a diffusive particle is based on this precept. With this in mind, the simplest model of microscopic diffusion is one in which a particle may move in a random walk in one dimension along the integer number line $\mathbb{Z}$, in steps of either $+1$ or $-1$, with equal probability. Taking each step as an independent random variable $Z_1, Z_2,\ldots$, if the particle's position $S$ starts at $S_0 = 0$, we can express the position of the particle after $N$ steps as
   \begin{equation}
     S_N = \sum\limits_{i=1}^N Z_i .
@@ -444,13 +456,6 @@
   
   Pull image from Evernote
   
-      Figure~\ref{fig:noisy-sine-wave}
-      \begin{figure}[htbp]
-        \centering
-        \includegraphics[height=0.7\textwidth]{Ch6/Figs/process_diagram}
-        \caption{A numerical approximation of a sine wave, on 1000 equispaced points from $0$ to $2\pi$. Random noise from a Gaussian distribution is added, with variance equal to the amplitude of the sine wave.}
-      \end{figure}
-    
   \subsection{2D Transforms Diffusion} % (fold)
   \label{sub:2d_transforms_diffusion}
     This 1-dimensional model is trivially extended to a 2D translation of a slice image aligning with its neighbour, since both of the parameters are mutually orthogonal. But what about the more complex harder with say affine transform. Square root of transform blah blah.
