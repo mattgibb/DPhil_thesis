@@ -118,8 +118,28 @@
     \label{fig:1d_diffusion_0_51}
   \end{figure}
   
+  % colour slice differences
+  \begin{figure}[htbp]
+    \centering
+    \subfigure[][unperturbed image]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/colour_perfect_slice}} \quad
+    \subfigure[][image with transformational noise]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/colour_noisy_slice}} \\
+    \subfigure[][squared differences in intensities]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/colour_red_blue_diff}} \quad
+    \subfigure[][squared differences in intensities]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/colour_squared_diff}}
+    \caption{slice 99 of straight volume. mean squared difference in bw image: 61.5265135808}
+    \label{fig:dummy_cross_sections}
+  \end{figure}
   
-  Figure of Transformational diffusion from identity (use Seg3D slices and Paraview surfaces):
+  % segmentation slice differences
+  \begin{figure}[htbp]
+    \centering
+    \subfigure[][unperturbed image]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_perfect_slice}} \quad
+    \subfigure[][image with transformational noise]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_noisy_slice}} \\
+    \subfigure[][squared differences in intensities]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_red_blue_diff}} \quad
+    \subfigure[][squared differences in intensities]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_squared_diff}}
+    \caption{slice 99 of straight volume, reconstructed using manual segmentation. mean squared difference in bw image: 12.9321}
+    \label{fig:dummy_cross_sections}
+  \end{figure}
+  
   % straight
   \begin{figure}[htbp]
     \centering
@@ -221,28 +241,6 @@
     \caption{What a nice figure! Notice a quarter of the way up from the base, a bad registration between 1 and 3 has been corrected in 10}
     \label{fig:dummy_cross_sections}
   \end{figure}
-  
-  % colour slice differences
-  \begin{sidewaysfigure}[htbp]
-    \centering
-    \subfigure[][unperturbed image]{\includegraphics[height=0.3\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/colour_perfect_slice}} \quad
-    \subfigure[][image with transformational noise]{\includegraphics[height=0.3\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/colour_noisy_slice}} \\
-    \subfigure[][squared differences in intensities]{\includegraphics[height=0.3\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/colour_red_blue_diff}} \quad
-    \subfigure[][squared differences in intensities]{\includegraphics[height=0.3\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/colour_squared_diff}}
-    \caption{slice 99 of straight volume. mean squared difference in bw image: 61.5265135808}
-    \label{fig:dummy_cross_sections}
-  \end{sidewaysfigure}
-  
-  % segmentation slice differences
-  \begin{sidewaysfigure}[htbp]
-    \centering
-    \subfigure[][unperturbed image]{\includegraphics[height=0.3\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_perfect_slice}} \quad
-    \subfigure[][image with transformational noise]{\includegraphics[height=0.3\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_noisy_slice}} \\
-    \subfigure[][squared differences in intensities]{\includegraphics[height=0.3\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_red_blue_diff}} \quad
-    \subfigure[][squared differences in intensities]{\includegraphics[height=0.3\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_squared_diff}}
-    \caption{slice 99 of straight volume, reconstructed using manual segmentation. mean squared difference in bw image: 12.9321}
-    \label{fig:dummy_cross_sections}
-  \end{sidewaysfigure}
   
   % mean squared differences 3D
   \begin{sidewaysfigure}[htbp]
