@@ -21,7 +21,7 @@ TRANSFER THESIS
   \begin{figure}[htbp]
 		\centering
 		\includegraphics[width=1\textwidth]{Ch5/Figs/valderrabano}
-    \caption{A meandering phase singularity from \cite{Valderrabano:2003p386} along a rabbit epicardial artery. Seven sequential phase maps are shown with the trajectory of the  singularity in the bottom right. The path is tightly restricted to the underlying artery.}
+    \caption{A meandering phase singularity from \cite{Valderrabano2003} along a rabbit epicardial artery. Seven sequential phase maps are shown with the trajectory of the  singularity in the bottom right. The path is tightly restricted to the underlying artery.}
 		\label{fig:meandering}
 	\end{figure}
 
@@ -29,7 +29,7 @@ TRANSFER THESIS
 
 \subsection{Defining the Laminae of Equal Helical Angle} % (fold)
 \label{sec:defining_the_laminae_of_equal_helical_angle}
-  It is observed that the myocardial fibres that constitute ventricular tissue are organised such that their angle from the horizontal plane varies transmurally, from around $60^\circ$ to $-60^\circ$ \cite{StreeterJr:1969p597}. This angle from the horizontal is known as the helical angle. In order to incorporate transmurally varying mean fibre direction into the model \cite{Potse:2006p446}, every point in the tissue model must be assigned to a myocardial lamina, a curved surface containing contiguous muscle fibres, all of equal helical angle.
+  It is observed that the myocardial fibres that constitute ventricular tissue are organised such that their angle from the horizontal plane varies transmurally, from around $60^\circ$ to $-60^\circ$ \cite{StreeterJr1969}. This angle from the horizontal is known as the helical angle. In order to incorporate transmurally varying mean fibre direction into the model \cite{Potse2006}, every point in the tissue model must be assigned to a myocardial lamina, a curved surface containing contiguous muscle fibres, all of equal helical angle.
   
   The simplest model of myocardial laminae in the presence of a blood vessel, from here on referred to as the `simple model', ignores the effect of the vessel completely. The laminae are placed exactly as they would have been with no vessel, but terminate on the vessel boundaries and are undefined within the vessel. In the case of a cuboid wall segment, where $y$ is defined as the transmural direction, this is equivalent to saying that each lamina is the set of points that share the same $y$ value: a flat $x$-$z$ plane.
 
@@ -38,7 +38,7 @@ TRANSFER THESIS
 		\subfigure[][]{\includegraphics[height=55ex]{Ch5/Figs/histology}}
 		\qquad
     \subfigure[][]{\includegraphics[height=55ex]{Ch5/Figs/cylinder}}
-    \caption{\textbf{(a)} A 10µm-thick histological image of rabbit mid-myocardial wall long-axis slice, provided by \cite{Burton:2006p100}. \textbf{(b)} The equipotentials (vertical lines) and field lines (horizontal with arrow heads) of a conducting circle in an infinite uniform field derived from the analytical solution to Eq. \ref{eqn:potential}.}
+    \caption{\textbf{(a)} A 10µm-thick histological image of rabbit mid-myocardial wall long-axis slice, provided by \cite{Burton2006}. \textbf{(b)} The equipotentials (vertical lines) and field lines (horizontal with arrow heads) of a conducting circle in an infinite uniform field derived from the analytical solution to Eq. \ref{eqn:potential}.}
 	  \label{fig:vessel}
 	\end{figure}
   
@@ -192,7 +192,7 @@ TRANSFER THESIS
       \label{fig:projected}
     \end{figure}
 
-    The questions remains, in which orientation should solution~\ref{eqn:potential} be mapped? The following dependency of overall fibre direction on depth of myocardial tissue is observed experimentally \cite{Potse:2006p446}, \cite{StreeterJr:1969p597}. Let $e$ be a tissue depth parameter
+    The questions remains, in which orientation should solution~\ref{eqn:potential} be mapped? The following dependency of overall fibre direction on depth of myocardial tissue is observed experimentally \cite{Potse2006}, \cite{StreeterJr1969}. Let $e$ be a tissue depth parameter
 
     \begin{equation}
       e = \frac{\Phi_\text{endo}}{\Phi_\text{endo}+\Phi_\text{epi}}\,,
@@ -317,7 +317,7 @@ TRANSFER THESIS
     \label{fig:tarantula}
   \end{figure}
   
-  There were several formatting issues associated with the final workflow. Once Tarantula had generated a tetrahedral mesh from the voxel image file built in Matlab, A C++ script written by Anton Prassl was used to convert the various Tarantula file formats so that they could be interpreted by the electrophysiological simulation package CARP (Cardiac Arrhythmias Research Package) \cite{Vigmond:2003p657}. Tarantula generates both an intracellular (tissue) mesh and a surrounding extracellular box, so CARP was then used to extract out just the intracellular space from the total mesh, for the purposes of monodomain simulations.
+  There were several formatting issues associated with the final workflow. Once Tarantula had generated a tetrahedral mesh from the voxel image file built in Matlab, A C++ script written by Anton Prassl was used to convert the various Tarantula file formats so that they could be interpreted by the electrophysiological simulation package CARP (Cardiac Arrhythmias Research Package) \cite{Vigmond2003}. Tarantula generates both an intracellular (tissue) mesh and a surrounding extracellular box, so CARP was then used to extract out just the intracellular space from the total mesh, for the purposes of monodomain simulations.
   
 \subsection{Evaluating the Fibre Direction at the Element Centroids} % (fold)
 \label{sec:evaluating_the_fibre_direction_at_the_element_centroids}
@@ -330,7 +330,7 @@ TRANSFER THESIS
 
 \subsection{Electrophysiological Simulation} % (fold)
 \label{sec:electrophysiological_simulation}  
-  Once each tetrahedron has been assigned a conductivity tensor, based on the modelled fibre direction at its centroid, simulations were run in CARP, using the UCLA rabbit ventricular action potential model \cite{Mahajan:2008p996}. Simulations were run in parallel on the Oxford OeRC cluster and took approximately a few hundred seconds to compute 300ms of activation on 32 cores.
+  Once each tetrahedron has been assigned a conductivity tensor, based on the modelled fibre direction at its centroid, simulations were run in CARP, using the UCLA rabbit ventricular action potential model \cite{Mahajan2008}. Simulations were run in parallel on the Oxford OeRC cluster and took approximately a few hundred seconds to compute 300ms of activation on 32 cores.
   
 \subsection{Results} % (fold)
 \label{sec:results}
@@ -342,7 +342,7 @@ TRANSFER THESIS
 		\subfigure[][Vertical MRI slice.]{\includegraphics[height=51ex]{Ch5/Figs/vertical_mri}}
 		\qquad
     \subfigure[][Extracted vascular tree.]{\includegraphics[height=51ex]{Ch5/Figs/extracted_vessels}}
-    \caption{\textbf{(a)} A 2-D image in the coronal plane from a 3-D Rabbit MRI dataset at resolution 26.4×26.4×24.4$\mu$m from \cite{Burton:2006p100}. Circular and elliptical cavities distributed within the myocardium can be observed.  These are the major vessels supplying the heart. \textbf{(b)} The vascular tree was extracted from the MRI dataset by Bishop et al \cite{Bishop:2009p444}. The main vessels are positioned either sub-epicardially or transmurally.}
+    \caption{\textbf{(a)} A 2-D image in the coronal plane from a 3-D Rabbit MRI dataset at resolution 26.4×26.4×24.4$\mu$m from \cite{Burton2006}. Circular and elliptical cavities distributed within the myocardium can be observed.  These are the major vessels supplying the heart. \textbf{(b)} The vascular tree was extracted from the MRI dataset by Bishop et al \cite{Bishop2009}. The main vessels are positioned either sub-epicardially or transmurally.}
 	  \label{fig:vessels}
 	\end{figure}
   
@@ -378,7 +378,7 @@ TRANSFER THESIS
   
   \subsubsection{Induced Arrhythmia} % (fold)
   \label{sub:induced_arrhythmia}
-    Where the first stage of experiment aimed to demonstrate possible arrhythmogenic mechanisms, acting through the increase in wave curvature due to vessels, this next stage examined the role of vessels and fibres once an arrhythmia was in progress. Since mapping studies \cite{Valderrabano:2003p386,Cysyk:2008p87,Qin:2005p665} attributed phase singularity anchoring to epicardial vessels, we initiated singularities around an epicardial vessel, on a domain large enough to contain an arrhythmia meandering in the vicinity of the vessel. The extended 35 x 10 x 3mm mesh was subject to a double stimulation protocol: for the first 5ms, the bottom edge was shocked to initiate a transmural wave, much in the manner adopted in section~\ref{sub:planar_propagation}; then after 600ms, one half of the tissue between the vessel and the endocardium is shocked, triggering a reentrant spiral wave. Figures~\ref{fig:shock_induced_54ms}--\ref{fig:shock_induced_2160ms} chronicle the double stimulation and subsequent arrhythmic episode for both fibre models. Both vessels reveal some anchoring effect, but it is stronger and perpetuated for longer in the simple model, where vertical propagation at the vessel boundary is more strongly retarded. Wave breakup is also more pronounced, with more angular, fibrillatory waveforms visible.
+    Where the first stage of experiment aimed to demonstrate possible arrhythmogenic mechanisms, acting through the increase in wave curvature due to vessels, this next stage examined the role of vessels and fibres once an arrhythmia was in progress. Since mapping studies \cite{Valderrabano2003,Cysyk2008,Qin2005} attributed phase singularity anchoring to epicardial vessels, we initiated singularities around an epicardial vessel, on a domain large enough to contain an arrhythmia meandering in the vicinity of the vessel. The extended 35 x 10 x 3mm mesh was subject to a double stimulation protocol: for the first 5ms, the bottom edge was shocked to initiate a transmural wave, much in the manner adopted in section~\ref{sub:planar_propagation}; then after 600ms, one half of the tissue between the vessel and the endocardium is shocked, triggering a reentrant spiral wave. Figures~\ref{fig:shock_induced_54ms}--\ref{fig:shock_induced_2160ms} chronicle the double stimulation and subsequent arrhythmic episode for both fibre models. Both vessels reveal some anchoring effect, but it is stronger and perpetuated for longer in the simple model, where vertical propagation at the vessel boundary is more strongly retarded. Wave breakup is also more pronounced, with more angular, fibrillatory waveforms visible.
   	
     \begin{figure}[htbp]
   		\centering
