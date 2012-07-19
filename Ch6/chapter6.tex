@@ -35,10 +35,7 @@ CONFIRMATION REPORT
 
   \subsection{Image Curation} % (fold)
   \label{sub:image_curation}
-    
-    The full-resolution histology dataset is approximately 2TB, and so the data must be downsampled. A subset of the images was selected algorithmically. Starting at the first image, one every 16 was chosen. For example, if the first image were 0001, the second image would be 0017. If 0017 were missing or marked in the metadata as unacceptable (for an example see Figure~\ref{fig:damaged_slice}), then a neighbouring image would be selected, in preference of proximity and then of lower value. For example, 0016 would be chosen, then 0018, then 0015 etc. In the rare case where two images of the same slice existed, both slices were examined manually and the lower quality version was marked as unacceptable in the metadata. The resulting list of files was then downloaded to the image processing node and downsampled by a factor of 64. Figure~\ref{fig:downsampled_vessel} juxtaposes part of an original image with its downsampled counterpart. A Gaussian smoothing filter was applied as part of the downsampling, with the same $\sigma$-value as the downsample factor, so that noise-producing frequencies above the new spatial sampling rate were removed. Any images marked as flipped in the metadata were then subject to a reflection along the x-direction.
-    
-      Many of the images must be prepared or altered prior to registration. Although every possible step was taken during image acquisition, certain unavoidable experimental practicalities needed correcting for. A handful of images required flipping or rotating; if a slice had been turned upside down between being sheared from the block face and being imaged under the microscope, or if it had diffused beyond 45 degrees from its angle on the block face. Several sets of downsamples of varying factors were generated, the lowest of which were used for debugging and testing, working up in detail, size and computational expense as the techniques were perfected. Images deemed damaged or of unacceptable quality were filtered by hand. On occasion, part way through image acquisition, the block face camera would be moved, relative to the surface of the wax block. All images acquired from then on had to be translated and rotated to compensate for this movement.
+    A master subset of the images was selected, removing any slices with unacceptable damage such as that found in Figure~\ref{fig:damaged_slice}. Wherever a slice or group of slices was missing or removed, the acceptable adjacent slices were repeated symmetrically to fill the gap, in order to preserve the macroscopic geometry of the tissue. In the rare case where two images of the same slice existed, both slices were examined and the higher quality version was selected.
     
     \begin{figure}[htbp]
       \centering
@@ -52,58 +49,61 @@ CONFIRMATION REPORT
   
   \subsection{Image Preparation} % (fold)
   \label{sub:image_preparation}
-    LoRes adjustments:
+    On occasion, part way through image acquisition, the block face camera would be moved, relative to the surface of the wax block. All images acquired from then on had to be translated and rotated to compensate for this movement. At each perturbation, the two slices between which the camera had moved were registered in order to calculate the corrective transform, which was then applied to all subsequent slices. Figure~\ref{fig:LoRes_cross_sections} depicts the results of these corrections, and the isosurface of the corrected segmented volume are shown from 6 sides in Figures~\labelcref{fig:LoRes_positive_x,fig:LoRes_negative_x,fig:LoRes_positive_y,fig:LoRes_negative_y,fig:LoRes_positive_z,fig:LoRes_negative_z}. The isosurface was generated from a threshold segmentation of the intensity magnitude of the volume. A dense cloud of wax bubbles and other small artefacts obscured the main surface of the heart, and so a binary shape opening filter was applied to remove all but the largest connected region from the segmentation before the contour was extracted.
+    
     % lores cross sections
     \begin{sidewaysfigure}[htbp]
       \centering
-      \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/LoRes_0_235}}
-      \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/LoRes_1_287}}
       \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/LoRes_without_adjustments_0_235}}
       \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/LoRes_without_adjustments_1_287}}
-      \caption{What a nice figure!}
+      \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/LoRes_0_235}\label{subfig:LoRes_adjusted_long_cross_section}}
+      \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/LoRes_1_287}}
+      \caption{Central cross-sections of the cropped block-face volume. \textbf{(a)} and \textbf{(b)} show the volume before adjustment, where a large camera displacement is apparent approximately a quarter of the way from the bottom of the image. Several thin stripes are visible further up, where the occasional single image has been displaced. The volume is fully aligned in \textbf{(c)} and \textbf{(d)}, with striations visible due to discrete changes in the positioning and intensity of illumination. These changes will propagate to the final registration result.}
       \label{fig:LoRes_cross_sections}
     \end{sidewaysfigure}
+    
+    
     
     % lores contours
     \begin{sidewaysfigure}[htbp]
       \centering
       \includegraphics[width=\textheight]{Ch6/Figs/Rat28/contours/LoRes_positive_x}
-      \caption{LoRes contour viewed along positive x direction, thresholded and all but largest label removed.}
+      \caption{A contour of the adjusted block face volume, viewed along the positive x direction. The round surface of the heart apex is clearly visible to the right. Oddly shaped protrusions in the top third of slices are due to gradually brightening reflection from the suface of the wax.}
       \label{fig:LoRes_positive_x}
     \end{sidewaysfigure}
     
     \begin{sidewaysfigure}[htbp]
       \centering
       \includegraphics[width=\textheight]{Ch6/Figs/Rat28/contours/LoRes_negative_x}
-      \caption{Negative x}
+      \caption{The block face contour viewed along the negative x direction. The more complex surface of the valve and vascular machinery at the base of the heart is visible to the right.}
       \label{fig:LoRes_negative_x}
     \end{sidewaysfigure}
     
     \begin{sidewaysfigure}[htbp]
       \centering
       \includegraphics[width=\textheight]{Ch6/Figs/Rat28/contours/LoRes_positive_y}
-      \caption{Positive y}
+      \caption{The block face contour viewed along the positive y direction. The bulge of an epicardial vessel at the bottom right hand side is clearly visible (it is also faintly visible towards the bottom left of Figure~\ref{fig:LoRes_negative_x}). The discrete change in illumination from Figure~\ref{subfig:LoRes_adjusted_long_cross_section} manifests as an apparent increase in surface size approximately a third of the height from the bottom.}
       \label{fig:LoRes_positive_y}
     \end{sidewaysfigure}
     
     \begin{sidewaysfigure}[htbp]
       \centering
       \includegraphics[width=\textheight]{Ch6/Figs/Rat28/contours/LoRes_negative_y}
-      \caption{Negative y}
+      \caption{The block face contour viewed along the negative y direction.}
       \label{fig:LoRes_negative_y}
     \end{sidewaysfigure}
     
     \begin{sidewaysfigure}[htbp]
       \centering
       \includegraphics[width=\textheight]{Ch6/Figs/Rat28/contours/LoRes_positive_z}
-      \caption{Positive z}
+      \caption{The block face contour viewed along the positive z direction. The detail and composition of the images is clearly visible from this angle. Note the protruding epicardial vessel in the top left. The surface of the first third of slices near the bottom left looks eroded, in a region where the threshold intensity values have failed to pick up the tissue boundary faithfully.}
       \label{fig:LoRes_positive_z}
     \end{sidewaysfigure}
     
     \begin{sidewaysfigure}[htbp]
       \centering
       \includegraphics[width=\textheight]{Ch6/Figs/Rat28/contours/LoRes_negative_z}
-      \caption{Negative z}
+      \caption{The block face contour viewed along the negative z direction. Bright reflection obscures much of the tissue surface from this angle, and the accurate registration of these top slices will prove impossible.}
       \label{fig:LoRes_negative_z}
     \end{sidewaysfigure}
     
@@ -138,8 +138,14 @@ CONFIRMATION REPORT
     RGBA
     
     flipping and rotating
+     A small number of slices had been flipped over in the experimental process; these were subject to a reflection along the x-direction. Otherwise normal flip/rotate.
     
-    downsampling and smoothing: motivate downsampling with fact that HiRes moving image is needlessly detailed compared to LoRes (include in-plane dims and show that factor of 8 is optimal). Motivate Gaussian smoothing with Nernquist limit, noisiness and with drawing info from other pixels. For the reasons delineated in Section~\ref{ssub:multiresolution_registration},  block-face downsamples were generated of all powers of 2 between 2 and 8, and histology downsamples between 2 and 64.
+     The images provided by Burton et al. yield unprecedented detail and quality. Although every possible step was taken during image acquisition, certain unavoidable experimental practicalities needed correcting for. A handful of images required flipping or rotating; if a slice had been turned upside down between being sheared from the block face and being imaged under the microscope, or if it had diffused beyond 45 degrees from its angle on the block face. Several sets of downsamples of varying factors were generated, the lowest of which were used for debugging and testing, working up in detail, size and computational expense as the techniques were perfected.
+    
+    downsampling and smoothing: motivate downsampling with fact that HiRes moving image is needlessly detailed compared to LoRes (include in-plane dims and show that factor of 8 is optimal). Motivate Gaussian smoothing with Nernquist limit, noisiness and with drawing info from other pixels. For the reasons delineated in  Section~\ref{ssub:multiresolution_registration},  block-face downsamples were generated of all powers of 2 between 2 and 8, and histology downsamples between 2 and 64.
+    The full-resolution histology dataset can measure 2TB
+    
+     Figure~\ref{fig:downsampled_vessel} juxtaposes part of an original image with its downsampled counterpart. A Gaussian smoothing filter was applied as part of the downsampling, with the same $\sigma$-value as the downsample factor, so that noise-producing frequencies above the new spatial sampling rate were removed.
     
   % subsection image_preparation_and_curation (end)
   
