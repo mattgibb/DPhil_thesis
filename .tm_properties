@@ -1,0 +1,1 @@
+exclude = "*.{aux,log,ini,fmt,fls,bbl,watcher_pid,out,toc,lof,lot,brf,nlo,nls,blg,synctex.gz}"
