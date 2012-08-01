@@ -186,23 +186,13 @@ CONFIRMATION REPORT
   
   \subsection{Registration Algorithm} % (fold)
   \label{sub:registration_algorithm}
-    A well-founded registration algorithm must embody three traits: numerically, it must reliably converge to the global minimum; computationally, it must be efficient so as to be tractable; and physically, it must correspond to the process that it was designed to correct for. It is within the context of these three benchmarks that we expound the following techniques.
+    Each main aspect of the registration method is outlined in this section. A well-founded registration algorithm must embody three traits: numerically, it must converge reliably to the global minimum; computationally, it must be efficient so as to be tractable; and physically, it must correspond to the process that it was designed to correct for. It is through the lens of these three benchmarks that we examine the following components.
     
     \subsubsection{Transforms} % (fold)
     \label{ssub:transforms}
-      Registrations are performed in an iterative fashion, gradually reducing in transformation constraint, starting with a simple rigid transform.
-    
-SENTENCE ABOUT TRANSFORM COMPLEXITY AND SIZE OF PARAMETER SPACE.  followed by an incrementally increasing transform complexity 
-
-Completing rigid registration before releasing non-rigid degrees of freedom also helps ensure a good starting point in a high-dimensional non-rigid parameter space. 
-
-By far most of the registration is done in the first rigid step. Didn't work for lots of reasons, tried PCA, ITKv3 bug, different metrics, optimisers, normalising images etc. loads of figures.
-
-Show instabilities and scaling factor problems
-
-The sectioning of the slices introduces 2-D, slice-specific deformation and in some cases damage. The subsequent relaxing and rehydration of each slice causes further deformation. Some of this deformation will be of affine form, blah blah
-
-        Transforms were optimised in the following order, the final result of each initialising its successor: a centred rigid 2D transform - a rotation about an arbitrary centre followed by a translation; a centred similarity transform - as before but with a scaling factor; a centred affine transform - an affine transformation around an arbitrary centre followed by a translation; a coarse grid bspline deformable transform; and a fine grid bspline deformable transform. For all centred transforms, the centre of rotation was exposed for optimisation as metric parameters.
+			The sectioning of the slices introduces 2-D, slice-specific deformation and in some cases damage. The subsequent relaxing and rehydration of each slice causes further deformation. A large proportion of this deformation will be of similarity or affine form. By first registering the simplest of transforms with the lowest dimensional parameter space, and then incrementally relaxing transformational constraint by increasing the number of parameters, we can provide the best possible starting point in each higher dimensional parameter space.
+			
+      Transforms were optimised in the following order, the final result of each initialising its successor: a centered rigid 2D transform - a rotation about an arbitrary centre followed by a translation; a centred similarity transform - as before but with a scaling factor; and a centred affine transform - an affine transformation around an arbitrary centre followed by a translation. For all transforms, the centre of rotation was exposed for optimisation as metric parameters. Finally, a coarse grid and subsequent fine grid bspline deformable transform was tested, but found to be unstable.
     % subsubsection transforms (end)
     
     \subsubsection{Optimisation} % (fold)
@@ -217,7 +207,6 @@ The sectioning of the slices introduces 2-D, slice-specific deformation and in s
       Mutual Information (MI) is usually considered to be most effective when registering images from different modalities. However, after a plethora of parameterisations and configurations was explored based on this metric, incrementally simpler and simpler metrics were tested. Each demanded more image preconditioning and tuning, but yielded monotonically closer and more consistent registrations, with a larger capture range, and required fewer iterations to converge. First, a normalised correlation was employed, with the simplest mean squares difference algorithm proving most suitable. It would appear that the simpler the intensity relationship, the smoother the cost landscape, with fewer local minima.
       
       The mutual information metric is highly suitable for matching different modalities, the downsampling of the images acts to smooth out the optimised function and prevent trapping in local minima, and the optimisation algorithm is a good choice for an unknown topology. 
-      
       
       Typically, large capture regions are associated with low precision for the maximum, so it may prove beneficial to revert to MI for the final bspline registration.
     % subsubsection metrics (end)
@@ -383,6 +372,10 @@ The sectioning of the slices introduces 2-D, slice-specific deformation and in s
   A series of figures will provide visual validation of the results, both of the full heart and more detailed images in regions of interest. Cross-sectional images perpendicular to the slice planes will show the close matching between planes, and segmented surfaces of myocardial walls and larger arteries will be rendered in 3-D. The performance of various registration regimes will be compared.
 CONFIRMATION REPORT
   
+	By far most of the registration is done in the first rigid step. Didn't work for lots of reasons, tried PCA, ITKv3 bug, different metrics, optimisers, normalising images etc. loads of figures.
+	
+	Show instabilities and scaling factor problems
+	
 	% initialisation figure
 	\begin{sidewaysfigure}[htbp]
 	  \centering
