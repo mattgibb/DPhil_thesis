@@ -123,25 +123,21 @@ CONFIRMATION REPORT
     
 	As is evident from Figures~\labelcref{fig:original_lores_images,fig:original_hires_images} for one slice, the vast majority of slices had been flipped over between sectioning from the block surface and being photographed. Slice images were therefore reflected across one axis in order to restore geometric parity with the associated block face image.
 	
-	 Several sets of downsamples of varying factors were generated, the lowest of which were used for debugging and testing, working up in detail, size and computational expense as the techniques were perfected. Before downsampling, a Gaussian smoothing was applied in each case, with sigma equal to the new larger pixel spacing. In this way, all original pixels in the region of a large downsampled pixel contribute to its final value, and aliasing noise problems associated with the Nyquist frequency are avoided. This results in a smoother and more accurate cost function when registering downsampled images. Figures~\labelcref{fig:original_lores_images,fig:original_hires_images} juxtapose the full images with various levels of downsampling. In Figure~\ref{fig:downsample_zooms}, the effects of the downsampling can be seen more clearly. Individual cell nuclei are resolved at the highest resolution of slice image, but the maximum resolution block face images are of much lower detail. Clearly, the original slice images, with 1.1$\mu$m pixel spacings, are needlessly detailed compared to their block face counterparts, with a mere 26.6$\mu$m. It is therefore appropriate
+	 Several sets of downsamples of varying factors were generated, the lowest of which were used for debugging and testing, working up in detail, size and computational expense as the techniques were perfected. Before downsampling, a Gaussian smoothing was applied in each case, with sigma equal to the new larger pixel spacing. In this way, all original pixels in the region of a large downsampled pixel contribute to its final value, and aliasing noise problems associated with frthe Nyquist frequency are avoided. This results in a smoother and more accurate cost function. Figures~\labelcref{fig:original_lores_images,fig:original_hires_images} juxtapose the full images with various levels of downsampling.
+	 
+	 When registering two images, it is important that they are of comparable resolution, in order to minimise processing time and to ensure the smoothest possible cost function. In Figure~\ref{fig:downsample_zooms}, the effects of the downsampling can be seen more clearly. Individual cell nuclei are resolved at the highest resolution of slice image, but the maximum resolution block face images are of much lower detail. Clearly, the original slice images, with 1.1$\mu$m pixel spacings, are needlessly detailed compared to their block face counterparts, with a mere 26.6$\mu$m. As is discussed in Section~\ref{ssub:multiresolution_registration}, it is therefore appropriate to register slice images at a factor of 8 times more downsampled than the block face images.
     
 	%  Lo/HiRes zooms
     \begin{sidewaysfigure}[htbp]
       \centering
-      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/HiRes_downsamples_1_0582_zoom}}
-      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/HiRes_downsamples_8_0582_zoom}}
-      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/HiRes_downsamples_64_0582_zoom}}
-      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/LoRes_rgb_downsamples_1_0582_zoom}}
-      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/LoRes_rgb_downsamples_8_0582_zoom}}
-      \caption{An epicardial vessel in slice 582 of Rat 28, in both the slice and the block face images. \textbf{(a)}, \textbf{(b)} and \textbf{(c)} show the slice original, 8x and 64x downsampled, while \textbf{(d)} and \textbf{(e)} show the block face original and 8x downsampled. The fibres parallel to the internal wall at the bottom of \textbf{(a)} are angled such that they reflect the illumination strongly at the top right of \textbf{(d)}, and are in much sharper contrast to the black wax than the rest of the tissue.}
+      \subfigure[][]{\includegraphics[width=0.39\pagewidth]{Ch6/Figs/HiRes_downsamples_1_0582_zoom}}
+      \subfigure[][]{\includegraphics[width=0.39\pagewidth]{Ch6/Figs/HiRes_downsamples_8_0582_zoom}}
+      \subfigure[][]{\includegraphics[width=0.39\pagewidth]{Ch6/Figs/HiRes_downsamples_64_0582_zoom}}
+      \subfigure[][]{\includegraphics[width=0.39\pagewidth]{Ch6/Figs/LoRes_rgb_downsamples_1_0582_zoom}}
+      \subfigure[][]{\includegraphics[width=0.39\pagewidth]{Ch6/Figs/LoRes_rgb_downsamples_8_0582_zoom}}
+      \caption{An epicardial vessel in slice 582 of Rat 28, in both the slice and the block face images. \textbf{(a)}, \textbf{(b)} and \textbf{(c)} show the slice original, 8x and 64x downsampled, while \textbf{(d)} and \textbf{(e)} show the block face original and 8x downsampled. The fibres parallel to the internal wall at the bottom of \textbf{(a)} are angled such that they reflect the illumination strongly at the top right of \textbf{(d)}, and are in much sharper contrast to the black wax than the rest of the tissue. Indeed, they are in much sharper contrast to the other tissue than the other tissue is to the non-tissue.}
       \label{fig:downsample_zooms}
     \end{sidewaysfigure}
-    
-    For the reasons delineated in Section~\ref{ssub:multiresolution_registration},  block-face downsamples were generated of all powers of 2 between 2 and 8, and histology downsamples between 2 and 64.
-    The full-resolution histology dataset can measure 2TB
-    
-     Figure~\ref{fig:downsampled_vessel} juxtaposes part of an original image with its downsampled counterpart. A Gaussian smoothing filter was applied as part of the downsampling, with the same $\sigma$-value as the downsample factor, so that noise-producing frequencies above the new spatial sampling rate were removed.
-    
   % subsection image_preparation_and_curation (end)
   
   \subsection{Initialisation} % (fold)
@@ -255,9 +251,10 @@ The sectioning of the slices introduces 2-D, slice-specific deformation and in s
     
     \subsubsection{Multiresolution Registration} % (fold)
     \label{ssub:multiresolution_registration}
-      REFERENCE \ref{}
       SECTION ON MULTIRESOLUTION, BOTH IN PLANE AND WITH IMAGE LISTS. TALK ABOUT REPRESENTATIVE SETS OF SLICES 100-110 + 200-210 + 300-310 ETC. TALK ABOUT TRACTABILITY WITH IMAGE SIZE AND TIME FOR REGISTRATION, AND HOW EACH ALGORITHM WAS SPLIT UP INTO INDIVIDUAL SLICES
       
+	  The full-resolution histology dataset can measure 2TB
+	  
       Motivate multires: state figures on total size of dataset, and on total times and memory to run 1 registration on a laptop and on a supercomputer. Talk about high dimensionality of parameter space, and the need for rapid feedback if the right parameters are to be found in any reasonable time.
     
       There are 2 ways to achieve this: in-plane downsampling and out-of-plane slice selection. Downsampling and Gaussian smoothing not only reduces time, but smooths the cost function and can lead to more robust registration results. In multiresolution registration, the resulting transforms can then be used to initialise a more accurate but more fragile registration at a higher resolution.
