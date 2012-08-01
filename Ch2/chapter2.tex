@@ -86,3 +86,21 @@ If we think of an image as a function of an n-dimensional point in space, one of
 \end{figure}
 
 \section{Registration}
+    \subsubsection{Interpolation} % (fold)
+    \label{ssub:interpolation}
+      ITK provides four methods of interpolation: nearest neighbour, linear, B-spline and windowed sinc. Nearest neighbour interpolation simply returns the value of the closest pixel in the image being sampled. This requires the least amount of computation of the four methods, but results in a more jagged optimisation function, which could increase the time to convergence, the exact value converged upon, or in rare cases could prevent convergence to the global minimum. More accurately, but slightly more expensively, the value can be linearly interpolated from the four corners of the containing square or eight of the containing cube.
+			% Even more accurately, the image intensity can be calculated using B-spline basis functions. However, values may lie outside the range of input image intensities, causing saturation. Finally, the most accurate is the windowed sinc interpolator. Interpolation is based on the Fourier analysis of a sampled smooth spatial function. The pixel intensity is the result of a convolution of the sinc function with a window of neighbouring pixels. This requires by a stretch the most computation.
+			For our purposes, linear interpolation provided the best compromise between efficiency and accuracy.
+    % subsubsection interpolation (end)
+    
+    \subsubsection{Metric} % (fold)
+    \label{ssub:metric}
+      The metrics available in ITK compare the gray-scale intensity of two images to measure how well they are aligned. Masks can be set for both the fixed and moving images to restrict evaluation of the metric within a specified region. The choice of metric critically affects the shape of the optimisation function in the parameter space, and some are only suitable to compare images of the same modality. A mean squares metric requires that equivalent points in the two images are at the same intensity in order to function well. A normalised correlation metric is slightly more flexible in its range of application, but still assumes a linear relationship between equivalent intensities in the two images. A mutual information metric assumes no such relationship. The mutual information between two images is a measure of how much information a random intensity from one image confers about the intensity at the equivalent point in the other image. For example, a region could be uniquely dark grey in one image, but uniquely red in the other. Regardless of the colour or intensity, if a randomly selected pixel turns out to be that exact dark grey in the first image, one can be sure that the same point in the second image is red, and vice versa; mutual information is maximised. If for some reason, these regions were misaligned, that certainty is compromised, and the contribution to the mutual information coefficient from that region is reduced. The mutual information approach is ideally suited to the registration of MRI to histology, where the relationship between intensities is highly complex.
+    % subsubsection metric (end)
+    
+    \subsubsection{Optimisation} % (fold)
+    \label{ssub:optimisation}
+      The optimiser iteratively moves through the space defined by the transform parameters from a set of initial coordinates, in an attempt to minimise the cost function evaluated by the metric. ITK provides a range of algorithms to achieve this task in the most efficient and reliable way possible. Throughout the registration process, a gradient descent optimiser was employed. This optimiser is a robust, general purpose algorithm that requires little configuration.
+    % subsubsection optimisation (end)
+  % subsection registration_algorithm (end)
+  

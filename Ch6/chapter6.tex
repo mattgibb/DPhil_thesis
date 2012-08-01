@@ -195,43 +195,18 @@ CONFIRMATION REPORT
       Transforms were optimised in the following order, the final result of each initialising its successor: a centered rigid 2D transform - a rotation about an arbitrary centre followed by a translation; a centred similarity transform - as before but with a scaling factor; and a centred affine transform - an affine transformation around an arbitrary centre followed by a translation. For all transforms, the centre of rotation was exposed for optimisation as metric parameters. Finally, a coarse grid and subsequent fine grid bspline deformable transform was tested, but found to be unstable.
     % subsubsection transforms (end)
     
+    \subsubsection{Metrics} % (fold)
+    \label{ssub:metrics}
+      Mutual Information (MI) is usually considered to be most effective when registering images from different modalities. However, after a plethora of parameterisations and configurations was explored based on this metric with little success, incrementally simpler and simpler metrics were tested. Each demanded more image preconditioning and tuning, but yielded monotonically closer and more consistent registrations, with a larger capture range, and required fewer iterations to converge. First, a normalised correlation was employed, with the simplest mean squares difference algorithm proving most suitable. It would appear that the simpler the intensity relationship, the smoother the cost landscape, with fewer local minima.
+    % subsubsection metrics (end)
+  
     \subsubsection{Optimisation} % (fold)
     \label{ssub:optimisation}
       Gradient Descent (GD) and Regular Step Gradient Descent (RSGD) optimisers have been applied. RSGD terminates before the maximum number of iterations has passed, and so in simple cases it is computationally more efficient. In most scenarios, however, the GD optimiser often proves more robust. In both cases, a choice to maximise or minimise the cost function must be chosen, the latter being dependent on both the choice of metric and the preconditioning of the image intensity ranges.
 
-      The optimisation space, as dictated by the transform, must be scaled along each dimension to correct for discrepant effects per unit change of each parameter. For example, a translation of one micron at the epicardium might result from a rotation of just $10^{-5}$ radians about the centre of the slice. This makes the metric space more isotropic and reduces the eccentricity of cost function basins, allowing the optimisation algorithm to fall more directly towards minima.
+      The optimisation space, as dictated by the transform, must be scaled along each dimension to correct for discrepant effects per unit change of each parameter. For example, a translation of one micron at the epicardium might result from a rotation of just $10^{-5}$ radians about the centre of the slice. This makes the metric space more isotropic and reduces the eccentricity of cost function basins, allowing the optimisation algorithm to fall more directly toward minima.
     % subsubsection optimisation (end)
     
-    \subsubsection{Metrics} % (fold)
-    \label{ssub:metrics}
-      Mutual Information (MI) is usually considered to be most effective when registering images from different modalities. However, after a plethora of parameterisations and configurations was explored based on this metric, incrementally simpler and simpler metrics were tested. Each demanded more image preconditioning and tuning, but yielded monotonically closer and more consistent registrations, with a larger capture range, and required fewer iterations to converge. First, a normalised correlation was employed, with the simplest mean squares difference algorithm proving most suitable. It would appear that the simpler the intensity relationship, the smoother the cost landscape, with fewer local minima.
-      
-      The mutual information metric is highly suitable for matching different modalities, the downsampling of the images acts to smooth out the optimised function and prevent trapping in local minima, and the optimisation algorithm is a good choice for an unknown topology. 
-      
-      Typically, large capture regions are associated with low precision for the maximum, so it may prove beneficial to revert to MI for the final bspline registration.
-    % subsubsection metrics (end)
-    
-    \subsubsection{Intensity Scaling} % (fold)
-    \label{ssub:intensity_scaling}
-      In order for the mean squares image metric to perform, the intensities of one of the image sets needed to be remapped beforehand such that there was a positive linear intensity correlation between equivalent points in the tissue. To this end, a histogram matching algorithm was applied to the slice volume based on the intensities from the block face volume. DISCUSS CONSTRAINTS OF DIFFERENT METRICS
-    % subsubsection intensity_scaling (end)
-    
-    \subsubsection{Interpolation} % (fold)
-    \label{ssub:interpolation}
-      ITK provides four methods of interpolation: nearest neighbour, linear, B-spline and windowed sinc. Nearest neighbour interpolation simply returns the value of the closest pixel in the image being sampled. This requires the least amount of computation of the four methods, but results in a more jagged optimisation function, which could increase the time to convergence, the exact value converged upon, or in rare cases could prevent convergence to the global minimum. More accurately, but slightly more expensively, the value can be linearly interpolated from the four corners of the containing square or eight of the containing cube. Even more accurately, the image intensity can be calculated using B-spline basis functions. However, values may lie outside the range of input image intensities, causing saturation. Finally, the most accurate is the windowed sinc interpolator. Interpolation is based on the Fourier analysis of a sampled smooth spatial function. The pixel intensity is the result of a convolution of the sinc function with a window of neighbouring pixels. This requires by a stretch the most computation. For our purposes, linear interpolation provided the best compromise between efficiency and accuracy.
-    % subsubsection interpolation (end)
-    
-    \subsubsection{Metric} % (fold)
-    \label{ssub:metric}
-      The metrics available in ITK compare the gray-scale intensity of two images to measure how well they are aligned. Masks can be set for both the fixed and moving images to restrict evaluation of the metric within a specified region. The choice of metric critically affects the shape of the optimisation function in the parameter space, and some are only suitable to compare images of the same modality. A mean squares metric requires that equivalent points in the two images are at the same intensity in order to function well. A normalised correlation metric is slightly more flexible in its range of application, but still assumes a linear relationship between equivalent intensities in the two images. A mutual information metric assumes no such relationship. The mutual information between two images is a measure of how much information a random intensity from one image confers about the intensity at the equivalent point in the other image. For example, a region could be uniquely dark grey in one image, but uniquely red in the other. Regardless of the colour or intensity, if a randomly selected pixel turns out to be that exact dark grey in the first image, one can be sure that the same point in the second image is red, and vice versa; mutual information is maximised. If for some reason, these regions were misaligned, that certainty is compromised, and the contribution to the mutual information coefficient from that region is reduced. The mutual information approach is ideally suited to the registration of MRI to histology, where the relationship between intensities is highly complex.
-    % subsubsection metric (end)
-    
-    \subsubsection{Optimisation} % (fold)
-    \label{ssub:optimisation}
-      The optimiser iteratively moves through the space defined by the transform parameters from a set of initial coordinates, in an attempt to minimise the cost function evaluated by the metric. ITK provides a range of algorithms to achieve this task in the most efficient and reliable way possible. Throughout the registration process, a gradient descent optimiser was employed. This optimiser is a robust, general purpose algorithm that requires little configuration.
-    % subsubsection optimisation (end)
-  % subsection registration_algorithm (end)
-  
   \subsection{Software Architecture} % (fold)
   \label{sub:software_architecture}
     MOTIVATE SOFTWARE QUALITY SECTION, SAY PROBLEMS I HAD, Discuss why, because the final result is unknown, any bugs or errors in calculation are often not apparent, and very difficult to find. Maybe anecdote about a slight error in calculating the initial centre of rotation for transforms went 9 months unnoticed. QUOTE VARIOUS SOFTWARE PRINCIPLES E.G. DRY, SINGLE POINT OF TRUTH,
@@ -578,7 +553,7 @@ CONFIRMATION REPORT
 A full-heart registration pipeline has been developed and downsampled histological volumes generated. An initial manual alignment is followed by rigid and similarity transforms. The quality of the registrations are quite poor at present, and the task at hand is to fine-tune the various parameters that constrain the process: parameter space preconditioning, maximum iterations, maximum and minimum step lengths, number of spatial samples and metric-specific parameters.
 END PROGRESS FROM CONFIRMATION REPORT
 }
-    We have constructed a comprehensive, generic and flexible pipeline to register histological slices to block face images, that can be configured to generate rapid results on the broadest spectrum of computational facilities, from laptop to supercomputer.
+    We have constructed a comprehensive, generic and flexible pipeline to register histological slices to block face images, that can be configured to generate rapid results on the broadest spectrum of computational facilities, from laptop, to cluster, to shared memory supercomputer.
     
     Talk about ad hoc meta-optimisation of registration parameters, could be more formalised but a great deal more effort and prone to error (e.g. mean final metric values of all slices might decrease, but end result may suck)
     
