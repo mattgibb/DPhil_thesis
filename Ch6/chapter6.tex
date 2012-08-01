@@ -144,44 +144,46 @@ CONFIRMATION REPORT
   \label{sub:initialisation}
     The optimisation algorithms used in registration do not assure convergence to the global minimum and are thus sensitive to initialisation and to the presence of local minima in the cost function. A reasonable initialisation is necessary for robust and accurate registration.
 	
-	The block face images are already coherent from their acquisition. White space under the microscope surrounding the slices had already been cropped, such that each slice sat approximately centrally within the bounds of its image. Having been reflected across the x-axis, an anticlockwise rotation of $90\,^{\circ}$ oriented most slices approximately with the block face, as is seen from Figures~\labelcref{fig:original_lores_images,fig:original_hires_images}. A small set of slices required $180\,^{\circ}$ rotations. Slice images were then initialised to their common centre to form a volume. The initial translation and pixel spacing of the block face images were then manually tuned to overlap maximally with the slice volume.
+		\subsubsection{Geometric Initialisation} % (fold)
+		\label{ssub:geometric_initialisation}
+			The block face images are already coherent from their acquisition. White space under the microscope surrounding the slices had already been cropped, such that each slice sat approximately centrally within the bounds of its image. Having been reflected across the x-axis, an anticlockwise rotation of $90\,^{\circ}$ oriented most slices approximately with the block face, as is seen from Figures~\labelcref{fig:original_lores_images,fig:original_hires_images}. A small set of slices required $180\,^{\circ}$ rotations. Slice images were then initialised to their common centre to form a volume. The initial translation and pixel spacing of the block face volume was then manually tuned to overlap maximally with the slice volume. As is exhibited in Section~\ref{sec:results}, this naïve geometric initialisation provides an adequate starting point.
+		% subsubsection geometric_initialisation (end)
+	
+		\subsubsection{PCA Initialisation} % (fold)
+		\label{ssub:pca_initialisation}
+			Although geometric initialisation provided a reasonable starting point for most slices, this was purely a consequence of how the experimentalist had manually obtained and cropped the original images. A more sophisticated method might make use of the information in the image. If the pixels containing tissue could be identified, the centres of mass and principal components of each pair of images can be aligned to provide a close initial matching.
+		
+		  Various segmentation methods were tested in an effort to identify tissue reliably in both sets of images. Because the block face volume was already coherent, volume-wise refinements and filters could be applied, whilst only 2D segementation techniques could be considered for the slice images.
+			
+			After applying any image preprocessing, such as a gradient magnitude or Hessian filter, many segmentation methods, such as opening and closing or level sets, are designed to refine the edges or surfaces of an approximate segmentation. Yet here it is to be noted that only the segmentation's moments are of consequence, in particular the centre of mass and the variance matrix. It is therefore unnecessary for the segmentation to overlap closely with the tissue at a small scale, only that the global distribution of tissue be represented precisely. That being said, methods to remove macroscopic artefacts, such as connected component filtering and selection proved beneficial in most contexts.
+			
+		  There is no facility to align the principal components of two images in ITK, only to align their centres of mass. The class itk::CenteredTransformPCAInitializer was implemented to encapsulate the details of this process. The results of applying this class compared to the simple geometric initialisation are shown in Figure~\ref{fig:pca}, and the segmentations upon which they are based are shown in Figure~\ref{fig:segmentation}.
+		
+	    It is somewhat clear from Figure~\ref{fig:LoRes_cross_sections} that the broad range of tissue colours and intensities in the block face volume overlap significantly with the colours and intensities of non-tissue. In Figures~\labelcref{fig:582_segmentation,fig:582_pca}, the threshold segmentation values were optimised for these particular slices as a proof of concept, but this slice was chosen as one of the best examples of the technique. Issues such as wax bubbles, the bright blob at the top of the block face volume, optical transmission from layers below, and differential brightness from differing fibre directions or anatomical features plagued efforts to segment the images, and in fact went on to plague registration. Even if a segmentation method could yield reasonable results for every slice in the dataset, it is impractical to tune parameters manually for each slice, and there would certainly not be a single parameter set suitable for every slice in the volume. For these reasons, the PCA method could not be used to improve robustly upon a simple geometric initialisation of the high-resolution slices seen in Figure~\ref{fig:geometric_initialisation}.
     
-    Figure: A naive initialisation of the histological slices, aligning images to their common centre, provides an adequate starting point. VOLUMES ALONG WITH MASKS
-    % Possible figure: volume of image mask to demonstrate geometric centres
+	  \begin{figure}[htbp]
+	    \centering
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/LoRes_562}}
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/LoRes_segmentation_562}}
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/HiRes_562}}
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/HiRes_segmentation_562}}
+      \caption{Originals and threshold segmentations of the block face and slice images of slice 582.}
+	    \label{fig:582_segmentation}
+	  \end{figure}
     
-    \begin{figure}[htbp]
-      \centering
-            \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/LoRes_562}}
-            \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/LoRes_segmentation_562}}
-            \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/HiRes_562}}
-            \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/HiRes_segmentation_562}}
-            \caption{4 figures: LoRes, LoRes segmentation, HiRes, HiRes segmentation}
-      \label{fig:segmentation}
+	  \begin{figure}[htbp]
+	    \centering
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/geometric_redblue}}
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/geometric_segmentation_redblue}}
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/pca_redblue}}
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/pca_segmentation_redblue}}
+      \caption{Intensity superpositions of block face (red channel) and slice (blue channel). The original images are used \textbf{(a)} and \textbf{(c)}, while the segmentations are shown in \textbf{(b)} and \textbf{(d)}. \textbf{(a)} and \textbf{(b)} show geometric initialisation, and \textbf{(c)} and \textbf{(d)} PCA initialisation. It is clear that PCA provides a much closer match from which the registration algorithm can begin.}
+      \label{fig:582_pca}
     \end{figure}
     
-    \begin{figure}[htbp]
-      \centering
-            \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/geometric_redblue}}
-            \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/geometric_segmentation_redblue}}
-            \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/pca_redblue}}
-            \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/pca_segmentation_redblue}}
-            \caption{4 figures: RedBlue of Geoms, RedBlue of Geom segmentations, RedBlue of pca, RedBlue of pca segmentations}
-      \label{fig:pca}
-    \end{figure}
-    
-    Motivate why the images have to be segmented for pca i.e. empty space shouldn't influence cm, only tissue blah blah.
-    
-    Write disclaimer somewhere about the unprecedented quality of these images, however unavoidable 
-    
-    List the issues that plagued both the segmentation and the registration: bubbles, bright blob in top, transmission from layers below, top filamenty bit of heart glowing...
-    It is somewhat clear from Figure~\ref{fig:LoRes_cross_sections} that the broad range of tissue colours and intensities in the block face volume overlap significantly with the colours and intensities of non-tissue. In Figures~\labelcref{fig:segmentation,fig:pca}, the threshold segmentation values were optimised for these particular slices as a proof of concept, but this slice was chosen as one of the best examples of the technique. Even if a segmentation method could yield reasonable results for every slice in the dataset, it is impractical to tune parameters manually for each slice, and there would certainly not be a single parameter set suitable for every slice in the volume. For these reasons, the PCA method could not be used to improve robustly upon a simple geometric initialisation of the high-resolution slices seen in Figure~\ref{fig:geometric_initialisation}.
-    
-    Say that there is no facility to align PCs in ITK, only align centres of mass. Wrote a class to blah blah.
-    
-    Several methods of segmentation were tried LOOK IN SEGMENTATION PROJECT, INCLUDE DIAGRAM OF LEVEL SETS. It is noted that only the segmentation's moments are of consequence, in particular the centre of mass, and the variance matrix. It is therefore unnecessary for the segmentation to overlap closely with the tissue at a small scale, only that the global distribution of tissue be represented accurately. Go into detail about how the top bit is overrepresented in the LoRes and under in the hires
-        
+		% subsubsection pca_initialisation (end)
   % subsection initialisation (end)
-   
+  
   \subsection{Registration Algorithm} % (fold)
   \label{sub:registration_algorithm}
     A well-founded registration algorithm must embody three traits: numerically, it must reliably converge to the global minimum; computationally, it must be efficient so as to be tractable; and physically, it must correspond to the process that it was designed to correct for. It is within the context of these three benchmarks that we expound the following techniques.
@@ -189,7 +191,7 @@ CONFIRMATION REPORT
     \subsubsection{Transforms} % (fold)
     \label{ssub:transforms}
       Registrations are performed in an iterative fashion, gradually reducing in transformation constraint, starting with a simple rigid transform.
-      
+    
 SENTENCE ABOUT TRANSFORM COMPLEXITY AND SIZE OF PARAMETER SPACE.  followed by an incrementally increasing transform complexity 
 
 Completing rigid registration before releasing non-rigid degrees of freedom also helps ensure a good starting point in a high-dimensional non-rigid parameter space. 
@@ -376,203 +378,205 @@ The sectioning of the slices introduces 2-D, slice-specific deformation and in s
     % subsection diagnostics (end)
 % section methods (end)
    
-\section{Results}
+\section{Results} % (fold)
+\label{sec:results}
   A series of figures will provide visual validation of the results, both of the full heart and more detailed images in regions of interest. Cross-sectional images perpendicular to the slice planes will show the close matching between planes, and segmented surfaces of myocardial walls and larger arteries will be rendered in 3-D. The performance of various registration regimes will be compared.
 CONFIRMATION REPORT
+  
+	% initialisation figure
+	\begin{sidewaysfigure}[htbp]
+	  \centering
+	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/geometric_0_235}}
+	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/geometric_1_287}}
+	  \caption{}
+	  \label{fig:geometric_initialisation}
+	\end{sidewaysfigure}
 
-% initialisation figure
-\begin{sidewaysfigure}[htbp]
-  \centering
-  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/geometric_0_235}}
-  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/geometric_1_287}}
-  \caption{}
-  \label{fig:geometric_initialisation}
-\end{sidewaysfigure}
+	% x slices
+	\begin{figure}[htbp]
+	  \centering
+	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/rigid_0_235}}
+	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/size_0_235}}
+	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/affine_0_235}}
+	  \caption{Talk about how discontinuities in intensity between slices in the LoRes cutthrough fig are mirrored in the registration}
+	  \label{fig:hires_0_235}
+	\end{figure}
 
-% x slices
-\begin{figure}[htbp]
-  \centering
-  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/rigid_0_235}}
-  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/size_0_235}}
-  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/affine_0_235}}
-  \caption{Talk about how discontinuities in intensity between slices in the LoRes cutthrough fig are mirrored in the registration}
-  \label{fig:hires_0_235}
-\end{figure}
+	% y slices
+	\begin{figure}[htbp]
+	  \centering
+	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/rigid_1_287}}
+	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/size_1_287}}
+	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/affine_1_287}}
+	  \caption{What a nice figure!}
+	  \label{fig:hires_1_287}
+	\end{figure}
 
-% y slices
-\begin{figure}[htbp]
-  \centering
-  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/rigid_1_287}}
-  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/size_1_287}}
-  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/affine_1_287}}
-  \caption{What a nice figure!}
-  \label{fig:hires_1_287}
-\end{figure}
+	blah blah
 
-blah blah
+	blah blah
 
-blah blah
+	blah blah
 
-blah blah
+	blah blah
 
-blah blah
+	blah blah
 
-blah blah
+	blah blah
 
-blah blah
+	blah blah
 
-blah blah
+	blah blah
 
-blah blah
+	blah blah
 
-blah blah
+	blah blah
 
-blah blah
+	blah blah
 
-blah blah
+	blah blah
 
-blah blah
+	blah blah
 
-blah blah
+	blah blah
 
-blah blah
+	blah blah
 
-blah blah
+	blah blah
 
-blah blah
+	blah blah
 
-blah blah
+	blah blah
 
-blah blah
+	blah blah
 
-blah blah
+	blah blah
 
-blah blah
+	blah blah
 
-blah blah
+	blah blah
 
-blah blah
+	blah blah
 
-blah blah
+	blah blah
 
-blah blah
+	% geometric contours
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_geometric}
+	  \caption{Contour details: threshold segmentation with limits:0 to 240, used original slice images that were Gaussian smoothed by a kernel of std dev 64, because the detail from a simple threshold on nonsmoothed images generated egregiously convoluted surfaces. Because this smoothing only operates within the plane of the slices, individual displacements between edges of adjacent slices is still clearly visible. After segmentation, a label map filter was applied to remove all but the largest connected component. This went some way to removing bubbles and other artefacts obscuring the surface of the heart. y-dimension of geometry bounding box is extended from 575 to 700 to encompass the increased spread of the slices.}
+	  \label{fig:image1.png}
+	\end{sidewaysfigure}
 
-% geometric contours
-\begin{sidewaysfigure}[p]
-  \centering
-  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_geometric}
-  \caption{Contour details: threshold segmentation with limits:0 to 240, used original slice images that were Gaussian smoothed by a kernel of std dev 64, because the detail from a simple threshold on nonsmoothed images generated egregiously convoluted surfaces. Because this smoothing only operates within the plane of the slices, individual displacements between edges of adjacent slices is still clearly visible. After segmentation, a label map filter was applied to remove all but the largest connected component. This went some way to removing bubbles and other artefacts obscuring the surface of the heart. y-dimension of geometry bounding box is extended from 575 to 700 to encompass the increased spread of the slices.}
-  \label{fig:image1.png}
-\end{sidewaysfigure}
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_geometric}
+	  \caption{}
+	  \label{fig:image1.png}
+	\end{sidewaysfigure}
 
-\begin{sidewaysfigure}[p]
-  \centering
-  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_geometric}
-  \caption{}
-  \label{fig:image1.png}
-\end{sidewaysfigure}
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_geometric}
+	  \caption{}
+	  \label{fig:image1.png}
+	\end{sidewaysfigure}
 
-\begin{sidewaysfigure}[p]
-  \centering
-  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_geometric}
-  \caption{}
-  \label{fig:image1.png}
-\end{sidewaysfigure}
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_geometric}
+	  \caption{}
+	  \label{fig:image1.png}
+	\end{sidewaysfigure}
 
-\begin{sidewaysfigure}[p]
-  \centering
-  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_geometric}
-  \caption{}
-  \label{fig:image1.png}
-\end{sidewaysfigure}
+	% rigid contours
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_rigid}
+	  \caption{}
+	  \label{fig:image1.png}
+	\end{sidewaysfigure}
 
-% rigid contours
-\begin{sidewaysfigure}[p]
-  \centering
-  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_rigid}
-  \caption{}
-  \label{fig:image1.png}
-\end{sidewaysfigure}
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_rigid}
+	  \caption{}
+	  \label{fig:image1.png}
+	\end{sidewaysfigure}
 
-\begin{sidewaysfigure}[p]
-  \centering
-  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_rigid}
-  \caption{}
-  \label{fig:image1.png}
-\end{sidewaysfigure}
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_rigid}
+	  \caption{}
+	  \label{fig:image1.png}
+	\end{sidewaysfigure}
 
-\begin{sidewaysfigure}[p]
-  \centering
-  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_rigid}
-  \caption{}
-  \label{fig:image1.png}
-\end{sidewaysfigure}
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_rigid}
+	  \caption{}
+	  \label{fig:image1.png}
+	\end{sidewaysfigure}
 
-\begin{sidewaysfigure}[p]
-  \centering
-  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_rigid}
-  \caption{}
-  \label{fig:image1.png}
-\end{sidewaysfigure}
+	% size contours
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_size}
+	  \caption{}
+	  \label{fig:image1.png}
+	\end{sidewaysfigure}
 
-% size contours
-\begin{sidewaysfigure}[p]
-  \centering
-  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_size}
-  \caption{}
-  \label{fig:image1.png}
-\end{sidewaysfigure}
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_size}
+	  \caption{}
+	  \label{fig:image1.png}
+	\end{sidewaysfigure}
 
-\begin{sidewaysfigure}[p]
-  \centering
-  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_size}
-  \caption{}
-  \label{fig:image1.png}
-\end{sidewaysfigure}
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_size}
+	  \caption{}
+	  \label{fig:image1.png}
+	\end{sidewaysfigure}
 
-\begin{sidewaysfigure}[p]
-  \centering
-  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_size}
-  \caption{}
-  \label{fig:image1.png}
-\end{sidewaysfigure}
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_size}
+	  \caption{}
+	  \label{fig:image1.png}
+	\end{sidewaysfigure}
 
-\begin{sidewaysfigure}[p]
-  \centering
-  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_size}
-  \caption{}
-  \label{fig:image1.png}
-\end{sidewaysfigure}
+	% affine contours
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_affine}
+	  \caption{}
+	  \label{fig:image1.png}
+	\end{sidewaysfigure}
 
-% affine contours
-\begin{sidewaysfigure}[p]
-  \centering
-  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_affine}
-  \caption{}
-  \label{fig:image1.png}
-\end{sidewaysfigure}
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_affine}
+	  \caption{}
+	  \label{fig:image1.png}
+	\end{sidewaysfigure}
 
-\begin{sidewaysfigure}[p]
-  \centering
-  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_affine}
-  \caption{}
-  \label{fig:image1.png}
-\end{sidewaysfigure}
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_affine}
+	  \caption{}
+	  \label{fig:image1.png}
+	\end{sidewaysfigure}
 
-\begin{sidewaysfigure}[p]
-  \centering
-  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_affine}
-  \caption{}
-  \label{fig:image1.png}
-\end{sidewaysfigure}
-
-\begin{sidewaysfigure}[p]
-  \centering
-  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_affine}
-  \caption{}
-  \label{fig:image1.png}
-\end{sidewaysfigure}
-
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_affine}
+	  \caption{}
+	  \label{fig:image1.png}
+	\end{sidewaysfigure}
+	
+% section results (end)
 
 \section{Discussion} % (fold)
 \label{sec:discussion}
