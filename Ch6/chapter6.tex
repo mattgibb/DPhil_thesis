@@ -5,7 +5,9 @@
 \begin{quote}{\em \input{Ch6/abstract6}}\end{quote}
 
 CONFIRMATION REPORT
-\section{Aims}
+\section{Aims} % (fold)
+\label{sec:aims}
+
   MOTIVATION, PROBLEMS, AIMS
   
   Having shown in an idealised geometry that fibre direction could have a significant effect on propagation, the challenge is set to characterise cardiac tissue at sufficient detail to resolve both fibre direction and other microstructure. Cell type distribution, the shape of tissue boundaries, the Purkinje fibre network, sheet structure and vasculature all affect macroscopic wave propagation. In this section we will lay the foundations for investigating these effects by registering high-resolution histological data with MRI images. Following on from the work touched on in section~\ref{sec:cardiac_tissue_can_be_accurately_characterised_with_high_resolution_data} by \cite{Mansoori2007}, we will first examine more closely the sources of deformation introduced by the image acquisition process. A brief summary of computational tools will follow, before an overview of the registration method. We end with a discussion of the progress so far and some thoughts on what the finished pipeline will yield.
@@ -22,6 +24,8 @@ CONFIRMATION REPORT
   
   The aim of this chapter is to develop an automated pipeline to register high resolution rat cardiac datasets robustly and accurately, and generate coherent subcellular resolution 3-D cardiac histological images.  Approximately three full rat heart datasets will be processed through the pipeline to provide registered volumes. These images will serve both as an authoritative anatomical reference, and as the basis for anatomically based models in simulation studies.
   
+% section aims (end)
+
 \section{Methods} % (fold)
 \label{sec:methods}
   INTRODUCTORY PARAGRAPH
@@ -184,7 +188,7 @@ CONFIRMATION REPORT
 		% subsubsection pca_initialisation (end)
   % subsection initialisation (end)
   
-  \subsection{Registration Algorithm} % (fold)
+	\subsection{Registration Algorithm} % (fold)
   \label{sub:registration_algorithm}
     Each main aspect of the registration method is outlined in this section. A well-founded registration algorithm must embody three traits: numerically, it must converge reliably to the global minimum; computationally, it must be efficient so as to be tractable; and physically, it must correspond to the process that it was designed to correct for. It is through the lens of these three benchmarks that we examine the following components.
     
@@ -206,14 +210,23 @@ CONFIRMATION REPORT
 
       The optimisation space, as dictated by the transform, must be scaled along each dimension to correct for discrepant effects per unit change of each parameter. For example, a translation of one micron at the epicardium might result from a rotation of just $10^{-5}$ radians about the centre of the slice. This makes the metric space more isotropic and reduces the eccentricity of cost function basins, allowing the optimisation algorithm to fall more directly toward minima.
     % subsubsection optimisation (end)
+	% subsection registration_algorithm (end)
     
   \subsection{Software Architecture} % (fold)
   \label{sub:software_architecture}
-    MOTIVATE SOFTWARE QUALITY SECTION, SAY PROBLEMS I HAD, Discuss why, because the final result is unknown, any bugs or errors in calculation are often not apparent, and very difficult to find. Maybe anecdote about a slight error in calculating the initial centre of rotation for transforms went 9 months unnoticed. QUOTE VARIOUS SOFTWARE PRINCIPLES E.G. DRY, SINGLE POINT OF TRUTH,
-
-    All file handling and networking algorithms were written in Ruby, a powerful, object-oriented, all-purpose, cross-platform scripting language. YAML (YAML Ain't a Markup Language) was used as a declarative language for configuration files, providing a syntax that is easily human readable and curatable, yet machine parsable. The main use of YAML was to store metadata for each histological slice, such as whether the image was flipped, whether it was trichrome stained, and the nature and extent of any damage or abberation. Source code management and code deployment was implemented in Git. All imaging algorithms were written in C++, using the venerable ITK library. C++ executables were compiled using the cross-platform build system CMake, an open source program and project founded by the same organisation that started ITK.
-    
-    An outline of the main problems encountered during the development process will be exhibited, along with the solutions crafted to overcome them.
+		From early on, the requirements of the problem diversified, and a range of related tools were built. Common patterns and functionality needed to be extracted and isolated. This prevented duplication and the potential for bugs and inconsistencies, and lead to more readable and manageable code. Because the final result was unknown, it was often extremely difficult to know whether the code was operating correctly. Bugs or errors in calculation were not usually apparent, and proved very difficult to find. We outline the main problems encountered during the development process, along with the solutions crafted to isolate and overcome them.
+		
+		\subsubsection{Languages and Frameworks} % (fold)
+		\label{ssub:languages_and_frameworks}
+      All file handling and networking algorithms were written in Ruby. Imaging algorithms were written in C++ or, in some simple cases, Python, using the venerable ITK library. C++ executables were compiled using the cross-platform build system CMake. YAML was used as a declarative language for configuration files, providing a syntax that is easily human readable and curatable, yet machine parsable. Source code management and code deployment was implemented in Git, and the project is freely available at \url{http://github.com/mattgibb/registration} under an MIT license.
+		% subsubsection languages_and_frameworks (end)
+		
+    \subsubsection{Stacks} % (fold)
+    \label{ssub:stacks}
+      Each block image must be paired with its equivalent slice image, and blank images must be interpolated where images are missing. Slices must be transformed independently and by a range of transform types. Resampler spacings must be set according to the original image spacings and the downsample ratios. Binary masks must be generated for each image, so that metrics will only take pixel intensities into account from inside the boundaries of the original untransformed images. A stack volume must be reconstructed from the transformed, resampled slices. A minimum percentage overlap is required for many metrics to function, and for small slice images close to the apex of the heart, block mask areas must be cropped until this constraint is satisfied.
+	  	
+      A heirarchy of Stack classes has been developed - along with associated builder classes, IO helpers and transform converters - to encapsulate the solutions to all of these problems. A Stack represents the 3D composition of a set of 2D slices. It handles ROI selection, generic transform storage, image and mask resampling and generation (both for 2D slices and for the 3D volume) and various error handling strategies. An MRI class is also available to solve the complementary problem of extracting arbitrarily oriented slices from a 3D image. However, for these specific datasets the block face images are intrinsically registered to the histological samples.
+    % subsubsection stacks (end)
     
     \subsubsection{Multiresolution Registration} % (fold)
     \label{ssub:multiresolution_registration}
@@ -225,36 +238,36 @@ CONFIRMATION REPORT
     
       There are 2 ways to achieve this: in-plane downsampling and out-of-plane slice selection. Downsampling and Gaussian smoothing not only reduces time, but smooths the cost function and can lead to more robust registration results. In multiresolution registration, the resulting transforms can then be used to initialise a more accurate but more fragile registration at a higher resolution.
     
+		
     % subsubsection multiresolution_registration (end)
     
-    \subsubsection{Stacks} % (fold)
-    \label{ssub:stacks}
-            Histology data are provided in series of 2D png images. Images within a set can each be of unique size, and slices which were damaged or which have not been imaged yet are missing. Each block image must be paired with its equivalent slice image, and blank images must be interpolated where images are missing. Slices must be transformed independently and by a range of transforms. Binary masks must be generated for each image, so that metrics will only take pixel intensities into account from inside the boundaries of the original untransformed images. A minimum percentage overlap is required for many metrics to function, and for small slice images close to the apex of the heart, block mask areas must be cropped until this constraint is satisfied.
-
-            The Stack has been developed to encapsulate the solutions to all of these problems. A Stack represents the 3D composition of a set of 2D slices. It handles ROI selection, generic transform storage, image and mask resampling and generation (both for 2D slices and for the 3D volume) and various error handling strategies. An MRI class is also available to solve the complementary problem of extracting arbitrarily oriented slices from a 3D image. However, for these specific datasets the block face images are intrinsically registered to the histological samples.
-    
-      A `mask' is also generated, a binary image of the same dimensions as the volume stack, with value 1 within a histological slice, and zero otherwise. The mask is used by the metric to specify which pixels will be taken into consideration.
-    % subsubsection stacks (end)
-    
-    \subsubsection{Pipeline Builders} % (fold)
-    \label{ssub:pipeline_builders}
-      MAYBE RENAME SUBSUBSECTION TO MORE GENERIC `BUILDERS'...SEARCH THROUGH SOURCE CODE FOR OTHER TYPES OF BUILDERS
-          A minimal registration pipeline is composed of several generic actors, including a metric, an optimiser, a transform, and an interpolator. The details of which types of actors are optimal and how they should interact are peculiar to the registration problem at hand. Furthermore, the specific type of each component often requires unique configuration beyond the generic interface of its family. Once several types must be chosen from and configured, even for just one component, an ad hoc procedural approach quickly became unwieldy, but these two requirements colluded combinatorially to demand a great deal of testing, tailoring and configuration in order to achieve registrations of high quality. More often than not, modifications would degrade the registration, and reversing parts of them proved non-trivial.
-
-          At the pipeline level, we developed a heirarchy of `frameworks' employing the Builder pattern, which abstracts away the heavy lifting of wiring up the various components together.  At the component level, a conflation of the Abstract Factory and the Strategy patterns, together with a configuration system using the human-friendly YAML markup language, serves not only to decouple the actors' representations from the minutiae of their construction, but to move these volatile decisions from compile-time to runtime. These tools vastly reduce the cost of experimentation and testing. With all the variables clearly grouped together, with no need to recompile the toolchain or pore through source code to find if and where one can make a change, the feedback from results is faster and less error prone.
-
+    \subsubsection{Builders} % (fold)
+    \label{ssub:builders}
+      A minimal registration pipeline is composed of several generic actors, including a metric, an optimiser, a transform, and an interpolator. The details of which types of actors are optimal and how they should interact are peculiar to the registration problem at hand. Furthermore, the specific type of each component often requires unique configuration beyond the generic interface of its family, and the choice of image preprocessing is dependent on the choice of metric. Once several types must be chosen from and configured, even for just one component, an ad hoc procedural approach quickly became unwieldy. These two requirements colluded combinatorially to demand a great deal of testing, tailoring and configuration in order to achieve registrations of high quality. More often than not, modifications would degrade the registration.
+			
+      At the pipeline level, we developed a heirarchy of frameworks employing the Builder pattern (\cite{Gamma1995}), which abstracts away the heavy lifting of wiring up the various components together.  At the component level, a conflation of the Abstract Factory and the Strategy patterns (\cite{Gamma1995}), together with a configuration system using the human-friendly YAML markup language, serves not only to decouple the actors' representations from the minutiae of their construction, but to move these volatile decisions from compile-time to runtime. These tools vastly reduce the cost of experimentation and testing. With all the variables clearly grouped together, with no need to recompile the toolchain or pore through source code to find if and where one can make a change, the feedback from results is faster and less error prone.
       
-    % subsubsection pipeline_builders (end)
-        \paragraph{Component Builders}
-        Should this go in here? or in the paper?
-
-        \paragraph{Checkpointing and Transform IO}
-          At any stage during the registration process, the vector of transforms held by a given Stack can be persisted to a file or a series of files with a single function call. Just as easily, a new Stack can be initialised with a set of transforms on storage. This machinery facilitates greater process granularity in three dimensions: in the sequence of transforms to be optimised, in the increasing image resolutions to be registered, and spatially in the pairs of slices within the Stack. In the first case, a user can tune one registration stage until they are happy that it is optimal, and then use the results as a starting point for all subsequent runs of the next stage. Moreover, the division of workload and memory is of particular importance when organising jobs on clusters and shared memory machines. ALSO TALK ABOUT COMPOSING TRANSFORMS RATHER THAN REPEATED RESAMPLING PREVENTS A LOSS OF IMAGE QUALITY DUE TO REPEATED RASTERISATION IN DIFFERING COORDINATE SYSTEMS. TALK ABOUT DIFFERENT PIXEL TYPES: FLOAT/DOUBLE PIXEL TYPES CAN BE USED FOR ACCURATE INTERPOLATION OF INTENSITIES DURING REGISTRATION, THEN THE TRANSFORMS CAN BE USED TO RECONSTRUCT A COLOUR VOLUME OR A SEGMENTATION AFTERWARDS.
+			The StackAligner class encapsulates the registration process, for tools employing affine or b-spline deformable transforms, across the whole heart or in a region of interest. At least two sets of stack configurations were required, for the block face and slice stacks, across a great many registration and reconstruction tools. This logic was pulled into a StackBuilder class tree, rooted from an untemplated StackBuilderBase class to prevent template infection across the codebase.
+    % subsubsection builders (end)
+		
+		\subsubsection{Events, Checkpointing and IO} % (fold)
+		\label{ssub:events_checkpointing_and_io}
+			It is necessary to save intermediate information about the progress of the registration, for parameter tuning and analysis. ITK exposes this functionality through the Command Observer pattern (see \cite{Gamma1995})). Any ITK object can publish events, and other objects may subscribe to those events. An object whose purpose is to subscribe to an event and perform an action when that event is triggered is called a Command Observer. Figure~\ref{fig:command_heirarchy} shows the class tree developed to display and record the required information.
+			
+    \begin{figure}[htbp]
+      \centering
+      \includegraphics[width=\pagewidth]{Ch6/Figs/command_heirarchy}
+      \caption{Command Observer heirarchy to output various types of information when specific events are triggered.}
+      \label{fig:command_heirarchy}
+    \end{figure}
+		
+      At any stage during the registration process, the vector of transforms held by a given Stack can be persisted to a series of files with a single function call. Just as easily, a new Stack can be initialised with a set of transforms on storage. This machinery facilitates greater process granularity in three dimensions: in the sequence of transforms to be optimised, in the increasing image resolutions to be registered, and spatially in the pairs of slices within the Stack. In the first case, a user can tune one registration stage until they are happy that it is optimal, and then use the results as a starting point for all subsequent runs of the next stage. In the second case, approximate registrations can be performed with images at lower resolutions, which can then initialise registrations at higher resolutions with different images. In the third case, the result from separate jobs for each slice pair using images of a scalar floating point pixel type or a segmentation image type can be aggregated and used to reconstruct a colour volume, perhaps at a different resolution. This division of workload and memory is of particular importance when organising jobs on clusters and shared memory machines.
+			
+			Even aside from process granularity, working with transforms is vastly superior to working directly with the images. Composing transforms rather than repeatedly resampling prevents a loss of image quality due to rasterisation in differing coordinate systems. Advanced composition of transforms makes possible registration refinement, either in regions of interest, or with the diffusion smoothing techniques discussed in Chapter~\ref{cha:diffusion_smoothing_registration_of_high_resolution_rat_histology}.
           
-          \vspace{3 mm}
-
-          Several other aspects of the architecture are not discussed here, including Configuration, File Management, Logging Output, Testing, as well as the opportunities and challenges posed by high performance computing.
-    
+          Several other aspects of the architecture are not discussed here, including configuration, file management, testing, as well as the opportunities and challenges posed by high performance computing.
+		% subsubsection events_checkpointing_and_io (end)
+		
   % subsection software_architecture (end)
   
     \subsection{Diagnostics} % (fold)
