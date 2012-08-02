@@ -270,87 +270,17 @@ CONFIRMATION REPORT
 		
   % subsection software_architecture (end)
   
-    \subsection{Diagnostics} % (fold)
+    \subsection{Diagnostics and Parameter Tuning} % (fold)
     \label{sub:diagnostics}
+      For almost a year and a half, it was very difficult to see why registration was failing to yield robustly accurate results. The output of raw parameters was somewhat elucidating, but only for obvious issues such as parameter scaling and step length, where almost zero change in some or all parameters signalled what to adjust. The space of possible parameters was enormous, and the computing time before feedback significant. With visual representation of nothing but the final result, divining which parameters to change and how was perhaps analogous to deciding how each player in a sports team could improve given only the final scores.
       
-      MOTIVATION: For a year and a half, very difficult to see why registration was failing. Output of raw parameters got us somewhere, but only for obvious issues e.g. parameter scaling, step length. Huge parameter space. Sports game analogy about result, but no play-by-play. BuildProgressVolumes
-      
-      IN ORDER TO OUTPUT INTERMEDIATE TRANSFORMS AND METRIC VALUES AT EACH ITERATION, WAS NECESSARY TO HOOK INTO ITK'S EVENT-DRIVEN API, USING THE COMMAND-OBSERVER PATTERN (CITE GANG OF 4). PERHAPS QUICK OMNIGRAFFLE FIGURE OF OBSERVER HEIRARCHY?
-      
-      Parameter tuning:
-      
-      Figures of bad params, symptoms and results. e.g. zigzags, overshoot and gradual worsening. Unclear how the gradual worsening happens; could be an oddly shaped v-shaped cost basin, deepening steeply along one dimension and 
-      
-      Before upgrade to ITKv4, registration algorithm would often not optimise i.e. results were much worse. Even though the upgrade shouldn't have affected the results, just the speed of the code, results were much much better.
-      
-      Parameter tuning:
-      Initial discussion of 4 parameters in RSGD: 2 behavioural (max step and relaxation factor), and 2 cutoff(min step and gradient magnitude tolerance).
-      Figures need to compare:
-        increase/decrease in behavioural (zigzag if too high because of overshoot)
-      increase/decrease in cutoff (takes too long if low, see tails in plot metric values and differences, doesn't finish if too high, use compare final metric values.py)
-
-      Increase max step for HiRes pairs registration to 60, and show characteristic zigzagging and jumping out of potential well
-      
-      \begin{sidewaysfigure}[htbp]
-        \centering
-        \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/rigid_metric_values}
-        \caption{Viewed from below to see clearly all the values. Nearly all curves smoothly and monotonically increase, before reaching a distinct flat maximum. After around slice 600, where blob appears, final metric values decrease almost linearly as the intensity of the blob increases. Slices in the region of 400-600 start from a much lower metric value, and take up to 1500 iterations to maximise. Diagnostics were important here, to see whether all slices had reached maximum. Give times to run 1500 iterations on supercomputer.}
-        \label{fig:rigid_metric_values}
-      \end{sidewaysfigure}
-      
-      \begin{sidewaysfigure}[htbp]
-        \centering
-        \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/similarity_metric_values}
-        \caption{}
-        \label{fig:similarity_metric_values}
-      \end{sidewaysfigure}
-      
-      \begin{sidewaysfigure}[htbp]
-        \centering
-        \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/affine_metric_values}
-        \caption{}
-        \label{fig:affine_metric_values}
-      \end{sidewaysfigure}
-      
-      \begin{sidewaysfigure}[htbp]
-        \centering
-        \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/affine_metric_value_differences}
-        \caption{}
-        \label{fig:affine_metric_value_differences}
-      \end{sidewaysfigure}
-      
-      \begin{sidewaysfigure}[htbp]
-        \centering
-        \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/initial_and_final_values_comparison}
-        \caption{Each successive registration increases correlation, but it is clear that the vast majority of improvement comes from the rigid registration. PERHAPS MOVE THE FOLLOWING TEXT SOMEWHERE ELSE: slices from 380 to 600 were photographed at a larger angle from that of their block-face images, and this is reflected in a sharply reduced initial correlation value. From Slice 600 onwards, the blob precludes successful registration and both initial and final correlation values decline.}
-        \label{fig:initial_and_final_values_comparison}
-      \end{sidewaysfigure}
-      
-      \begin{figure}[htbp]
-        \centering
-        \subfigure[][]{\includegraphics[height=0.3\textheight]{Ch6/Figs/diagnostics/fixed_progress_slice_0562_1_287.pdf}}
-        \subfigure[][]{\includegraphics[height=0.3\textheight]{Ch6/Figs/diagnostics/moving_progress_slice_0562_1_287.pdf}}
-        \subfigure[][]{\includegraphics[height=0.3\textheight]{Ch6/Figs/diagnostics/fixed_progress_slice_0562_0_235.pdf}}
-        \subfigure[][]{\includegraphics[height=0.3\textheight]{Ch6/Figs/diagnostics/moving_progress_slice_0562_0_235.pdf}}
-        \caption{Progress volume of 1500 iterations of slice 0562}
-        \label{fig:progress_cross_sections}
-      \end{figure}
-      
-      \begin{figure}[htbp]
-        \centering
-        \includegraphics[width=\pagewidth]{Ch6/Figs/diagnostics/0562_contour.png}
-        \caption{Quick rotation at the start, then flatter, slower translation...finally reaches a stationary minimum in the last iterations.}
-        \label{fig:progress_contour}
-      \end{figure}
-      
-      \begin{figure}[p]
-        \centering
-        \subfigure[][]{\includegraphics[width=0.9\pagewidth]{Ch6/Figs/diagnostics/0562_correlation}}
-        \subfigure[][]{\includegraphics[width=0.9\pagewidth]{Ch6/Figs/diagnostics/0562_delta_correlation}}
-        \caption{What a nice figure!}
-        \label{fig:0562_correlation}
-      \end{figure}
-      
+      Armed with the intermediate transforms and metric values discussed in Section~\ref{ssub:events_checkpointing_and_io}, the causes of the suboptimal registration results were immediately apparent. The progression of metric values for all slices could be plotted in graphs like those in Figures~\labelcref{fig:rigid_metric_values,fig:similarity_metric_values,fig:affine_metric_values,fig:affine_metric_value_differences}. Progress volumes of a particular slice could be constructed as seen in Figures~\labelcref{fig:progress_cross_sections,fig:progress_contour}.
+			
+			The regular step gradient descent optimiser is parameterised with four values: two behavioural values (maximum step length and relaxation factor), and two cutoff values (minimum step length and gradient magnitude tolerance). Bad behavioural values manifest in static or `zigzagging' unstable progress volumes and metric values, whilst premature or overcautious cutoff values yield either no region or a needlessly large region of equilibrium at the end. Bad parameter scaling is not evident solely from the intermediate metric values, which can still remain smoothly increasing with a quasi-equilibrated final section. However, the progress volume will appear restricted in one or more dimension. For example, the slice may rotate freely, but remain at a fixed translation, despite an obvious translational cost gradient.
+			
+			Not all symptoms could be diagnosed. In rare cases, the metric value would gradually and consistently worsen, and it was unclear why this was happening. Perhaps an oddly shaped cost basin or saddle point was to blame, deepening steeply along one dimension and shallowly along a perpendicular one.
+			
+      Interestingly, before an upgrade to ITKv4, the registration algorithm would often not optimise, but rather diffuse in a seemingly random way between metric values. Even though the upgrade should not have affected the registration outcome, but just the speed of the code, results were suddenly much better.
       
     % subsection diagnostics (end)
 % section methods (end)
@@ -360,9 +290,71 @@ CONFIRMATION REPORT
   A series of figures will provide visual validation of the results, both of the full heart and more detailed images in regions of interest. Cross-sectional images perpendicular to the slice planes will show the close matching between planes, and segmented surfaces of myocardial walls and larger arteries will be rendered in 3-D. The performance of various registration regimes will be compared.
 CONFIRMATION REPORT
   
+	Give times to run 1500 iterations on supercomputer.
+	
 	By far most of the registration is done in the first rigid step. Didn't work for lots of reasons, tried PCA, ITKv3 bug, different metrics, optimisers, normalising images etc. loads of figures.
 	
 	Show instabilities and scaling factor problems
+	
+  \begin{sidewaysfigure}[htbp]
+    \centering
+    \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/rigid_metric_values}
+    \caption{Intermediate metric values for all slices during rigid registration. The graph is viewed from below to see all values clearly. Nearly all curves increase smoothly and monotonically, before reaching a distinct flat maximum. After around slice 600, where the blob-shaped artefact appears, the final metric values decrease almost linearly as the intensity of the blob increases. Slices in the region of 400-600 start from a much lower metric value, and take up to 1500 iterations to maximise. This was due to their geometric initialisations being much further from their final optimal position. Diagnostics were of critical importance here, not least to see whether all slices had reached their optimum position.}
+    \label{fig:rigid_metric_values}
+  \end{sidewaysfigure}
+      
+  \begin{sidewaysfigure}[htbp]
+    \centering
+    \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/similarity_metric_values}
+    \caption{}
+    \label{fig:similarity_metric_values}
+  \end{sidewaysfigure}
+      
+  \begin{sidewaysfigure}[htbp]
+    \centering
+    \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/affine_metric_values}
+    \caption{}
+    \label{fig:affine_metric_values}
+  \end{sidewaysfigure}
+      
+  \begin{sidewaysfigure}[htbp]
+    \centering
+    \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/affine_metric_value_differences}
+    \caption{}
+    \label{fig:affine_metric_value_differences}
+  \end{sidewaysfigure}
+      
+  \begin{sidewaysfigure}[htbp]
+    \centering
+    \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/initial_and_final_values_comparison}
+    \caption{Each successive registration increases correlation, but it is clear that the vast majority of improvement comes from the rigid registration. PERHAPS MOVE THE FOLLOWING TEXT SOMEWHERE ELSE: slices from 380 to 600 were photographed at a larger angle from that of their block-face images, and this is reflected in a sharply reduced initial correlation value. From Slice 600 onwards, the blob precludes successful registration and both initial and final correlation values decline.}
+    \label{fig:initial_and_final_values_comparison}
+  \end{sidewaysfigure}
+      
+  \begin{figure}[htbp]
+    \centering
+    \subfigure[][]{\includegraphics[height=0.3\textheight]{Ch6/Figs/diagnostics/fixed_progress_slice_0562_1_287.pdf}}
+    \subfigure[][]{\includegraphics[height=0.3\textheight]{Ch6/Figs/diagnostics/moving_progress_slice_0562_1_287.pdf}}
+    \subfigure[][]{\includegraphics[height=0.3\textheight]{Ch6/Figs/diagnostics/fixed_progress_slice_0562_0_235.pdf}}
+    \subfigure[][]{\includegraphics[height=0.3\textheight]{Ch6/Figs/diagnostics/moving_progress_slice_0562_0_235.pdf}}
+    \caption{Progress volume of 1500 iterations of slice 0562}
+    \label{fig:progress_cross_sections}
+  \end{figure}
+      
+  \begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\pagewidth]{Ch6/Figs/diagnostics/0562_contour.png}
+    \caption{Quick rotation at the start, then flatter, slower translation...finally reaches a stationary minimum in the last iterations.}
+    \label{fig:progress_contour}
+  \end{figure}
+      
+  \begin{figure}[p]
+    \centering
+    \subfigure[][]{\includegraphics[width=0.9\pagewidth]{Ch6/Figs/diagnostics/0562_correlation}}
+    \subfigure[][]{\includegraphics[width=0.9\pagewidth]{Ch6/Figs/diagnostics/0562_delta_correlation}}
+    \caption{What a nice figure!}
+    \label{fig:0562_correlation}
+  \end{figure}
 	
 	% initialisation figure
 	\begin{sidewaysfigure}[htbp]
@@ -580,9 +572,3 @@ END PROGRESS FROM CONFIRMATION REPORT
     
     Dicuss why b-splines didn't work.
 % section discussion (end)
-
-REGISTRATION PAPER
-
-% \input{../registration_paper/latex/methods/methods}
-% \input{../registration_paper/latex/results/results}
-  
