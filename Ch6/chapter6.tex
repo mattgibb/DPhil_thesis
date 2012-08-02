@@ -287,14 +287,22 @@ CONFIRMATION REPORT
    
 \section{Results} % (fold)
 \label{sec:results}
-  A series of figures will provide visual validation of the results, both of the full heart and more detailed images in regions of interest. Cross-sectional images perpendicular to the slice planes will show the close matching between planes, and segmented surfaces of myocardial walls and larger arteries will be rendered in 3-D. The performance of various registration regimes will be compared.
-CONFIRMATION REPORT
-  
-	Give times to run 1500 iterations on supercomputer.
+	Intro: list each paragraph.
+	The work leading up to this chapter is composed of a great many dead ends and failed experiments, and the result presented here is merely the best outcome. Details of computation times are followed by the plotting of intermediate and final metric values. The progress of a single representative slice is scrutinised, ending with cross-sections and contours of the registered histological volumes after each successive registration.
 	
+	Para on computing times.
+	Give times to run 1500 iterations on supercomputer. To begin with, lower resolution images were used to approximate parameters in reasonable time, but all registrations shown here were performed with the full resolution block face images and 8x downsampled slice images. On a MacBook Pro with a 2.4GHz Intel Quad Core i7 processor, registering the original block face image to an 8x downsampled slice image took approximately 0.25 seconds per iteration. For the 1500 iterations required for rigid registration, and for 900 slices, this extrapolates to 93 hours total run time. When jobs were distributed on the cluster, 12 parallel registrations could be run concurrently in times of low demand. The total registration time was reduced from 93 hours to just below 7 hours.
+	
+	Para on intermediate values.
 	By far most of the registration is done in the first rigid step. Didn't work for lots of reasons, tried PCA, ITKv3 bug, different metrics, optimisers, normalising images etc. loads of figures.
 	
-	Show instabilities and scaling factor problems
+	Para on final values.
+	
+	Para on single slice.
+	
+	Para on cross-sections.
+	
+	Para on contours.
 	
   \begin{sidewaysfigure}[htbp]
     \centering
