@@ -230,15 +230,13 @@ CONFIRMATION REPORT
     
     \subsubsection{Multiresolution Registration} % (fold)
     \label{ssub:multiresolution_registration}
-      SECTION ON MULTIRESOLUTION, BOTH IN PLANE AND WITH IMAGE LISTS. TALK ABOUT REPRESENTATIVE SETS OF SLICES 100-110 + 200-210 + 300-310 ETC. TALK ABOUT TRACTABILITY WITH IMAGE SIZE AND TIME FOR REGISTRATION, AND HOW EACH ALGORITHM WAS SPLIT UP INTO INDIVIDUAL SLICES
-      
-	  The full-resolution histology dataset can measure 2TB
-	  
-      Motivate multires: state figures on total size of dataset, and on total times and memory to run 1 registration on a laptop and on a supercomputer. Talk about high dimensionality of parameter space, and the need for rapid feedback if the right parameters are to be found in any reasonable time.
-    
-      There are 2 ways to achieve this: in-plane downsampling and out-of-plane slice selection. Downsampling and Gaussian smoothing not only reduces time, but smooths the cost function and can lead to more robust registration results. In multiresolution registration, the resulting transforms can then be used to initialise a more accurate but more fragile registration at a higher resolution.
-    
-		
+			The total size of the block face and slice images approaches two terabytes. Even with an 8x downsampled slice dataset, one full rigid registration to test one parameter set would take nearly 100 hours on a modern quad core processor. An affine registration performed with a regular step gradient descent optimizer is parameterised in 10 dimensions. Rapid feedback is required if the right parameters are to be found in any reasonable time, and so a multiresolution approach must be taken. There are 2 ways to reduce the resolution of the dataset: in-plane downsampling and out-of-plane slice selection.
+			
+      In-plane downsampling and Gaussian smoothing not only reduces time, but smooths the cost function and can lead to more robust registration results. In multiresolution registration, the resulting transforms can then be used to initialise a more accurate but more fragile registration at a higher resolution.
+			
+      To start with, a quick order-of-magnitude overview of the global performance of a particular parameter set was required. In this case, regularly spaced subsets of the full curated list were created, such as every thirtieth slice or every fifth slice. Alternatively, every slice within a region might be selected, for example, the band of slices spanning an epicardial vessel. Of course, these two reductions can be applied together for very rapid feedback. As will be made clearer in Chapter~\ref{cha:diffusion_smoothing_registration_of_high_resolution_rat_histology}, full out-of-plane resolution is required to parameterise effectively the coregistration of adjacent slices. However, the fruitful region of parameters near the apex of the heart for elliptical discs of tissue is different (yet not disjunct) from that in more complex, central slices. In this case, a group of representative slice sublists at full resolution, e.g. 100-110, 200-210, 300-310 etc., provide the best compromise between speed and accuracy.
+			
+			The slice list is loaded dynamically by all tools from a config file, and so switching between lists when prototyping is as simple as redirecting a symlink.
     % subsubsection multiresolution_registration (end)
     
     \subsubsection{Builders} % (fold)
@@ -287,7 +285,6 @@ CONFIRMATION REPORT
    
 \section{Results} % (fold)
 \label{sec:results}
-	Intro: list each paragraph.
 	The work leading up to this chapter is composed of a great many dead ends and failed experiments, and the result presented here is merely the best outcome. Details of computation times are followed by the plotting of intermediate and final metric values. The progress of a single representative slice is scrutinised, ending with cross-sections and contours of the registered histological volumes after each successive registration.
 	
 	Para on computing times.
