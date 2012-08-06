@@ -287,69 +287,64 @@ CONFIRMATION REPORT
 \label{sec:results}
 	The work leading up to this chapter is composed of a great many dead ends and failed experiments, and the result presented here is merely the best outcome. Details of computation times are followed by the plotting of intermediate and final metric values. The progress of a single representative slice is scrutinised, ending with cross-sections and contours of the registered histological volumes after each successive registration.
 	
-	Para on computing times.
-	Give times to run 1500 iterations on supercomputer. To begin with, lower resolution images were used to approximate parameters in reasonable time, but all registrations shown here were performed with the full resolution block face images and 8x downsampled slice images. On a MacBook Pro with a 2.4GHz Intel Quad Core i7 processor, registering the original block face image to an 8x downsampled slice image took approximately 0.25 seconds per iteration. For the 1500 iterations required for rigid registration, and for 900 slices, this extrapolates to 93 hours total run time. When jobs were distributed on the cluster, 12 parallel registrations could be run concurrently in times of low demand. The total registration time was reduced from 93 hours to just below 7 hours.
-	
-	Para on intermediate values.
-	By far most of the registration is done in the first rigid step. Didn't work for lots of reasons, tried PCA, ITKv3 bug, different metrics, optimisers, normalising images etc. loads of figures.
-	
-	Para on final values.
-	
-	Para on single slice.
-	
-	Para on cross-sections.
-	
-	Para on contours.
+  To begin with, lower resolution images were used to approximate parameters in reasonable time, but all registrations shown here were performed with the full resolution block face images and 8x downsampled slice images. On a MacBook Pro with a 2.4GHz Intel Quad Core i7 processor, registering the original block face image to an 8x downsampled slice image took approximately 0.25 seconds per iteration. For the 1500 iterations required for rigid registration, and for 900 slices, this extrapolates to 93 hours total run time. When jobs were distributed on the cluster, 12 parallel registrations could be run concurrently in times of low demand. The total registration time was reduced from 93 hours to just below 7 hours.
 	
   \begin{sidewaysfigure}[htbp]
     \centering
     \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/rigid_metric_values}
-    \caption{Intermediate metric values for all slices during rigid registration. The graph is viewed from below to see all values clearly. Nearly all curves increase smoothly and monotonically, before reaching a distinct flat maximum. After around slice 600, where the blob-shaped artefact appears, the final metric values decrease almost linearly as the intensity of the blob increases. Slices in the region of 400-600 start from a much lower metric value, and take up to 1500 iterations to maximise. This was due to their geometric initialisations being much further from their final optimal position. Diagnostics were of critical importance here, not least to see whether all slices had reached their optimum position.}
+    \caption{Intermediate metric values for all slices during rigid registration.}
     \label{fig:rigid_metric_values}
   \end{sidewaysfigure}
       
   \begin{sidewaysfigure}[htbp]
     \centering
     \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/similarity_metric_values}
-    \caption{}
+    \caption{Intermediate metric values for all slices during similarity registration.}
     \label{fig:similarity_metric_values}
   \end{sidewaysfigure}
       
   \begin{sidewaysfigure}[htbp]
     \centering
     \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/affine_metric_values}
-    \caption{}
+    \caption{Intermediate metric values for all slices during affine registration.}
     \label{fig:affine_metric_values}
   \end{sidewaysfigure}
-      
+  
+	Figures~\labelcref{fig:rigid_metric_values,fig:similarity_metric_values,fig:affine_metric_values} graph the intermediate metric values of each iteration for each slice, during the rigid, similarity and affine registrations. Each graph is viewed from below, in order to see all values clearly. Evidently, the overwhelming majority of the optimisation is done in the first rigid step, and this is reflected in the number of iterations required to reach a global optimum: 1500, as apposed to 100 for similarity and affine registrations. Nearly all curves increase smoothly and monotonically, before reaching a distinct flat maximum. In Figure~\ref{fig:rigid_metric_values} after around slice 600, where the blob-shaped artefact appears, the final metric values decrease almost linearly as the intensity of the blob increases. Slices in the region of 400-600 start from a much lower metric value, and take up to 1500 iterations to maximise; their geometric initialisations were much further from their final optimal position. Diagnostics were of critical importance here, not least to ensure that enough iterations had passed so that all slices had reached their flat optimum position.
+	
   \begin{sidewaysfigure}[htbp]
     \centering
     \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/affine_metric_value_differences}
-    \caption{}
+    \caption{Intermediate \emph{delta} metric values for all slices during affine registration.}
     \label{fig:affine_metric_value_differences}
   \end{sidewaysfigure}
-      
+  
+	The changes in metric value in Figure~\ref{fig:affine_metric_values} are very small compared to the range of metric values across slices. Figure~\ref{fig:affine_metric_value_differences} depicts the change in metric value upon each iteration. It is viewed from the zero plane, and demonstrates -- at least to some extent -- that these changes are weighted largely to the positive side of zero. The affine registration is a small but certain improvement upon the similarity registration.
+	
   \begin{sidewaysfigure}[htbp]
     \centering
     \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/initial_and_final_values_comparison}
-    \caption{Each successive registration increases correlation, but it is clear that the vast majority of improvement comes from the rigid registration. PERHAPS MOVE THE FOLLOWING TEXT SOMEWHERE ELSE: slices from 380 to 600 were photographed at a larger angle from that of their block-face images, and this is reflected in a sharply reduced initial correlation value. From Slice 600 onwards, the blob precludes successful registration and both initial and final correlation values decline.}
+    \caption{Initial and final metric values before and after each stage of registration.}
     \label{fig:initial_and_final_values_comparison}
   \end{sidewaysfigure}
-      
-  \begin{figure}[htbp]
+  
+	Para on final values.
+	Figure \ref{fig:initial_and_final_values_comparison} shows the initial metric values after geometric initialisation, and the final metric values after rigid, similarity and affine registrations. Again is it clear that each successive registration increases correlation, but the majority of improvement comes from the rigid registration. Slices from 380 to 600 were photographed at a larger angle from that of their block-face images, and this is reflected in a sharply reduced initial correlation value. From Slice 600 onwards, the blob precludes successful registration and both initial and final correlation values decline.
+	
+	\begin{figure}[htbp]
     \centering
     \subfigure[][]{\includegraphics[height=0.3\textheight]{Ch6/Figs/diagnostics/fixed_progress_slice_0562_1_287.pdf}}
     \subfigure[][]{\includegraphics[height=0.3\textheight]{Ch6/Figs/diagnostics/moving_progress_slice_0562_1_287.pdf}}
     \subfigure[][]{\includegraphics[height=0.3\textheight]{Ch6/Figs/diagnostics/fixed_progress_slice_0562_0_235.pdf}}
     \subfigure[][]{\includegraphics[height=0.3\textheight]{Ch6/Figs/diagnostics/moving_progress_slice_0562_0_235.pdf}}
-    \caption{Progress volume of 1500 iterations of slice 0562}
+    \caption{Central cross-sections of the progress volume of 1500 iterations of slice 0562, together with the fixed progress volume of the equivalent block face image.}
     \label{fig:progress_cross_sections}
   \end{figure}
       
   \begin{figure}[htbp]
     \centering
     \includegraphics[width=\pagewidth]{Ch6/Figs/diagnostics/0562_contour.png}
-    \caption{Quick rotation at the start, then flatter, slower translation...finally reaches a stationary minimum in the last iterations.}
+    \caption{Contours of the progress volume of 1500 iterations of slice 0562 in blue, and of the fixed eqiuvalent block face image in yellow. Isosurfaces were extracted from volumes built from manual segmentations of both the block face and the slice image.}
     \label{fig:progress_contour}
   \end{figure}
       
@@ -357,9 +352,12 @@ CONFIRMATION REPORT
     \centering
     \subfigure[][]{\includegraphics[width=0.9\pagewidth]{Ch6/Figs/diagnostics/0562_correlation}}
     \subfigure[][]{\includegraphics[width=0.9\pagewidth]{Ch6/Figs/diagnostics/0562_delta_correlation}}
-    \caption{What a nice figure!}
+    \caption{Metric values and delta metric values during the rigid registration of slice 0562.}
     \label{fig:0562_correlation}
   \end{figure}
+	
+	Para on single slice.
+	Figures~\labelcref{fig:progress_cross_sections,fig:progress_contour,fig:0562_correlation} showcase the diagnostics for a single representative slice during rigid registration. Figures~\labelcref{fig:progress_cross_sections,fig:progress_contour} are representations of the progress volume: a stack of the same 0562 image, transformed by the updating rigid transform at each of the 1500 steps in the registration. The rotation angle is quickly optimised in the first 100 iterations at the base. A flatter, slower translational optimisation ensues, which finally reaches a stationary minimum over the last iterations at the top. The top of Figure~\ref{fig:progress_contour} shows a very close fit compared with the starting point. The distinct phases of the registration are mirrored in the metric values of Figure~\ref{fig:0562_correlation}. The rapid rotational phase is seen again in the first 100 steps, with the largest metric gradients of the whole registration. a smooth, monotonic translational phasefor the next 700 iterations accelerates as it gets close to the optimum, until coming to rest at around 1450 iterations.
 	
 	% initialisation figure
 	\begin{sidewaysfigure}[htbp]
@@ -390,54 +388,8 @@ CONFIRMATION REPORT
 	  \label{fig:hires_1_287}
 	\end{figure}
 
-	blah blah
-
-	blah blah
-
-	blah blah
-
-	blah blah
-
-	blah blah
-
-	blah blah
-
-	blah blah
-
-	blah blah
-
-	blah blah
-
-	blah blah
-
-	blah blah
-
-	blah blah
-
-	blah blah
-
-	blah blah
-
-	blah blah
-
-	blah blah
-
-	blah blah
-
-	blah blah
-
-	blah blah
-
-	blah blah
-
-	blah blah
-
-	blah blah
-
-	blah blah
-
-	blah blah
-
+	Para on cross-sections.
+	
 	% geometric contours
 	\begin{sidewaysfigure}[p]
 	  \centering
@@ -553,6 +505,8 @@ CONFIRMATION REPORT
 	  \caption{}
 	  \label{fig:image1.png}
 	\end{sidewaysfigure}
+	
+	Para on contours.
 	
 % section results (end)
 
