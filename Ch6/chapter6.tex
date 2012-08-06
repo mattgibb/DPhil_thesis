@@ -2,28 +2,17 @@
 \chapter{Coregistration of High Resolution Rat Histology}
 % If you like chapter abstracts ...
 \dblspace
-\begin{quote}{\em \input{Ch6/abstract6}}\end{quote}
+% \begin{quote}{\em \input{Ch6/abstract6}}\end{quote}
 
-CONFIRMATION REPORT
 \section{Aims} % (fold)
 \label{sec:aims}
 
-  MOTIVATION, PROBLEMS, AIMS
-  
-  Having shown in an idealised geometry that fibre direction could have a significant effect on propagation, the challenge is set to characterise cardiac tissue at sufficient detail to resolve both fibre direction and other microstructure. Cell type distribution, the shape of tissue boundaries, the Purkinje fibre network, sheet structure and vasculature all affect macroscopic wave propagation. In this section we will lay the foundations for investigating these effects by registering high-resolution histological data with MRI images. Following on from the work touched on in section~\ref{sec:cardiac_tissue_can_be_accurately_characterised_with_high_resolution_data} by \cite{Mansoori2007}, we will first examine more closely the sources of deformation introduced by the image acquisition process. A brief summary of computational tools will follow, before an overview of the registration method. We end with a discussion of the progress so far and some thoughts on what the finished pipeline will yield.
-  
-  
-  
-  Intro/Motivation
-  People have tried to align block faces, but can't use certain dyes, transmission problems, lo res with Lo res data.
-  People have tried to align hires stuff, but we know that this is not consistent.
-  ASK VICENTE FOR REFS. MARK BOYETT FIRST AUTHOR OF ONE PAPER. ASK BECKY FOR INTRO/METHODS PAPERS.
-  First attempt to use both sets of data to make coherent hires dyed segmented etc.
-  
-  \emph{This paper will be composed of four main sections: an overview of experimental methods, a review of the architecture of the library developed to register the raw data, a comparison of algorithms and their utility to this end, and finally the results of successful registration, with several colour figures providing visual validation of the methods.}
-  
-  The aim of this chapter is to develop an automated pipeline to register high resolution rat cardiac datasets robustly and accurately, and generate coherent subcellular resolution 3-D cardiac histological images.  Approximately three full rat heart datasets will be processed through the pipeline to provide registered volumes. These images will serve both as an authoritative anatomical reference, and as the basis for anatomically based models in simulation studies.
-  
+  Having shown in an idealised geometry that fibre direction could have a significant effect on propagation, the challenge is set to characterise cardiac tissue at sufficient detail to resolve both fibre direction and other microstructure. Cell type distribution, the shape of tissue boundaries, the Purkinje fibre network, sheet structure and vasculature all affect macroscopic wave propagation, and must therefore be incorporated into electrophysiological models.
+	
+	Attempts have been made to construct volumes from block face images, but aside from the low resolutions and optical transmission problems, there is no way to distinguish between tissue types with the use of dyes. Attempts have also been made to coregister high resolution histological slice images together, but the results suffer from what is known as `the banana problem', and provide geometries unrepresentative of the original tissue.
+	
+  The aim of this chapter is to develop an automated pipeline to register high resolution rat cardiac datasets robustly and accurately, and generate for the first time coherent subcellular resolution 3-D cardiac histological images. One full rat heart dataset will be processed through the pipeline to provide registered volumes. These images will serve both as an authoritative anatomical reference, and as the basis for anatomically based models in simulation studies, laying the foundations for the investigation of the role of microstructure in propagation dynamics.
+	
 % section aims (end)
 
 \section{Methods} % (fold)
