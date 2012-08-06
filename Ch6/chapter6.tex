@@ -364,7 +364,7 @@ CONFIRMATION REPORT
 	  \centering
 	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/geometric_0_235}}
 	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/geometric_1_287}}
-	  \caption{}
+	  \caption{Central cross-sections of the slice image stack before registration.}
 	  \label{fig:geometric_initialisation}
 	\end{sidewaysfigure}
 
@@ -374,7 +374,7 @@ CONFIRMATION REPORT
 	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/rigid_0_235}}
 	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/size_0_235}}
 	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/affine_0_235}}
-	  \caption{Talk about how discontinuities in intensity between slices in the LoRes cutthrough fig are mirrored in the registration}
+	  \caption{Cross-sections of the rigid, similarity and affine volumes perpendicular to the x-axis.}
 	  \label{fig:hires_0_235}
 	\end{figure}
 
@@ -384,129 +384,129 @@ CONFIRMATION REPORT
 	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/rigid_1_287}}
 	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/size_1_287}}
 	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/affine_1_287}}
-	  \caption{What a nice figure!}
+	  \caption{Cross-sections of the rigid, similarity and affine volumes perpendicular to the y-axis.}
 	  \label{fig:hires_1_287}
 	\end{figure}
 
-	Para on cross-sections.
+	Central cross-sections of the geometrically initialised volume before registration are shown in Figure~\ref{fig:geometric_initialisation}, and cross-sections after each stage of the registration are shown in Figures~\labelcref{fig:hires_0_235,fig:hires_1_287}. The incoherent volumes in Figure~\ref{fig:geometric_initialisation} are brought into alignment by rigid registration, with small incremental improvements from similarity and affine. The improvements in the later stages are most evident at the extremeties to the left and right of the figures, where the effects of small changes in parameters are most evident; edges are smoother, tissue microstructure is more clearly discerned and large displacements are mostly removed. Discontinuities in intensity between block face images, visible in Figure~\ref{fig:LoRes_cross_sections}, are mirrored in the registration. It is also clear that registration has failed from slice 600 upwards.
 	
 	% geometric contours
 	\begin{sidewaysfigure}[p]
 	  \centering
 	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_geometric}
-	  \caption{Contour details: threshold segmentation with limits:0 to 240, used original slice images that were Gaussian smoothed by a kernel of std dev 64, because the detail from a simple threshold on nonsmoothed images generated egregiously convoluted surfaces. Because this smoothing only operates within the plane of the slices, individual displacements between edges of adjacent slices is still clearly visible. After segmentation, a label map filter was applied to remove all but the largest connected component. This went some way to removing bubbles and other artefacts obscuring the surface of the heart. y-dimension of geometry bounding box is extended from 575 to 700 to encompass the increased spread of the slices.}
-	  \label{fig:image1.png}
+	  \caption{Geometric slice volume, viewed along the positive x direction.}
+	  \label{fig:positive_x_geometric_contour}
 	\end{sidewaysfigure}
 
 	\begin{sidewaysfigure}[p]
 	  \centering
 	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_geometric}
-	  \caption{}
-	  \label{fig:image1.png}
+	  \caption{Geometric slice volume, viewed along the negative x direction.}
+	  \label{fig:negative_x_geometric_contour}
 	\end{sidewaysfigure}
 
 	\begin{sidewaysfigure}[p]
 	  \centering
 	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_geometric}
-	  \caption{}
-	  \label{fig:image1.png}
+	  \caption{Geometric slice volume, viewed along the positive y direction.}
+	  \label{fig:positive_y_geometric_contour}
 	\end{sidewaysfigure}
 
 	\begin{sidewaysfigure}[p]
 	  \centering
 	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_geometric}
-	  \caption{}
-	  \label{fig:image1.png}
+	  \caption{Geometric slice volume, viewed along the positive z direction.}
+	  \label{fig:positive_z_geometric_contour}
 	\end{sidewaysfigure}
 
 	% rigid contours
 	\begin{sidewaysfigure}[p]
 	  \centering
 	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_rigid}
-	  \caption{}
-	  \label{fig:image1.png}
+	  \caption{Rigid slice volume, viewed along the positive x direction.}
+	  \label{fig:positive_x_rigid_contour}
 	\end{sidewaysfigure}
 
 	\begin{sidewaysfigure}[p]
 	  \centering
 	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_rigid}
-	  \caption{}
-	  \label{fig:image1.png}
+	  \caption{Rigid slice volume, viewed along the negative x direction.}
+	  \label{fig:negative_x_rigid_contour}
 	\end{sidewaysfigure}
 
 	\begin{sidewaysfigure}[p]
 	  \centering
 	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_rigid}
-	  \caption{}
-	  \label{fig:image1.png}
+	  \caption{Rigid slice volume, viewed along the positive y direction.}
+	  \label{fig:positive_y_rigid_contour}
 	\end{sidewaysfigure}
 
 	\begin{sidewaysfigure}[p]
 	  \centering
 	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_rigid}
-	  \caption{}
-	  \label{fig:image1.png}
+	  \caption{Rigid slice volume, viewed along the positive z direction.}
+	  \label{fig:positive_z_rigid_contour}
 	\end{sidewaysfigure}
 
 	% size contours
 	\begin{sidewaysfigure}[p]
 	  \centering
 	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_size}
-	  \caption{}
-	  \label{fig:image1.png}
+	  \caption{Similarity slice volume, viewed along the positive x direction.}
+	  \label{fig:positive_x_similarity_contour}
 	\end{sidewaysfigure}
 
 	\begin{sidewaysfigure}[p]
 	  \centering
 	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_size}
-	  \caption{}
-	  \label{fig:image1.png}
+	  \caption{Similarity slice volume, viewed along the negative x direction.}
+	  \label{fig:negative_x_similarity_contour}
 	\end{sidewaysfigure}
 
 	\begin{sidewaysfigure}[p]
 	  \centering
 	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_size}
-	  \caption{}
-	  \label{fig:image1.png}
+	  \caption{Similarity slice volume, viewed along the positive y direction.}
+	  \label{fig:positive_y_similarity_contour}
 	\end{sidewaysfigure}
 
 	\begin{sidewaysfigure}[p]
 	  \centering
 	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_size}
-	  \caption{}
-	  \label{fig:image1.png}
+	  \caption{Similarity slice volume, viewed along the positive z direction.}
+	  \label{fig:positive_z_similarity_contour}
 	\end{sidewaysfigure}
 
 	% affine contours
 	\begin{sidewaysfigure}[p]
 	  \centering
 	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_affine}
-	  \caption{}
-	  \label{fig:image1.png}
+	  \caption{Affine slice volume, viewed along the positive x direction.}
+	  \label{fig:positive_x_affine_contour}
 	\end{sidewaysfigure}
 
 	\begin{sidewaysfigure}[p]
 	  \centering
 	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_affine}
-	  \caption{}
-	  \label{fig:image1.png}
+	  \caption{Affine slice volume, viewed along the negative x direction.}
+	  \label{fig:negative_x_affine_contour}
 	\end{sidewaysfigure}
 
 	\begin{sidewaysfigure}[p]
 	  \centering
 	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_affine}
-	  \caption{}
-	  \label{fig:image1.png}
+	  \caption{Affine slice volume, viewed along the positive y direction.}
+	  \label{fig:positive_y_affine_contour}
 	\end{sidewaysfigure}
 
 	\begin{sidewaysfigure}[p]
 	  \centering
 	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_affine}
-	  \caption{}
-	  \label{fig:image1.png}
+	  \caption{Affine slice volume, viewed along the positive z direction.}
+	  \label{fig:positive_z_affine_contour}
 	\end{sidewaysfigure}
 	
-	Para on contours.
+	Threshold segmentation contours illustrate further in Figures~\labelcref{fig:positive_x_geometric_contour,fig:negative_x_geometric_contour,fig:positive_y_geometric_contour,fig:positive_z_geometric_contour,fig:positive_x_rigid_contour,fig:negative_x_rigid_contour,fig:positive_y_rigid_contour,fig:positive_z_rigid_contour,fig:positive_x_similarity_contour,fig:negative_x_similarity_contour,fig:positive_y_similarity_contour,fig:positive_z_similarity_contour,fig:positive_x_affine_contour,fig:negative_x_affine_contour,fig:positive_y_affine_contour,fig:positive_z_affine_contour}. In all cases, contours were generated from a threshold segmentation with intensity limits 0 to 240, using the original slice images, Gaussian smoothed by a kernel of standard deviation 64, because the detail from a simple threshold on nonsmoothed images generated egregiously convoluted surfaces. Because this smoothing only operates within the plane of the slices, individual displacements between edges of adjacent slices is still clearly visible. After segmentation, a label map filter was applied to remove all but the largest connected component. This went some way to removing bubbles and other artefacts obscuring the surface of the heart. In Figures~\labelcref{fig:positive_x_geometric_contour,fig:negative_x_geometric_contour,fig:positive_y_geometric_contour,fig:positive_z_geometric_contour}, the y-dimension of the geometry bounding box is extended from 575 to 700 to encompass the increased spread of the slices. The improvements from each stage are most perceptible here, with the smoothest and most coherent surfaces in Figures~\labelcref{fig:positive_x_affine_contour,fig:negative_x_affine_contour,fig:positive_y_affine_contour,fig:positive_z_affine_contour}.
 	
 % section results (end)
 
