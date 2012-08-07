@@ -4,13 +4,12 @@
 
 % If you like chapter abstracts ...
 \dblspace
-\begin{quote}{\em \input{Ch7/abstract7}}\end{quote}
+% \begin{quote}{\em \input{Ch7/abstract7}}\end{quote}
 
 \section{Aims} % (fold)
 \label{sec:aims}
-  introductory motivational paragraph about problems with final affine result.
-
-  Figure of zoomed in noise in HiRes result, and of intrinsic LoRes fixed image (jaggedness and changing light.)
+  Introductory motivational paragraph about problems and failures with final affine result. Maybe repeat motivations from Chapter 6.
+  
   \subsection{Problem}
     \begin{itemize}
       \item Underlying noise in reference images, from changes in camera position and illumination angles and intensities
@@ -34,105 +33,104 @@
 
 \section{Methods} % (fold)
 \label{sec:methods}
-  \subsection{A 1D Random Walk Analogy}
-  Figure caption?: A numerical approximation of a sine wave, on 1000 equispaced points from $0$ to $2\pi$. Random noise from a Gaussian distribution is added, with variance equal to the amplitude of the sine wave.
-  
-  The central limit theorem states that the mean of a sufficiently large number of independent random variables will be approximately normally distributed, regardless of their individual distribution. Indeed, Einstein's theory of the Brownian motion of a diffusive particle is based on this precept. With this in mind, the simplest model of microscopic diffusion is one in which a particle may move in a random walk in one dimension along the integer number line $\mathbb{Z}$, in steps of either $+1$ or $-1$, with equal probability. Taking each step as an independent random variable $Z_1, Z_2,\ldots$, if the particle's position $S$ starts at $S_0 = 0$, we can express the position of the particle after $N$ steps as
-  \begin{equation}
-    S_N = \sum\limits_{i=1}^N Z_i .
-  \end{equation}
-  The probability of taking $k$ positive steps out of a total of $N$ steps is given by
-  \begin{equation}
-    P(k;N) = \binom{N}{k}\left(\frac{1}{2} \right)^N,
-  \end{equation}
-  where the binomial coefficient
-  \begin{equation}
-    \label{eq:registration:binomial-coefficient}
-     \binom{N}{k} = \frac{N!}{k!(N-k)!},
-  \end{equation}
-  since there are $\binom{N}{k}$ possible ways of taking $k$ and $N - k$ steps of $-1$ and $+1$, respectively. At each independent step, the probability of taking one or the other direction is $\frac{1}{2}$, leading to the product $\frac{1}{2}^N$.
-  
-  Applying Stirling's approximation:
-  \begin{align}
-    \label{eq:registration:stirling}
-    \ln \left( n! \right) &= n\ln n - n + O(\ln n) \notag \\
-           &\approx n\ln n - n \quad \text{as}\: n \to \infty,
-  \end{align}
-  
-  \emph{Possibly include proof of de Moivre-Laplace theorem.}
-  % Proof can be found here:
-  % http://en.wikipedia.org/wiki/De_Moivre%E2%80%93Laplace_theorem
-  We can see that in the limit of large $N$, the distribution of $k$ and thus $S_N$ tend to Gaussian:
-  \begin{equation}
-    \label{eq:registration:gaussian-approximation}
-    \binom{N}{k}\left(\frac{1}{2}\right)^N \approx \sqrt{\frac{2}{\pi N}} \
-      e^{-2(k - \frac{N}{2})^2/N}
-  \end{equation}
-  
-  Show diagrams of half particles stepping once left, half right.
-  
-  It is clear from Equation~\ref{eq:registration:gaussian-approximation} that multiple application of this smoothing operation approximates a Gaussian diffusion smoothing.
+  Intro: Summary sentence or comment sentence, then list content.
 
+	\subsection{A 1D Random Walk Analogy} % (fold)
+	\label{sub:a_1d_random_walk_analogy}
+	   The central limit theorem states that the mean of a sufficiently large number of independent random variables will be approximately normally distributed, regardless of their individual distribution. Indeed, Einstein's theory of the Brownian motion of a diffusive particle is based on this precept. With this in mind, the simplest model of microscopic diffusion is one in which a particle may move in a random walk in one dimension along the integer number line $\mathbb{Z}$, in steps of either $+1$ or $-1$, with equal probability. Taking each step as an independent random variable $Z_1, Z_2,\ldots$, if the particle's position $S$ starts at $S_0 = 0$, we can express the position of the particle after $N$ steps as
+	  \begin{equation}
+	    S_N = \sum\limits_{i=1}^N Z_i .
+	  \end{equation}
+	  The probability of taking $k$ positive steps out of a total of $N$ steps is given by
+	  \begin{equation}
+	    P(k;N) = \binom{N}{k}\left(\frac{1}{2} \right)^N,
+	  \end{equation}
+	  where the binomial coefficient
+	  \begin{equation}
+	    \label{eq:registration:binomial-coefficient}
+	     \binom{N}{k} = \frac{N!}{k!(N-k)!},
+	  \end{equation}
+	  since there are $\binom{N}{k}$ possible ways of taking $k$ and $N - k$ steps of $-1$ and $+1$, respectively. At each independent step, the probability of taking one or the other direction is $\frac{1}{2}$, leading to the product $\frac{1}{2}^N$.
   
-  We might consider a concentration of particles $f$ over a discrete 1-dimensional grid $x$. After a discretised timestep $\Delta t$, a proportion $\alpha$ of the particles have taken a random walk, such that half of them have diffused to the left and half to the right:
+	  Applying Stirling's approximation:
+	  \begin{align}
+	    \label{eq:registration:stirling}
+	    \ln \left( n! \right) &= n\ln n - n + O(\ln n) \notag \\
+	           &\approx n\ln n - n \quad \text{as}\: n \to \infty,
+	  \end{align}
   
-  \begin{align}
-    f(x_i, t_{n+1}) &= f(x_i, t_n) + \alpha (f(x_{i-1}, t_n) - 2f(x_i, t_n) + f(x_{i+1}, t_n)), \\
-    \Delta f(x, t + \Delta t) &= \alpha (f(x - \Delta x, t) - 2f(x, t) + f(x + \Delta x, t)). \end{align}
+	  we can see that in the limit of large $N$, the distribution of $k$ and thus $S_N$ tend to Gaussian:
+	  \begin{equation}
+	    \label{eq:registration:gaussian-approximation}
+	    \binom{N}{k}\left(\frac{1}{2}\right)^N \approx \sqrt{\frac{2}{\pi N}} \
+	      e^{-2(k - \frac{N}{2})^2/N}.
+	  \end{equation}
   
-  Figure of 1-D diffusion with alpha=0.4:
-  \begin{figure}[htbp]
-    \centering
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.40/000}}
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.40/001}}
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.40/003}}
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.40/015}}
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.40/099}}
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.40/299}}
-    \caption{$\alpha = 0.4$. \textbf{(a)} Blah \textbf{(b)} blah blah Eq. \ref{eqn:potential}.}
-	  \label{fig:1d_diffusion_0_40}
-  \end{figure}
+	  \emph{Possibly include proof of de Moivre-Laplace theorem?}
+	  % Proof can be found here:
+	  % http://en.wikipedia.org/wiki/De_Moivre%E2%80%93Laplace_theorem
+  
+	  We might consider a concentration of particles $f$ over a discrete 1-dimensional grid $x$. After a discretised timestep $\Delta t$, a proportion $2\alpha$ of the particles have taken one step, such that half of them have diffused to the left and half to the right:
+  
+	  \begin{align}
+	    f(x_i, t_{n+1}) &= f(x_i, t_n) + \alpha (f(x_{i-1}, t_n) - 2f(x_i, t_n) + f(x_{i+1}, t_n)), \\
+	    \Delta f(x, t + \Delta t) &= \alpha (f(x - \Delta x, t) - 2f(x, t) + f(x + \Delta x, t)). \end{align}
+  
+	  This diffusion will of course act to smooth and homogenise $f$, since regions of high concentration relative to their neighbours will be reduced, and those of low concentration augmented. It is also clear from Equation~\ref{eq:registration:gaussian-approximation} that multiple application of this smoothing operation approximates a Gaussian diffusion smoothing.
 
-  Figure of 1-D diffusion with alpha=0.49:
-  \begin{figure}[htbp]
-    \centering
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.49/000}}
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.49/001}}
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.49/003}}
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.49/015}}
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.49/099}}
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.49/299}}
-    \caption{$\alpha = 0.49$. \textbf{(a)} Blah \textbf{(b)} blah blah Eq. \ref{eqn:potential}.}
-	  \label{fig:1d_diffusion_0_49}
-  \end{figure}
+	  \begin{figure}[htbp]
+	    \centering
+			\subfigure[][0 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.40/000}}
+			\subfigure[][1 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.40/001}}
+			\subfigure[][3 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.40/003}}
+			\subfigure[][15 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.40/015}}
+			\subfigure[][99 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.40/099}}
+			\subfigure[][299 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.40/299}}
+	    \caption{A simulation of 1-D diffusion, with $\alpha = 0.4$.}
+		  \label{fig:1d_diffusion_0_40}
+	  \end{figure}
+	
+	  \begin{figure}[htbp]
+	    \centering
+			\subfigure[][0 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.49/000}}
+			\subfigure[][1 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.49/001}}
+			\subfigure[][3 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.49/003}}
+			\subfigure[][15 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.49/015}}
+			\subfigure[][99 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.49/099}}
+			\subfigure[][299 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.49/299}}
+	    \caption{A simulation of 1-D diffusion, with $\alpha = 0.49$.}
+		  \label{fig:1d_diffusion_0_49}
+	  \end{figure}
   
-  Figure of 1-D diffusion with alpha=0.5:
-  \begin{figure}[htbp]
-    \centering
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.50/000}}
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.50/001}}
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.50/003}}
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.50/015}}
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.50/099}}
-		\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.50/299}}
-    \caption{$\alpha = 0.5$. Equivalent to saying that all the particles move out of each bin.}
-	  \label{fig:1d_diffusion_0_50}
-  \end{figure}
+	  \begin{figure}[htbp]
+	    \centering
+			\subfigure[][0 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.50/000}}
+			\subfigure[][1 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.50/001}}
+			\subfigure[][3 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.50/003}}
+			\subfigure[][15 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.50/015}}
+			\subfigure[][99 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.50/099}}
+			\subfigure[][299 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.50/299}}
+	    \caption{A simulation of 1-D diffusion, with $\alpha = 0.5$.}
+		  \label{fig:1d_diffusion_0_50}
+	  \end{figure}
   
-  Figure of 1-D diffusion with alpha=0.51:
-  \begin{figure}[htbp]
-    \centering
-  	\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/000}}
-  	\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/001}}
-  	\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/003}}
-  	\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/015}}
-  	\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/099}}
-  	\subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/299}}
-    \caption{$\alpha = 0.51$. Unphysical, saying that more than all the particles move out of each bin.}
-    \label{fig:1d_diffusion_0_51}
-  \end{figure}
+	  \begin{figure}[htbp]
+	    \centering
+	  	\subfigure[][0 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/000}}
+	  	\subfigure[][1 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/001}}
+	  	\subfigure[][3 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/003}}
+	  	\subfigure[][15 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/015}}
+	  	\subfigure[][99 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/099}}
+	  	\subfigure[][299 iterations]{\includegraphics[width=0.4\pagewidth]{Ch7/Figs/1d_noise/alpha_0.51/299}}
+	    \caption{A simulation of 1-D diffusion, with $\alpha = 0.51$.}
+	    \label{fig:1d_diffusion_0_51}
+	  \end{figure}
   
-  % colour slice differences
+	  This process can be simulated quite trivially. A numerical approximation of a sine wave is graphed in blue in each of Figures~\labelcref{fig:1d_diffusion_0_40,fig:1d_diffusion_0_49,fig:1d_diffusion_0_50,fig:1d_diffusion_0_51}, on 200 equispaced points from $0$ to $2\pi$. Random noise from a Gaussian distribution is added, with variance equal to the amplitude of the sine wave, and is plotted in green. The subfigures show the evolution of the noise after 0, 1, 3, 15, 99 and 299 timesteps.
+  
+	  Our purpose is to smooth out the high frequency random noise from the green wave as quickly and as computationally cheaply as is possible, whilst maintaining the underlying low frequency signal. There is a tradeoff to be made when deciding upon a value for $\alpha$. The greater $\alpha$, the more particles move to the left and right at each iteration, and so the faster the noise is damped. But when $\alpha$ approaches 0.5, almost all of the particles from each bin are moving out at each iteration, and unstable oscillations start to appear. In Figure~\ref{fig:1d_diffusion_0_40}, $\alpha$ is set to 0.4, a great compromise between speed of smoothing and stability. $\alpha$ is set to 0.49 in Figure~\ref{fig:1d_diffusion_0_49}, and the highest frequency is actually damped much more slowly, as oscillatory `swapping' effects start to appear. When $\alpha = 0.5$ in Figure~\ref{fig:1d_diffusion_0_50}, the highest frequency is still undamped after 300 iterations, and by the time $\alpha$ is at 0.51 in Figure~\ref{fig:1d_diffusion_0_51}, the system is unstable. This is not entirely surprising, since it is unphysical for more than all of the particles to diffuse out of a particular bin at each timestep.
+	% subsection a_1d_random_walk_analogy (end)
+ % colour slice differences
   \begin{figure}[htbp]
     \centering
     \subfigure[][unperturbed image]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/colour_perfect_slice}} \quad
@@ -562,7 +560,7 @@
 \section{Discussion} % (fold)
 \label{sec:discussion}
   GENERAL POINT, `it will be shown later' in introductory paragraphs, to tittilate the reader.
-
+  
   With a better interpolation scheme, it might be possible to crank alpha up further.
   
   Inherently introduces the banana problem across the curvature of the heart (~30 slices - give justification with numbers)
@@ -573,6 +571,8 @@
   Expensive to rerun slice-pair registrations every iteration, could infer from previous registration. Inaccuracy and instability?
   
   Could be extended easily to more complex transforms such as b-spline, although perhaps a little trickier to think about interpolating transforms other than linearly interpolating their parameters.
+  
+  More robust than even banana registration, as images have many chances to jump out from local minima.
 
 % section discussion (end)
 
