@@ -152,12 +152,12 @@
 			\mathbf{T}_i^{n+1} = \mathbf{T}_i^n \mathbf{\Delta T}_i^{n,n+1}.
 		\end{equation}
 		
-	  How would this $\mathbf{\Delta T}_i^{n,n+1}$ be defined? In the case of 1-dimensional diffusion, we might reformulate the right hand side of Equation~\ref{eqn:diffusion_1d} into two separate terms thusly:
+	  How would this $\mathbf{\Delta T}_i^{n,n+1}$ be defined? In the case of 1-dimensional diffusion, we can reformulate the right hand side of Equation~\ref{eqn:diffusion_1d} into two separate terms thusly:
 		
 	  \begin{align}
 	    f(x_i, t_{n+1}) &= f(x_i, t_n) + \alpha ((f(x_{i+1}, t_n) - f(x_i, t_n)) - (f(x_{i-1}, t_n) - f(x_i, t_n)) \\
 			\Delta f_i^{n,n+1} &= \alpha (\Delta f_{i,i+1}^n - \Delta f_{i-1,i}^n) \\
-			                   &= \alpha \Delta f_{i,i+1}^n + \alpha \Delta f_{i,i-1}^n, \label{eqn:1d_diffusion_operator}
+			                   &= \alpha \Delta f_{i,i-1}^n + \alpha \Delta f_{i,i+1}^n, \label{eqn:1d_diffusion_operator}
 		\end{align}
 		
     where $\Delta f_i^{m,n}$ is the difference in $f$ at position $i$ between timestep $m$ and timestep $n$, and $\Delta f_{i,j}^m$ is the difference in $f$ between position $i$ and position $j$ at timestep $m$. From Equation~\ref{eqn:1d_diffusion_operator}, we can see that at each timestep, the concentration at each bin moves towards its left and right neighbour by a proportion $\alpha$ of its difference from each, respectively.
@@ -165,23 +165,80 @@
 	  We might, then, propose analogously that
 		
 		\begin{equation}
-		 	\mathbf{\Delta T}_i^{n,n+1} = \alpha \cdot \mathbf{\Delta T}_i^{n,n+1} \oplus \alpha \cdot \mathbf{\Delta T}_i^{n,n+1},
+		 	\mathbf{\Delta T}_i^{n,n+1} = \alpha \cdot \mathbf{\Delta T}_{i,i+1}^n \oplus \alpha \cdot \mathbf{\Delta T}_{i,i-1}^n, \label{eqn:transformational_placeholder}
 		\end{equation}
 	 	
-	 	where $\mathbf{\Delta T}_{i,j}^n$ is defined as the transformation that registers a histological slice $i$ to slice $j$ at iteration $n$, and $\cdot$ and $\oplus$ are placeholders for binary operators on a pair of transforms. The question now emerges: what precisely are the two binary operators? We will start by outlining their desirable properties, and then decide on a sensible implementation.
+	 	where $\mathbf{\Delta T}_{i,j}^n$ is defined as the transformation that registers a histological slice $i$ to slice $j$ at iteration $n$, $\cdot$ is a placeholder for a binary operator on a scalar and a transform, and $\oplus$ is a placeholder for a binary operator on a pair of transforms. The question now emerges: what precise form do the two binary operators take? We will start by outlining their desirable properties, and then discuss implementations that satisfy these constraints.
 		
-	  The operator $\cdot$ takes two operands: a scalar and a transform. We would like 
+		The operator $\cdot$ takes two operands: a scalar and a transform. We would like $0$ to be the null operand on $\mathbf{T}$, so that when $\alpha = 0$, no diffusion occurs. We would like $1$ to be the identity operand on $\mathbf{T}$, so that when $\alpha = 1$, the transform from each term in \ref{eqn:transformational_placeholder} would diffuse the slice exactly to the position of its equivalent neighbour. Ideally, we would also like addition of the scalar operand to distribute over the serial application of the resultant transforms, so that transforms vary smoothly and naturally with respect to the scalar operand. For example, in the case of a 2-dimensional rotation matrix, the rotation angle would vary proportionally with the scalar operand. This final condition can be satisfied for certain transforms, such as linear transforms and vector field transforms, but cannot be satisfied in general for others, such as b-spline transforms. To summarise in mathematical form, we would like the following to hold:
+		
+		\begin{align}
+			0 \cdot \mathbf{T} &= \mathbf{I} \label{eqn:null} \\
+			1 \cdot \mathbf{T} &= \mathbf{T} \label{eqn:identity} \\
+			(\alpha \cdot \mathbf{T}) (\beta \cdot \mathbf{T}) &= (\alpha + \beta) \cdot \mathbf{T} \label{eqn:distributivity}
+		\end{align}
 	 	
-	  In the particular case of affine transformations, an ITK transform $\mathbf{T}$ acting on a point $\mathbf{p}$ consists of a matrix transformation $\mathbf{M}$, followed by a translation by an offset vector $\mathbf{o}$:
+	  The operator $\oplus$ takes two transform operands. Commutativity must hold if the diffusion is to be symmetric i.e. behave identically if the order of the slices is reversed. That is,
+		
+		\begin{equation}
+			\forall \mathbf{S}, \mathbf{T} : \mathbf{S} \oplus \mathbf{T} = \mathbf{T} \oplus \mathbf{S}. \label{eqn:commutativity}
+		\end{equation}
+		
+		Unfortunately, commutativity rules out the straightforward serial application of transforms. For example, in the general case of matrix multiplication, $AB \ne BA$. One solution is to use the transform that is equivalent to returning the Euclidian midpoint of $\mathbf{Sp}$ and $\mathbf{Tp}$ for all $\mathbf{p}$, but again, this may not always be representable by some types of transform. In the case of rotation matrices, it seems sensible to return the mean of the two angles; and for similarity transforms, the geometric mean of the two enlargement factors. Inductively therefore, the operator $\oplus$ would do well to return the midpoint of some appropriate parameterisation of the operand transforms.
+		
+	  It is elucidating to apply this general mathematical form to concrete classes of transform, in order of increasing complexity: translation transforms, rotation transforms, similarity transforms, affine transforms and more general deformable transforms. An ITK affine transform $\mathbf{T}$ acting on a point $\mathbf{p}$ consists of a matrix transformation $\mathbf{M}$, followed by a translation by an offset vector $\mathbf{o}$:
+		
+		\begin{equation}
+			\mathbf{p'} = \mathbf{Tp}= \mathbf{Mp} + \mathbf{o}.
+		\end{equation}
+		
+		In the simplest case of translation transforms, where $\mathbf{M}$ is the identity matrix $\mathbf{I}$, the two translation parameters are independent and individually identical to the 1-dimensional diffusion in \ref{eqn:1d_diffusion_operator}. Operator $\cdot$ is a scalar multiplication of each offset parameter, and operator $\oplus$ is the commutative serial application of the transforms (or equivalently, addition of the respective parameters):
+		
+		\begin{align}
+			(\alpha \cdot \mathbf{T}) \mathbf{p} &= \mathbf{p} + \alpha\mathbf{o} \\
+			(\mathbf{S} \oplus \mathbf{T}) \mathbf{p} &= \mathbf{STp} \\
+			                                          &= \mathbf{p} + \mathbf{o_S} + \mathbf{o_T}
+		\end{align}
+		
+		Clearly, these two operators satisfy \labelcref{eqn:null,eqn:identity,eqn:distributivity,eqn:commutativity}. Equation~\ref{eqn:transformational_placeholder} becomes
+		
+		\begin{align}
+		 	\mathbf{\Delta T}_i^{n,n+1} \mathbf{p} &= (\alpha \mathbf{\Delta T}_{i,i-1}^n) (\alpha \mathbf{\Delta T}_{i,i+1}^n) \mathbf{p} \\
+			\mathbf{p} + \mathbf{o}_i^{n,n+1} &= \mathbf{p} + \alpha \mathbf{o}_{i,i-1}^n + \alpha \mathbf{o}_{i,i+1}^n \\
+			\mathbf{o}_i^{n,n+1} &= \alpha (\mathbf{o}_{i,i-1}^n + \mathbf{o}_{i,i+1}^n) 
+		\end{align}
+		
+		The offsets are therefore trivially analogous to \ref{eqn:1d_diffusion_operator}.
+		
+		In the case of rigid transforms, $\mathbf{M}$ is a rotation matrix
+		
+		\begin{equation}
+			\mathbf{R}(\theta) = \left( \begin{matrix}
+			  										 \cos \theta & -\sin\theta \\
+														 \sin\theta & \cos\theta
+					                 \end{matrix} \right) .
+		\end{equation}
+		
+		In 2 dimensions, rotation matrices commute, and the result of their multiplication is simply a rotation matrix with angle equal to the sum of the operands' angles; in the special case where there are no offsets, then serial application of the transforms is a candidate for operator $\oplus$ according to \ref{eqn:commutativity}:
+		
+		\begin{equation}
+			\mathbf{S} \oplus \mathbf{T} = \mathbf{R}(\theta_\mathbf{S})\mathbf{R}(\theta_\mathbf{T}) = \mathbf{R}(\theta_\mathbf{S} + \theta_\mathbf{T})
+		\end{equation}
 		
 		
-		DISCUSS SMALL LIMIT
-		It is interesting to note how the two operators behave in the small limit...
-	\begin{equation}
-		\mathbf{p'} = \mathbf{Tp}= \mathbf{Mp} + \mathbf{o}.
-	\end{equation}
+		In a similar vein, an operator $\cdot$ that multiplies the angle of the input transform with $\alpha$ fulfils criteria \labelcref{eqn:null,eqn:identity,eqn:distributivity}:
+    
+    \begin{equation}
+      \alpha \cdot \mathbf{T} = R(\alpha\theta)
+    \end{equation}
 		
-	 
+		When offsets are introduced, however, commutativity no longer holds and criteria \labelcref{eqn:distributivity,eqn:commutativity} are not fulfilled:
+		
+		
+		In the case of rigid transforms, $\mathbf{M}$ is a rotation matrix $\mathbf{R}$ multiplied by an enlargement $\sigma$. 
+		
+		In most practical applications of this method, where the slices are already roughly coherent, the registration transforms between neighbouring slices $T_{i,i+1}^n$ are close to the identity transform. It is therefore interesting to examine how the various implementations of the two operators $\cdot$ and $\oplus$ behave in the small limit.
+	
 	% subsection transformational_diffusion (end)
 	
   % colour slice differences
@@ -367,85 +424,6 @@
   \end{sidewaysfigure}
   
   
-
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-  this is a load of content
-  
-
   % full contours
   \begin{figure}[htbp]\texttt{}
     \centering
