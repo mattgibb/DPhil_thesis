@@ -184,7 +184,7 @@
 			\forall \mathbf{S}, \mathbf{T} : \mathbf{S} \oplus \mathbf{T} = \mathbf{T} \oplus \mathbf{S}. \label{eqn:commutativity}
 		\end{equation}
 		
-		Unfortunately, commutativity rules out the straightforward serial application of transforms. For example, in the general case of matrix multiplication, $AB \ne BA$. One solution is to use the transform that is equivalent to returning the Euclidian midpoint of $\mathbf{Sp}$ and $\mathbf{Tp}$ for all $\mathbf{p}$, but again, this may not always be representable by some types of transform. In the case of rotation matrices, it seems sensible to return the mean of the two angles; and for similarity transforms, the geometric mean of the two enlargement factors. Inductively therefore, the operator $\oplus$ would do well to return the midpoint of some appropriate parameterisation of the operand transforms.
+		Unfortunately, commutativity rules out the straightforward serial application of transforms. For example, in the general case of matrix multiplication, $AB \ne BA$. One solution is to use the transform that is equivalent to returning the Euclidian midpoint of $\mathbf{Sp}$ and $\mathbf{Tp}$ for all $\mathbf{p}$, but again, this may not always be representable by some types of transform. In the case of rotation matrices, it seems sensible to return the sum of the two angles; and for similarity transforms, the product of the two enlargement factors. Inductively therefore, the operator $\oplus$ would do well to return the summation of some appropriate parameterisation of the operand transforms.
 		
 	  It is elucidating to apply this general mathematical form to concrete classes of transform, in order of increasing complexity: translation transforms, rotation transforms, similarity transforms, affine transforms and more general deformable transforms. An ITK affine transform $\mathbf{T}$ acting on a point $\mathbf{p}$ consists of a matrix transformation $\mathbf{M}$, followed by a translation by an offset vector $\mathbf{o}$:
 		
@@ -222,7 +222,7 @@
 		In 2 dimensions, rotation matrices commute, and the result of their multiplication is simply a rotation matrix with angle equal to the sum of the operands' angles; in the special case where there are no offsets, then serial application of the transforms is a candidate for operator $\oplus$ according to \ref{eqn:commutativity}:
 		
 		\begin{equation}
-			\mathbf{S} \oplus \mathbf{T} = \mathbf{R}(\theta_\mathbf{S})\mathbf{R}(\theta_\mathbf{T}) = \mathbf{R}(\theta_\mathbf{S} + \theta_\mathbf{T})
+			\mathbf{S} \oplus \mathbf{T} = \mathbf{R}(\theta_\mathbf{S})\mathbf{R}(\theta_\mathbf{T}) = \mathbf{R}(\theta_\mathbf{S} + \theta_\mathbf{T}) = \mathbf{T} \oplus \mathbf{S}
 		\end{equation}
 		
 		
@@ -605,7 +605,24 @@
   Could be extended easily to more complex transforms such as b-spline, although perhaps a little trickier to think about interpolating transforms other than linearly interpolating their parameters.
   
   More robust than even banana registration, as images have many chances to jump out from local minima.
-
+  
+  Why not use larger kernel than nearest neighbours at each iteration?
+  
+  \begin{equation}
+          \Delta T = exp \left( \sum Binom term \log \Delta T_i \right)
+  \end{equation}
+    
+  Log-Euclidean statistics could be used for averaging registrations between 3D data sets e.g. different rat hearts. Diffusion framework could be used to smooth out jolting or transformational noise in 4D time-series datasets, whilst maintaining features...?
+  
+  Anisotropic diffusion such as in~\cite{Arsigny2005} eqn~37, with anisotropy based on gradient.
+  
+  \begin{equation}
+    \Delta_{aniso}S(x)  = \sum_{j=1}^3 c\left(\left|\left| \frac{\partial}{\partial x_j}S(x)\right|\right|\right) \\
+                            \frac{\partial_2}{\partial x_j^2}S(x)
+  \end{equation}
+  \begin{equation}
+    c(x) = exp(-x^2/\kappa^2)
+  \end{equation}
 % section discussion (end)
 
 % chapter diffusion_smoothing_registration_of_high_resolution_rat_histology (end)
