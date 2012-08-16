@@ -130,8 +130,8 @@
 	    \caption{A simulation of 1-D diffusion, with $\alpha = 0.51$.}
 	    \label{fig:1d_diffusion_0_51}
 	  \end{figure}
-  
-	
+    
+	  
 	
 	  This process can be simulated quite trivially. A numerical approximation of a sine wave is graphed in blue in each of Figures~\labelcref{fig:1d_diffusion_0_40,fig:1d_diffusion_0_49,fig:1d_diffusion_0_50,fig:1d_diffusion_0_51}, on 200 equispaced points from $0$ to $2\pi$. Random noise from a Gaussian distribution is added, with variance equal to the amplitude of the sine wave, and is plotted in green. The subfigures show the evolution of the noise after 0, 1, 3, 15, 99 and 299 timesteps.
   
@@ -168,39 +168,42 @@
 		 	\mathbf{\Delta T}_i^{n,n+1} = \alpha \cdot \mathbf{\Delta T}_{i,i+1}^n \oplus \alpha \cdot \mathbf{\Delta T}_{i,i-1}^n, \label{eqn:transformational_placeholder}
 		\end{equation}
 	 	
-	 	where $\mathbf{\Delta T}_{i,j}^n$ is defined as the transformation that registers a histological slice $i$ to slice $j$ at iteration $n$, $\cdot$ is a placeholder for a binary operator on a scalar and a transform, and $\oplus$ is a placeholder for a binary operator on a pair of transforms. The question now emerges: what precise form do the two binary operators take? We will start by outlining their desirable properties, and then discuss implementations that satisfy these constraints.
+	 	where $\mathbf{\Delta T}_{i,j}^n$ is defined as the transformation that registers a histological slice $i$ to slice $j$ at iteration $n$, operator $\cdot$ is a placeholder for a binary operator on a scalar and a transform, and operator $\oplus$ is a placeholder for a binary operator on a pair of transforms. The question now emerges: what precise form do the two binary operators take? We will start by outlining their desirable properties, and then discuss implementations that satisfy these constraints.
 		
-		The operator $\cdot$ takes two operands: a scalar and a transform. We would like $0$ to be the null operand on $\mathbf{T}$, so that when $\alpha = 0$, no diffusion occurs. We would like $1$ to be the identity operand on $\mathbf{T}$, so that when $\alpha = 1$, the transform from each term in \ref{eqn:transformational_placeholder} would diffuse the slice exactly to the position of its equivalent neighbour. Ideally, we would also like addition of the scalar operand to distribute over the serial application of the resultant transforms, so that transforms vary smoothly and naturally with respect to the scalar operand. For example, in the case of a 2-dimensional rotation matrix, the rotation angle would vary proportionally with the scalar operand. This final condition can be satisfied for certain transforms, such as linear transforms and vector field transforms, but cannot be satisfied in general for others, such as b-spline transforms. To summarise in mathematical form, we would like the following to hold:
+		The operator $\cdot$ takes two operands: a scalar and a transform. We would like $0$ to be the null operand on $\mathbf{T}$, so that when $\alpha = 0$, no diffusion occurs. We would like $1$ to be the identity operand on $\mathbf{T}$, so that when $\alpha = 1$, the transform from each term in \ref{eqn:transformational_placeholder} would diffuse the slice exactly to the position of its equivalent neighbour. Ideally, we would also like addition of the scalar operand to distribute over the serial application of the resultant transforms, so that transforms vary smoothly and naturally with respect to the scalar operand. This final condition can be satisfied for certain transforms, such as linear transforms and vector field transforms, but cannot be satisfied in general for others, such as b-spline transforms. To summarise in mathematical form, we would like the following to hold:
 		
-		\begin{align}
-			0 \cdot \mathbf{T} &= \mathbf{I} \label{eqn:null} \\
-			1 \cdot \mathbf{T} &= \mathbf{T} \label{eqn:identity} \\
-			(\alpha \cdot \mathbf{T}) (\beta \cdot \mathbf{T}) &= (\alpha + \beta) \cdot \mathbf{T} \label{eqn:distributivity}
-		\end{align}
+		\begin{gather}
+			0 \cdot \mathbf{T} = \mathbf{I} \label{eqn:null} \\
+			1 \cdot \mathbf{T} = \mathbf{T} \label{eqn:identity} \\
+			(\alpha \cdot \mathbf{T}) (\beta \cdot \mathbf{T}) = (\alpha + \beta) \cdot \mathbf{T} \label{eqn:distributivity}
+		\end{gather}
 	 	
-	  The operator $\oplus$ takes two transform operands. Commutativity must hold if the diffusion is to be symmetric i.e. behave identically if the order of the slices is reversed. That is,
+	  The operator $\oplus$ takes two transform operands. Commutativity must hold if the diffusion is to be symmetric i.e. behave identically if the order of the slices is reversed. If statistics are to be calculated on more than two transformations, it is also necessary for associativity to hold, so that the order of application of operator $\oplus$ is not preferential to any subset of transform operands. That is,
 		
-		\begin{equation}
-			\forall \mathbf{S}, \mathbf{T} : \mathbf{S} \oplus \mathbf{T} = \mathbf{T} \oplus \mathbf{S}. \label{eqn:commutativity}
-		\end{equation}
+		\begin{gather}
+			\forall \mathbf{S}, \mathbf{T} : \mathbf{S} \oplus \mathbf{T} = \mathbf{T} \oplus \mathbf{S} \label{eqn:commutativity} \\
+			\forall \mathbf{S}, \mathbf{T} : (\mathbf{S} \oplus \mathbf{T}) \oplus \mathbf{U} = \mathbf{S} \oplus (\mathbf{T} \oplus \mathbf{U}). \label{eqn:associativity}
+		\end{gather}
 		
-		Unfortunately, commutativity rules out the straightforward serial application of transforms. For example, in the general case of matrix multiplication, $AB \ne BA$. One solution is to use the transform that is equivalent to returning the Euclidian midpoint of $\mathbf{Sp}$ and $\mathbf{Tp}$ for all $\mathbf{p}$, but again, this may not always be representable by some types of transform. In the case of rotation matrices, it seems sensible to return the sum of the two angles; and for similarity transforms, the product of the two enlargement factors. Inductively therefore, the operator $\oplus$ would do well to return the summation of some appropriate parameterisation of the operand transforms.
+		Unfortunately, commutativity rules out the straightforward serial application of transforms. For example, in the general case of matrix multiplication, $AB \ne BA$. One solution is to use the transform that is equivalent to returning the Euclidian midpoint of $\mathbf{Sp}$ and $\mathbf{Tp}$ for all $\mathbf{p}$. However, the result may not always be representable by some types of transform (notably b-spline transforms), and further, it may be dependent on the order that the $\oplus$ operator is applied. In group theoretical terms, two axioms of the group $(\mathbf{T},\oplus)$ are violated: closure and associativity. Aside from anything else, the Euclidian midpoint approach leads in many cases to unnatural results, such as the `bulging' effect noted in \cite{Arsigny2005a}, and the null matrix in 2D between transforms separated by a rotation of $\pi$.
+        
+        In the case of rotation matrices, it seems sensible to return the sum of the two angles; and for similarity transforms, the product of the two enlargement factors. Inductively therefore, the operator $\oplus$ would do well to return the summation of some appropriate parameterisation of the operand transforms. The challenge is set to find that parameterisation.
 		
-	  It is elucidating to apply this general mathematical form to concrete classes of transform, in order of increasing complexity: translation transforms, rotation transforms, similarity transforms, affine transforms and more general deformable transforms. An ITK affine transform $\mathbf{T}$ acting on a point $\mathbf{p}$ consists of a matrix transformation $\mathbf{M}$, followed by a translation by an offset vector $\mathbf{o}$:
+	  It is elucidating to consider the general mathematical form constrained by \labelcref{eqn:null,eqn:identity,eqn:distributivity,eqn:commutativity,eqn:distributivity} applied to concrete classes of transform, in order of increasing complexity: translation transforms, rotation transforms, similarity transforms, affine transforms and more general deformable transforms. An ITK affine transform $\mathbf{T}$ acting on a point $\mathbf{p}$ consists of a matrix transformation $\mathbf{M}$, followed by a translation by an offset vector $\mathbf{o}$:
 		
 		\begin{equation}
 			\mathbf{p'} = \mathbf{Tp}= \mathbf{Mp} + \mathbf{o}.
 		\end{equation}
 		
-		In the simplest case of translation transforms, where $\mathbf{M}$ is the identity matrix $\mathbf{I}$, the two translation parameters are independent and individually identical to the 1-dimensional diffusion in \ref{eqn:1d_diffusion_operator}. Operator $\cdot$ is a scalar multiplication of each offset parameter, and operator $\oplus$ is the commutative serial application of the transforms (or equivalently, addition of the respective parameters):
+		In the simplest case of translation transforms, where $\mathbf{M}$ is the identity matrix $\mathbf{I}$ i.e. $\mathbf{Tp} = \mathbf{p} + \mathbf{o}$, the two translation parameters are independent and individually identical to the 1-dimensional diffusion in \ref{eqn:1d_diffusion_operator}. Operator $\cdot$ is a scalar multiplication of each offset parameter, and operator $\oplus$ is the commutative serial application of the transforms (or equivalently, addition of the respective parameters):
 		
 		\begin{align}
-			(\alpha \cdot \mathbf{T}) \mathbf{p} &= \mathbf{p} + \alpha\mathbf{o} \\
+			(\alpha \cdot \mathbf{T}) \mathbf{p} &= \mathbf{p} + \alpha\mathbf{o} \label{eqn:translation_cdot}\\
 			(\mathbf{S} \oplus \mathbf{T}) \mathbf{p} &= \mathbf{STp} \\
-			                                          &= \mathbf{p} + \mathbf{o_S} + \mathbf{o_T}
+			                                          &= \mathbf{p} + \mathbf{o_S} + \mathbf{o_T} \label{eqn:translation_oplus}
 		\end{align}
 		
-		Clearly, these two operators satisfy \labelcref{eqn:null,eqn:identity,eqn:distributivity,eqn:commutativity}. Equation~\ref{eqn:transformational_placeholder} becomes
+		Clearly, these two operators satisfy \labelcref{eqn:null,eqn:identity,eqn:distributivity,eqn:commutativity,eqn:associativity}. Equation~\ref{eqn:transformational_placeholder} becomes
 		
 		\begin{align}
 		 	\mathbf{\Delta T}_i^{n,n+1} \mathbf{p} &= (\alpha \mathbf{\Delta T}_{i,i-1}^n) (\alpha \mathbf{\Delta T}_{i,i+1}^n) \mathbf{p} \\
@@ -229,16 +232,102 @@
 		In a similar vein, an operator $\cdot$ that multiplies the angle of the input transform with $\alpha$ fulfils criteria \labelcref{eqn:null,eqn:identity,eqn:distributivity}:
     
     \begin{equation}
-      \alpha \cdot \mathbf{T} = R(\alpha\theta)
+      \alpha \cdot \mathbf{T} = R(\alpha\theta).
     \end{equation}
 		
-		When offsets are introduced, however, commutativity no longer holds and criteria \labelcref{eqn:distributivity,eqn:commutativity} are not fulfilled:
+        In the case of similarity transforms with no offset, $\mathbf{M}$ is a rotation matrix $\mathbf{R}$ multiplied by an enlargement $\sigma$:
+        
+        \begin{equation}
+            \mathbf{T} = \sigma\mathbf{R}(\theta).
+        \end{equation}
+        
+        Since scalar multiplications commute with matrix transformations, if the operator $\cdot$ is constructed to scale geometrically, the situation is very similar to that of rotation matrices and \labelcref{eqn:null,eqn:identity,eqn:distributivity,eqn:commutativity,eqn:associativity} still apply:
+        
+        \begin{gather}
+            \alpha \cdot \mathbf{T} = e^{\alpha\ln\sigma}R(\alpha\theta) \\
+            (\alpha \cdot \mathbf{T})(\beta \cdot \mathbf{T}) = e^{(\alpha + \beta)\ln\sigma}R((\alpha + \beta)\theta) = (\alpha + \beta) \cdot \mathbf{T} \\
+			\mathbf{S} \oplus \mathbf{T} = \sigma_\mathbf{S}\mathbf{R}(\theta_\mathbf{S})\sigma_\mathbf{T}\mathbf{R}(\theta_\mathbf{T}) = \sigma_\mathbf{S}\sigma_\mathbf{T}\mathbf{R}(\theta_\mathbf{S} + \theta_\mathbf{T}) = \mathbf{T} \oplus \mathbf{S} \\
+			(\mathbf{S} \oplus \mathbf{T}) \oplus \mathbf{U} = \sigma_\mathbf{S}\sigma_\mathbf{T}\sigma_\mathbf{U}\mathbf{R}(\theta_\mathbf{S} + \theta_\mathbf{T} + \theta_\mathbf{U}) = \mathbf{S} \oplus (\mathbf{T} \oplus \mathbf{U}).
+        \end{gather}
 		
-		
-		In the case of rigid transforms, $\mathbf{M}$ is a rotation matrix $\mathbf{R}$ multiplied by an enlargement $\sigma$. 
-		
-		In most practical applications of this method, where the slices are already roughly coherent, the registration transforms between neighbouring slices $T_{i,i+1}^n$ are close to the identity transform. It is therefore interesting to examine how the various implementations of the two operators $\cdot$ and $\oplus$ behave in the small limit.
+		In the more general case of diagonalisable affine matrix transformations, in the absence of translations, and when $\mathbf{S}$ and $\mathbf{T}$ can be diagonalised by the same matrix $\mathbf{V}$ i.e. $\mathbf{S} = \mathbf{VD_SV}^{-1}$ and $\mathbf{T} = \mathbf{VD_TV}^{-1}$, commutativity still holds for serial application:
+        
+        \begin{equation}
+			\mathbf{S} \oplus \mathbf{T} = \mathbf{ST} = \mathbf{VD_SV}^{-1}\mathbf{VD_TV}^{-1} = \mathbf{VD_SD_TV}^{-1} =\mathbf{VD_TD_SV}^{-1} = \mathbf{T} \oplus \mathbf{S},
+        \end{equation}
+        
+        with associativity of course holding for the serial application of affine transformations in general. However, when $\mathbf{M_S}$ and $\mathbf{M_T}$ no longer commute, serial application of transforms is no longer sufficient. There is also no obvious form of operator $\cdot$ which satisfies \labelcref{eqn:null,eqn:identity,eqn:distributivity}. We must take recourse to a more general formulation of operators $\cdot$ and $\oplus$.
+        
+        It is here that we must introduce the concept of the matrix exponential:
+        
+        \begin{equation}
+          e^{\mathbf{M}} = \sum_{k=0}^{\infty}\frac{1}{k!}\mathbf{M}^k. \label{eqn:matrix_exponential}
+        \end{equation}
+        
+        Conversely, a logarithm $\mathbf{L}$ of a matrix $\mathbf{M}$ is another matrix such that $e^\mathbf{L} = \mathbf{M}$. For any invertible matrix $\mathbf{Y}$, it is clear that
+        
+        \begin{gather}
+          (\mathbf{YM}\mathbf{Y}^{-1})^n = \mathbf{Y}\mathbf{M}^n\mathbf{Y}^{-1}, n \in \mathbb{N}.
+        \end{gather}
+        
+        It then follows from \ref{eqn:matrix_exponential} that
+        
+        \begin{align}
+          \mathbf{Y}e^{\mathbf{M}}\mathbf{Y}^{-1} &= \mathbf{Y}\left(\sum_{k=0}^{\infty}\frac{1}{k!}\mathbf{M}^k\right)\mathbf{Y}^{-1} \\
+                                                  &= \sum_{k=0}^{\infty}\frac{1}{k!}\mathbf{Y}\mathbf{M}^k\mathbf{Y}^{-1} \\
+                                                  &= \sum_{k=0}^{\infty}\frac{1}{k!}(\mathbf{YM}\mathbf{Y}^{-1})^k \label{eqn:diagonal_exp} \\
+                                                  &= e^{\mathbf{YM}\mathbf{Y}^{-1}}.
+        \end{align}
+        
+        If $\mathbf{M}$ is diagonalisable, and we choose a $\mathbf{Y}$ that diagonalises $\mathbf{M}$, such that $\mathbf{D} = \mathbf{YMY}^{-1}$, (\ref{eqn:diagonal_exp}) becomes trivially analogous to the Taylor expansion for a scalar exponential, and we can then simply compute the exponential of each diagonal element of $\mathbf{D}$. It follows that the logarithm of a positive definite diagonal matrix can be computed by taking the logarithm of each of its elements.
+        
+        It turns out that when a matrix $\mathbf{M}$ has a logarithm $\mathbf{L}$, $\mathbf{M}$ is in a Lie group --- a group on a smooth manifold. $\mathbf{L}$ is the corresponding element of the associated Lie algebra. $\mathbf{L}$ is an `infinitessimal generator', and its value determines the tangent space at the identity $\mathbf{I}$. Informally, this means that there exists a matrix $\mathbf{I} + \epsilon \mathbf{L}$ that is extremely close to the identity, such that when applied repeatedly an extremely large number of times i.e. $(\mathbf{I} + \epsilon \mathbf{L})^n$, the result eventually becomes $\mathbf{M}$.
+        
+        If we define operator $\cdot$ in terms of the exponential and the logarithm of $\mathbf{M}$, \labelcref{eqn:null,eqn:identity,eqn:distributivity} are all satisfied:
+        
+        \begin{gather}
+          \alpha \cdot \mathbf{M} = e^{\alpha\ln\mathbf{M}} \\
+          0 \cdot \mathbf{M} = e^0 = \mathbf{I} \\
+          1 \cdot \mathbf{M} = e^{\ln\mathbf{M}} = \mathbf{M} \\
+          (\alpha \cdot \mathbf{M})(\beta \cdot \mathbf{M}) = e^{\alpha\ln\mathbf{M}}e^{\beta\ln\mathbf{M}}
+                                                            = e^{(\alpha + \beta)\ln\mathbf{M}}
+                                                            = (\alpha + \beta) \cdot \mathbf{M}.
+        \end{gather}
+        
+        We can define operator $\oplus$ as a simple addition of the matrix logarithms in log-Euclidian space, followed by a mapping back to transform space with the exponential operator:
+        
+        \begin{equation}
+          \mathbf{M_S} \oplus \mathbf{M_T} = e^{\ln\mathbf{M_S} + \ln\mathbf{M_T}}
+        \end{equation}
+        
+        Because all operations are homomorphic with Euclidian vector space, this operator always fulfils the commutativity and associativity criteria
+        
+        \begin{gather}
+          \mathbf{M_S} \oplus \mathbf{M_T} = e^{\ln\mathbf{M_S} + \ln\mathbf{M_T}} = \mathbf{M_T} \oplus \mathbf{M_S} \\
+          (\mathbf{M_S}\oplus\mathbf{M_T})\oplus\mathbf{M_U} = e^{\ln\mathbf{M_S} + \ln\mathbf{M_T} + \ln\mathbf{M_U}} = \mathbf{M_S}\oplus(\mathbf{M_T}\oplus\mathbf{M_U})
+        \end{gather}
+        
+        It is pleasing to note that this new formula coincides with the special cases of rotation, similarity and diagonalisability discussed previously, since whenever the two matrices commute,
+        
+        \begin{equation}
+          \mathbf{M_SM_T} = e^{\ln\mathbf{M_S}}e^{\ln\mathbf{M_T}} = e^{\ln\mathbf{M_S} + \ln\mathbf{M_T}} = \mathbf{M_S} \oplus \mathbf{M_T}.
+        \end{equation}
+        
+        This `log-Euclidian' approach is expounded with Titanic mathematical rigour in \cite{Arsigny2005}. However, being motivated by the interpolation of MRI data, the treatise is limited to tensors; that is, symmetric matrices with no translation.
+        
+		    So far, the discussion has been limited to cases with zero offset. When offsets are introduced, even when their respective matrices commute, commutativity of transforms no longer holds and criteria \labelcref{eqn:distributivity,eqn:commutativity} are not fulfilled:
+		 
+        \begin{equation}
+          
+        \end{equation}
+        
+        When $\mathbf{M} - \mathbf{I}$ is invertible --- that is, when none of the eigenvalues of $\mathbf{M}$ are equal to 1 --- we can express a transform 
+        
+        In the opposing case, where $\mathbf{M} - \mathbf{I}$ is singular and there is no central invariate coordinate along the singular dimensions, it is of course natural that operator $\cdot$ interpolates the translation coordinates linearly along those dimensions as in Equation~\ref{eqn:translation_cdot}, and that operator $\oplus$ sums translations arithmetically as in Equation~\ref{eqn:translation_oplus}.
+        
+        In most practical applications of this method, where the slices are already roughly coherent, the registration transforms between neighbouring slices $T_{i,i+1}^n$ are close to the identity transform. It is therefore interesting to examine how the various implementations of the two operators $\cdot$ and $\oplus$ behave in the small limit.
 	
+    Final discussion about general non-rigid transforms, need an infinitessimal generator, Lie algebra this, Lie group that, blah blah.
 	% subsection transformational_diffusion (end)
 	
   % colour slice differences
