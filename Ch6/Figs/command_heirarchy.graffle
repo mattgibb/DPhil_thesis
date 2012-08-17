@@ -7,7 +7,7 @@
 	<key>ApplicationVersion</key>
 	<array>
 		<string>com.omnigroup.OmniGraffle.MacAppStore</string>
-		<string>139.7</string>
+		<string>139.15</string>
 	</array>
 	<key>AutoAdjust</key>
 	<true/>
@@ -48,7 +48,7 @@
 	<key>Creator</key>
 	<string>Matt Gibb</string>
 	<key>DisplayScale</key>
-	<string>1 0/72 in = 1 0/72 in</string>
+	<string>1 0/72 in = 1.0000 in</string>
 	<key>FileType</key>
 	<string>flat</string>
 	<key>GraphDocumentVersion</key>
@@ -927,8 +927,8 @@ itk::Command}</string>
 			<integer>1170</integer>
 			<key>Points</key>
 			<array>
-				<string>{493.98731500101525, 250.35227639406187}</string>
-				<string>{454.0126849987476, 286.67973654560706}</string>
+				<string>{493.98731500101746, 250.35227639405988}</string>
+				<string>{454.01268499898293, 286.67973654539327}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -968,7 +968,7 @@ itk::Command}</string>
 			<key>Points</key>
 			<array>
 				<string>{361.79967866439927, 329.83716910111218}</string>
-				<string>{225.2700887774615, 371.19484383834094}</string>
+				<string>{225.27008877746155, 371.19484383834094}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -1007,8 +1007,8 @@ itk::Command}</string>
 			<integer>1172</integer>
 			<key>Points</key>
 			<array>
-				<string>{454.01268499898515, 332.3522763940619}</string>
-				<string>{493.9873150012528, 368.67973654560706}</string>
+				<string>{454.01268499898299, 332.35227639405997}</string>
+				<string>{493.98731500101746, 368.67973654539327}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -1047,8 +1047,8 @@ itk::Command}</string>
 			<integer>1174</integer>
 			<key>Points</key>
 			<array>
-				<string>{403.75475686148019, 332.3522763940619}</string>
-				<string>{363.78012685921271, 368.67973654560706}</string>
+				<string>{403.75475686148241, 332.35227639405997}</string>
+				<string>{363.78012685944805, 368.67973654539327}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -1087,8 +1087,8 @@ itk::Command}</string>
 			<integer>1176</integer>
 			<key>Points</key>
 			<array>
-				<string>{493.98731500101525, 414.3522763940619}</string>
-				<string>{454.01268499874766, 450.67973654560706}</string>
+				<string>{493.98731500101741, 414.35227639405997}</string>
+				<string>{454.01268499898293, 450.67973654539327}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -1127,8 +1127,8 @@ itk::Command}</string>
 			<integer>1178</integer>
 			<key>Points</key>
 			<array>
-				<string>{544.24524313852044, 414.3522763940619}</string>
-				<string>{584.21987314078831, 450.67973654560706}</string>
+				<string>{544.24524313851828, 414.35227639405997}</string>
+				<string>{584.21987314055298, 450.67973654539327}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -1167,8 +1167,8 @@ itk::Command}</string>
 			<integer>1180</integer>
 			<key>Points</key>
 			<array>
-				<string>{378.91064227331174, 496.22284607595117}</string>
-				<string>{298.39168330830319, 532.8091668634022}</string>
+				<string>{384.78615040511659, 496.24508148356364}</string>
+				<string>{312.35987862360855, 533.57553177122406}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -1207,8 +1207,8 @@ itk::Command}</string>
 			<integer>1184</integer>
 			<key>Points</key>
 			<array>
-				<string>{544.24524313852044, 250.35227639406187}</string>
-				<string>{584.21987314078831, 286.67973654560706}</string>
+				<string>{544.24524313851816, 250.35227639405988}</string>
+				<string>{584.21987314055298, 286.67973654539327}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -1248,7 +1248,7 @@ itk::Command}</string>
 			<key>Points</key>
 			<array>
 				<string>{495.96776161030863, 329.837168620753}</string>
-				<string>{632.49735466876166, 371.19484431870018}</string>
+				<string>{632.49735466876166, 371.19484431870012}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -1367,8 +1367,8 @@ itk::Command}</string>
 			<integer>1196</integer>
 			<key>Points</key>
 			<array>
-				<string>{659.32191586622389, 496.22284607595117}</string>
-				<string>{739.84087483123199, 532.8091668634022}</string>
+				<string>{659.32191582739551, 496.22284605830822}</string>
+				<string>{739.84087487027875, 532.80916688114439}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -1447,7 +1447,7 @@ itk::Command}</string>
 	<key>MasterSheets</key>
 	<array/>
 	<key>ModificationDate</key>
-	<string>2012-08-02 11:22:09 +0000</string>
+	<string>2012-08-17 14:24:17 +0000</string>
 	<key>Modifier</key>
 	<string>Matt Gibb</string>
 	<key>NotesVisible</key>

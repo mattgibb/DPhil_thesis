@@ -77,7 +77,7 @@
 	    \frac{\Delta f(x, t + \Delta t)}{\Delta t} &= \alpha (f(x - \Delta x, t) - 2f(x, t) + f(x + \Delta x, t)).
 		\end{align}
   	
-	  This diffusion will of course act to smooth and homogenise $f$, since regions of high concentration relative to their neighbours will be reduced, and those of low concentration augmented. It is also clear from Equation~\ref{eq:registration:gaussian-approximation} that multiple application of this smoothing operation approximates a Gaussian diffusion smoothing.
+	  This diffusion will of course act to smooth and homogenise $f$, since regions of high concentration relative to their neighbours will be reduced, and those of low concentration augmented. It is also clear from (\ref{eq:registration:gaussian-approximation}) that multiple application of this smoothing operation approximates a Gaussian diffusion smoothing.
 		
 	% subsection a_1d_random_walk_analogy (end)
 	
@@ -139,20 +139,20 @@
 	% subsection simulating_1d_diffusion (end)
 		
 	\subsection{Transformational Diffusion} % (fold)
+  \subsubsection{Algorithm Overview} % (fold)
+  \label{ssub:algorithm_overview}
+		Our goal is to develop an iterative process that `diffuses' each histological slice toward its neighbours, in order to smooth out high-frequency transformational noise, whilst maintaining the low-frequency underlying geometry of the volume. At iteration $n$ of this process, each slice $i$ in a reconstructed histological stack has associated with it an invertible transform $\mathbf{T}_i^n$. We define the transform $\mathbf{\Delta T}_i^{n,n+1}$, which is calculated to move slice $i$ towards slices $i-1$ and $i+1$, based on the results of registrations between adjacent slices. $\mathbf{\Delta T}_i^{n,n+1}$ is pre-applied to a point in the resampling space of $i$ before $\mathbf{T}_i^n$, such that
+		
+  % subsubsection algorithm_overview (end)
 	\label{sub:transformational_diffusion}
 	  An ITK transform $\mathbf{T}$ acting on a point $\mathbf{p}$ maps points in the resampling space to points in the original image space:
 		
-		\begin{equation}
-			\mathbf{p'} = \mathbf{Tp}
-		\end{equation}
-		
-		Our goal is to develop an iterative process that `diffuses' each slice toward its neighbours. At iteration $n$ of this process, each slice $i$ in a reconstructed histological stack has associated with it an invertible transform $\mathbf{T}_i^n$. We define the transform $\mathbf{\Delta T}_i^{n,n+1}$, which is pre-applied to a point in the resampling space of $i$ before $\mathbf{T}_i^n$, such that
-		
-		\begin{equation}
+		\begin{gather}
+			\mathbf{p'} = \mathbf{Tp} \\
 			\mathbf{T}_i^{n+1} = \mathbf{T}_i^n \mathbf{\Delta T}_i^{n,n+1}.
-		\end{equation}
+		\end{gather}
 		
-	  How would this $\mathbf{\Delta T}_i^{n,n+1}$ be defined? In the case of 1-dimensional diffusion, we can reformulate the right hand side of Equation~\ref{eqn:diffusion_1d} into two separate terms thusly:
+	  How would this $\mathbf{\Delta T}_i^{n,n+1}$ be defined? In the case of 1-dimensional diffusion, we can reformulate the right hand side of (\ref{eqn:diffusion_1d}) into two separate terms thusly:
 		
 	  \begin{align}
 	    f(x_i, t_{n+1}) &= f(x_i, t_n) + \alpha ((f(x_{i+1}, t_n) - f(x_i, t_n)) - (f(x_{i-1}, t_n) - f(x_i, t_n)) \\
@@ -160,7 +160,7 @@
 			                   &= \alpha \Delta f_{i,i-1}^n + \alpha \Delta f_{i,i+1}^n, \label{eqn:1d_diffusion_operator}
 		\end{align}
 		
-    where $\Delta f_i^{m,n}$ is the difference in $f$ at position $i$ between timestep $m$ and timestep $n$, and $\Delta f_{i,j}^m$ is the difference in $f$ between position $i$ and position $j$ at timestep $m$. From Equation~\ref{eqn:1d_diffusion_operator}, we can see that at each timestep, the concentration at each bin moves towards its left and right neighbour by a proportion $\alpha$ of its difference from each, respectively.
+    where $\Delta f_i^{m,n}$ is the difference in $f$ at position $i$ between timestep $m$ and timestep $n$, and $\Delta f_{i,j}^m$ is the difference in $f$ between position $i$ and position $j$ at timestep $m$. From (\ref{eqn:1d_diffusion_operator}), we can see that at each timestep, the concentration at each bin moves towards its left and right neighbour by a proportion $\alpha$ of its difference from each, respectively.
 		
 	  We might, then, propose analogously that
 		
@@ -170,7 +170,7 @@
 	 	
 	 	where $\mathbf{\Delta T}_{i,j}^n$ is defined as the transformation that registers a histological slice $i$ to slice $j$ at iteration $n$, operator $\cdot$ is a placeholder for a binary operator on a scalar and a transform, and operator $\oplus$ is a placeholder for a binary operator on a pair of transforms. The question now emerges: what precise form do the two binary operators take? We will start by outlining their desirable properties, and then discuss implementations that satisfy these constraints.
 		
-		The operator $\cdot$ takes two operands: a scalar and a transform. We would like $0$ to be the null operand on $\mathbf{T}$, so that when $\alpha = 0$, no diffusion occurs. We would like $1$ to be the identity operand on $\mathbf{T}$, so that when $\alpha = 1$, the transform from each term in \ref{eqn:transformational_placeholder} would diffuse the slice exactly to the position of its equivalent neighbour. Ideally, we would also like addition of the scalar operand to distribute over the serial application of the resultant transforms, so that transforms vary smoothly and naturally with respect to the scalar operand. This final condition can be satisfied for certain transforms, such as linear transforms and vector field transforms, but cannot be satisfied in general for others, such as b-spline transforms. To summarise in mathematical form, we would like the following to hold:
+		The operator $\cdot$ takes two operands: a scalar and a transform. We would like $0$ to be the null operand on $\mathbf{T}$, so that when $\alpha = 0$, no diffusion occurs. We would like $1$ to be the identity operand on $\mathbf{T}$, so that when $\alpha = 1$, the transform from each term in (\ref{eqn:transformational_placeholder}) would diffuse the slice exactly to the position of its equivalent neighbour. Ideally, we would also like addition of the scalar operand to distribute over the serial application of the resultant transforms, so that transforms vary smoothly and naturally with respect to the scalar operand. This final condition can be satisfied for certain transforms, such as linear transforms and vector field transforms, but cannot be satisfied in general for others, such as b-spline transforms. To summarise in mathematical form, we would like the following to hold:
 		
 		\begin{gather}
 			0 \cdot \mathbf{T} = \mathbf{I} \label{eqn:null} \\
@@ -195,7 +195,7 @@
 			\mathbf{p'} = \mathbf{Tp}= \mathbf{Mp} + \mathbf{o}.
 		\end{equation}
 		
-		In the simplest case of translation transforms, where $\mathbf{M}$ is the identity matrix $\mathbf{I}$ i.e. $\mathbf{Tp} = \mathbf{p} + \mathbf{o}$, the two translation parameters are independent and individually identical to the 1-dimensional diffusion in \ref{eqn:1d_diffusion_operator}. Operator $\cdot$ is a scalar multiplication of each offset parameter, and operator $\oplus$ is the commutative serial application of the transforms (or equivalently, addition of the respective parameters):
+		In the simplest case of translation transforms, where $\mathbf{M}$ is the identity matrix $\mathbf{I}$ i.e. $\mathbf{Tp} = \mathbf{p} + \mathbf{o}$, the two translation parameters are independent and individually identical to the 1-dimensional diffusion in (\ref{eqn:1d_diffusion_operator}). Operator $\cdot$ is a scalar multiplication of each offset parameter, and operator $\oplus$ is the commutative serial application of the transforms (or equivalently, addition of the respective parameters):
 		
 		\begin{align}
 			(\alpha \cdot \mathbf{T}) \mathbf{p} &= \mathbf{p} + \alpha\mathbf{o} \label{eqn:translation_cdot}\\
@@ -203,7 +203,7 @@
 			                                          &= \mathbf{p} + \mathbf{o_S} + \mathbf{o_T} \label{eqn:translation_oplus}
 		\end{align}
 		
-		Clearly, these two operators satisfy \labelcref{eqn:null,eqn:identity,eqn:distributivity,eqn:commutativity,eqn:associativity}. Equation~\ref{eqn:transformational_placeholder} becomes
+		Clearly, these two operators satisfy \labelcref{eqn:null,eqn:identity,eqn:distributivity,eqn:commutativity,eqn:associativity}. (\ref{eqn:transformational_placeholder}) becomes
 		
 		\begin{align}
 		 	\mathbf{\Delta T}_i^{n,n+1} \mathbf{p} &= (\alpha \mathbf{\Delta T}_{i,i-1}^n) (\alpha \mathbf{\Delta T}_{i,i+1}^n) \mathbf{p} \\
@@ -211,7 +211,7 @@
 			\mathbf{o}_i^{n,n+1} &= \alpha (\mathbf{o}_{i,i-1}^n + \mathbf{o}_{i,i+1}^n) 
 		\end{align}
 		
-		The offsets are therefore trivially analogous to \ref{eqn:1d_diffusion_operator}.
+		The offsets are therefore trivially analogous to (\ref{eqn:1d_diffusion_operator}).
 		
 		In the case of rigid transforms, $\mathbf{M}$ is a rotation matrix
 		
@@ -222,7 +222,7 @@
 					                 \end{matrix} \right) .
 		\end{equation}
 		
-		In 2 dimensions, rotation matrices commute, and the result of their multiplication is simply a rotation matrix with angle equal to the sum of the operands' angles; in the special case where there are no offsets, then serial application of the transforms is a candidate for operator $\oplus$ according to \ref{eqn:commutativity}:
+		In 2 dimensions, rotation matrices commute, and the result of their multiplication is simply a rotation matrix with angle equal to the sum of the operands' angles; in the special case where there are no offsets, then serial application of the transforms is a candidate for operator $\oplus$ according to (\ref{eqn:commutativity}):
 		
 		\begin{equation}
 			\mathbf{S} \oplus \mathbf{T} = \mathbf{R}(\theta_\mathbf{S})\mathbf{R}(\theta_\mathbf{T}) = \mathbf{R}(\theta_\mathbf{S} + \theta_\mathbf{T}) = \mathbf{T} \oplus \mathbf{S}
@@ -270,7 +270,7 @@
           (\mathbf{YM}\mathbf{Y}^{-1})^n = \mathbf{Y}\mathbf{M}^n\mathbf{Y}^{-1}, n \in \mathbb{N}.
         \end{gather}
         
-        It then follows from \ref{eqn:matrix_exponential} that
+        It then follows from (\ref{eqn:matrix_exponential}) that
         
         \begin{align}
           \mathbf{Y}e^{\mathbf{M}}\mathbf{Y}^{-1} &= \mathbf{Y}\left(\sum_{k=0}^{\infty}\frac{1}{k!}\mathbf{M}^k\right)\mathbf{Y}^{-1} \\
@@ -315,7 +315,7 @@
         
         This `log-Euclidian' approach is expounded with Titanic mathematical rigour in \cite{Arsigny2005}. However, being motivated by the interpolation of MRI data, the treatise is limited to tensors; that is, symmetric matrices with no translation.
         
-		    So far, the discussion has been limited to cases with zero offset. When offsets are introduced, even when their respective matrices commute, the commutativity of transforms in \ref{eqn:commutativity} no longer holds when serial action akin to \ref{eqn:translation_oplus} is introduced na\"ively:
+		    So far, the discussion has been limited to cases with zero offset. When offsets are introduced, even when their respective matrices commute, the commutativity of transforms in (\ref{eqn:commutativity}) no longer holds when serial action akin to (\ref{eqn:translation_oplus}) is introduced na\"ively:
 		    
         \begin{equation}
           (\mathbf{S} \oplus \mathbf{T})\mathbf{p} = (\mathbf{M_S} \oplus \mathbf{M_T})\mathbf{p} + \mathbf{M_So_T} + \mathbf{o_S} \ne (\mathbf{T} \oplus \mathbf{S})\mathbf{p}.
@@ -344,7 +344,7 @@
         We can then reformulate operator $\cdot$ as a log-Euclidian transformation about this invariant centre and satisfy distributivity:
         
         \begin{gather}
-          \alpha \cdot \mathbf{T} = e^{\alpha\ln\mathbf{M}}(p - c) + c \\
+          \alpha \cdot \mathbf{T} = e^{\alpha\ln\mathbf{M}}(p - c) + c \label{eqn:affine_cdot} \\
           \begin{split}
             (\alpha \cdot \mathbf{T})(\beta \cdot \mathbf{T}) &= e^{\alpha\ln\mathbf{M}}((e^{\beta\ln\mathbf{M}}(p - c) + c) - c) + c \\
                                                               &= e^{\alpha\ln\mathbf{M}}(e^{\beta\ln\mathbf{M}}(p - c)) + c \\
@@ -353,28 +353,58 @@
           \end{split}
         \end{gather}
         
-        In order to derive the common centre of the two operands of operator $\cdot$, let us consider the infinitesimal case
+        With this condition satisfied, $\alpha\cdot\mathbf{T}$ is equivalent to $\mathbf{T}^{\alpha}$. In order to derive the common centre of the two operands of operator $\oplus$, let us consider the infinitesimal case
         
         \begin{gather}
           \delta \cdot \mathbf{U} = (\delta \cdot \mathbf{S}) \oplus (\delta \cdot \mathbf{T}) \approx (\delta \cdot \mathbf{S}) (\delta \cdot \mathbf{T}) \\
           \begin{split}
-            e^{\delta(\ln \mathbf{S} + \ln \mathbf{T})}\mathbf{p} + (\mathbf{I} - e^{\delta(\ln \mathbf{S} + \ln \mathbf{T})})\mathbf{c_U} =
-              &e^{\delta \ln \mathbf{S}}e^{\delta \ln \mathbf{T}}\mathbf{p} \\
-              &+ e^{\delta \ln \mathbf{S}}(\mathbf{I} - e^{\delta \ln \mathbf{T}})\mathbf{c_T} \\
-              &+ (\mathbf{I} - e^{\delta \ln \mathbf{S}})\mathbf{c_S}.
+            e^{\delta(\ln \mathbf{M_S} + \ln \mathbf{M_T})}\mathbf{p} + (\mathbf{I} - e^{\delta(\ln \mathbf{M_S} + \ln \mathbf{M_T})})\mathbf{c_U} =
+              &e^{\delta \ln \mathbf{M_S}}e^{\delta \ln \mathbf{M_T}}\mathbf{p} \\
+              &+ e^{\delta \ln \mathbf{M_S}}(\mathbf{I} - e^{\delta \ln \mathbf{T}})\mathbf{c_T} \\
+              &+ (\mathbf{I} - e^{\delta \ln \mathbf{M_S}})\mathbf{c_S}. \label{eqn:infinitesimal_oplus}
           \end{split}
         \end{gather}
         
         We can see from the series in (\ref{eqn:matrix_exponential}) that
         
         \begin{equation}
-          2
+          e^{\delta \ln \mathbf{M}} = \mathbf{I} + \delta \ln \mathbf{M} + \mathcal{O}((\delta \ln \mathbf{M})^2).
         \end{equation}
         
-        In the opposing case, where $\mathbf{M} - \mathbf{I}$ is singular and there is no central invariate coordinate along the singular dimensions, it is of course natural that operator $\cdot$ interpolates the translation coordinates linearly along those dimensions as in (\ref{eqn:translation_cdot}), and that operator $\oplus$ sums translations arithmetically as in Equation~\ref{eqn:translation_oplus}.
+        Applying this to (\ref{eqn:infinitesimal_oplus}), we obtain
         
-        In most practical applications of this method, where the slices are already roughly coherent, the registration transforms between neighbouring slices $T_{i,i+1}^n$ are close to the identity transform. It is therefore interesting to examine how the various implementations of the two operators $\cdot$ and $\oplus$ behave in the small limit.
-	
+        \begin{equation}
+          (\ln\mathbf{M_S} + \ln\mathbf{M_T})\mathbf{c_U} = (\ln\mathbf{M_S})\mathbf{c_S} + (\ln\mathbf{M_T})\mathbf{c_T}.
+        \end{equation}
+        
+        The general form of operator $\oplus$ is then finally
+        
+        \begin{gather}
+          \mathbf{S} \oplus \mathbf{T} = e^{\ln\mathbf{M_S} + \ln\mathbf{M_T}}(\mathbf{p} - \mathbf{c}) + \mathbf{c}, \nonumber \\
+          \mathbf{c} = (\ln\mathbf{M_S} + \ln\mathbf{M_T})^{-1}((\ln\mathbf{M_S})\mathbf{c_S} + (\ln\mathbf{M_T})\mathbf{c_T}). \label{eqn:affine_oplus}
+        \end{gather}
+        
+        Commutativity is evident by inspection, and associativity is simply demonstrated:
+        
+        \begin{gather}
+          \begin{split}
+            (\mathbf{S} \oplus \mathbf{T}) \oplus \mathbf{U} &= \exp(\ln(e^{\ln\mathbf{M_S} + \ln\mathbf{M_T}}) + \ln\mathbf{M_U})(\mathbf{p} - \mathbf{c}) + \mathbf{c} \\
+                                                             &= e^{\ln\mathbf{M_S} + \ln\mathbf{M_T} + \ln\mathbf{M_U}}(\mathbf{p} - \mathbf{c}) + \mathbf{c},
+          \end{split} \\
+          \begin{split}
+            \mathbf{c} &= (\ln\mathbf{M_{S \oplus T}} + \ln\mathbf{M_U})^{-1}((\ln\mathbf{M_{S \oplus T}})\mathbf{c_{S \oplus T}} + (\ln\mathbf{M_U})\mathbf{c_U}) \\
+                       &= (\ln\mathbf{M_S} + \ln\mathbf{M_T} + \ln\mathbf{M_U})^{-1}((\ln\mathbf{M_U})\mathbf{c_S} + (\ln\mathbf{M_U})\mathbf{c_T} + (\ln\mathbf{M_U})\mathbf{c_U}).
+          \end{split}
+        \end{gather}
+        
+        As a last algebraic structural perk, it can be shown from \labelcref{eqn:affine_cdot,eqn:affine_oplus} that the operation of $\cdot$ by a scalar distributes over the operation of $\oplus$ on two affine transformations. In particular,
+        
+        \begin{equation}
+          (\alpha \cdot \mathbf{S}) \oplus (\alpha \cdot \mathbf{T}) = \alpha \cdot (\mathbf{S} \oplus \mathbf{T}).
+        \end{equation}
+        
+        In the case where $\mathbf{M} - \mathbf{I}$ is singular and there is no central invariate coordinate along the singular dimensions, it is of course natural that operator $\cdot$ interpolates the translation coordinates linearly along those dimensions as in (\ref{eqn:translation_cdot}), and that operator $\oplus$ sums translations arithmetically as in (\ref{eqn:translation_oplus}).
+        
     Final discussion about general non-rigid transforms, need an infinitessimal generator, Lie algebra this, Lie group that, blah blah.
 	% subsection transformational_diffusion (end)
 	
