@@ -315,15 +315,63 @@
         
         This `log-Euclidian' approach is expounded with Titanic mathematical rigour in \cite{Arsigny2005}. However, being motivated by the interpolation of MRI data, the treatise is limited to tensors; that is, symmetric matrices with no translation.
         
-		    So far, the discussion has been limited to cases with zero offset. When offsets are introduced, even when their respective matrices commute, commutativity of transforms no longer holds and criteria \labelcref{eqn:distributivity,eqn:commutativity} are not fulfilled:
-		 
+		    So far, the discussion has been limited to cases with zero offset. When offsets are introduced, even when their respective matrices commute, the commutativity of transforms in \ref{eqn:commutativity} no longer holds when serial action akin to \ref{eqn:translation_oplus} is introduced na\"ively:
+		    
         \begin{equation}
-          
+          (\mathbf{S} \oplus \mathbf{T})\mathbf{p} = (\mathbf{M_S} \oplus \mathbf{M_T})\mathbf{p} + \mathbf{M_So_T} + \mathbf{o_S} \ne (\mathbf{T} \oplus \mathbf{S})\mathbf{p}.
         \end{equation}
         
-        When $\mathbf{M} - \mathbf{I}$ is invertible --- that is, when none of the eigenvalues of $\mathbf{M}$ are equal to 1 --- we can express a transform 
+        If commutivity is forced, by averaging the offset contributions from both permutations of the operands i.e.
         
-        In the opposing case, where $\mathbf{M} - \mathbf{I}$ is singular and there is no central invariate coordinate along the singular dimensions, it is of course natural that operator $\cdot$ interpolates the translation coordinates linearly along those dimensions as in Equation~\ref{eqn:translation_cdot}, and that operator $\oplus$ sums translations arithmetically as in Equation~\ref{eqn:translation_oplus}.
+        \begin{equation}
+          (\mathbf{S} \oplus \mathbf{T})\mathbf{p} = (\mathbf{T} \oplus \mathbf{S})\mathbf{p} = (\mathbf{M_S} \oplus \mathbf{M_T})\mathbf{p} + \frac{1}{2}\left(\left( \mathbf{M_S} + \mathbf{I} \right) \mathbf{o_T} + \mathbf{o_S}\right),
+        \end{equation}
+        
+        then associativity breaks down. The same underlying structure precludes a linear interpolation in operator $\cdot$ akin to \labelcref{eqn:translation_cdot} in the presence of a non-identical matrix:
+        
+        \begin{gather}
+          (\alpha \cdot \mathbf{T})(\beta \cdot \mathbf{T})\mathbf{p} = \mathbf{M}_{\alpha+\beta}\mathbf{p} + \beta\mathbf{M}_{\alpha}\mathbf{o} + \alpha\mathbf{o} \ne (\alpha + \beta) \cdot \mathbf{T}
+        \end{gather}
+        
+        When $\mathbf{I} - \mathbf{M}$ is invertible --- that is, when none of the eigenvalues of $\mathbf{M}$ are equal to 1 --- we can express a transform as a matrix transformation about a single invariant centre, with no offset:
+        
+        \begin{gather}
+          \mathbf{Tp} = \mathbf{Mp} + \mathbf{o} = \mathbf{M}(\mathbf{p}-\mathbf{c}) + \mathbf{c} \\
+          \mathbf{o} = (\mathbf{I} - \mathbf{M})\mathbf{c} \\
+          \mathbf{c} = (\mathbf{I} - \mathbf{M})^{-1}\mathbf{o}.
+        \end{gather}
+        
+        We can then reformulate operator $\cdot$ as a log-Euclidian transformation about this invariant centre and satisfy distributivity:
+        
+        \begin{gather}
+          \alpha \cdot \mathbf{T} = e^{\alpha\ln\mathbf{M}}(p - c) + c \\
+          \begin{split}
+            (\alpha \cdot \mathbf{T})(\beta \cdot \mathbf{T}) &= e^{\alpha\ln\mathbf{M}}((e^{\beta\ln\mathbf{M}}(p - c) + c) - c) + c \\
+                                                              &= e^{\alpha\ln\mathbf{M}}(e^{\beta\ln\mathbf{M}}(p - c)) + c \\
+                                                              &= e^{(\alpha + \beta)\ln\mathbf{M}}(p - c) + c \\
+                                                              &= (\alpha + \beta) \cdot \mathbf{T}
+          \end{split}
+        \end{gather}
+        
+        In order to derive the common centre of the two operands of operator $\cdot$, let us consider the infinitesimal case
+        
+        \begin{gather}
+          \delta \cdot \mathbf{U} = (\delta \cdot \mathbf{S}) \oplus (\delta \cdot \mathbf{T}) \approx (\delta \cdot \mathbf{S}) (\delta \cdot \mathbf{T}) \\
+          \begin{split}
+            e^{\delta(\ln \mathbf{S} + \ln \mathbf{T})}\mathbf{p} + (\mathbf{I} - e^{\delta(\ln \mathbf{S} + \ln \mathbf{T})})\mathbf{c_U} =
+              &e^{\delta \ln \mathbf{S}}e^{\delta \ln \mathbf{T}}\mathbf{p} \\
+              &+ e^{\delta \ln \mathbf{S}}(\mathbf{I} - e^{\delta \ln \mathbf{T}})\mathbf{c_T} \\
+              &+ (\mathbf{I} - e^{\delta \ln \mathbf{S}})\mathbf{c_S}.
+          \end{split}
+        \end{gather}
+        
+        We can see from the series in (\ref{eqn:matrix_exponential}) that
+        
+        \begin{equation}
+          2
+        \end{equation}
+        
+        In the opposing case, where $\mathbf{M} - \mathbf{I}$ is singular and there is no central invariate coordinate along the singular dimensions, it is of course natural that operator $\cdot$ interpolates the translation coordinates linearly along those dimensions as in (\ref{eqn:translation_cdot}), and that operator $\oplus$ sums translations arithmetically as in Equation~\ref{eqn:translation_oplus}.
         
         In most practical applications of this method, where the slices are already roughly coherent, the registration transforms between neighbouring slices $T_{i,i+1}^n$ are close to the identity transform. It is therefore interesting to examine how the various implementations of the two operators $\cdot$ and $\oplus$ behave in the small limit.
 	
