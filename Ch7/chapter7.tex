@@ -139,21 +139,29 @@
 	% subsection simulating_1d_diffusion (end)
 		
 	\subsection{Transformational Diffusion} % (fold)
-  \subsubsection{Algorithm Overview} % (fold)
-  \label{ssub:algorithm_overview}
-		Our goal is to develop an iterative process that `diffuses' each histological slice toward its neighbours, in order to smooth out high-frequency transformational noise, whilst maintaining the low-frequency underlying geometry of the volume. At iteration $n$ of this process, each slice $i$ in a reconstructed histological stack has associated with it an invertible transform $\mathbf{T}_i^n$. We define the transform $\mathbf{\Delta T}_i^{n,n+1}$, which is calculated to move slice $i$ towards slices $i-1$ and $i+1$, based on the results of registrations between adjacent slices. $\mathbf{\Delta T}_i^{n,n+1}$ is pre-applied to a point in the resampling space of $i$ before $\mathbf{T}_i^n$, such that
-		
-  % subsubsection algorithm_overview (end)
 	\label{sub:transformational_diffusion}
-	  An ITK transform $\mathbf{T}$ acting on a point $\mathbf{p}$ maps points in the resampling space to points in the original image space:
+    \subsubsection{Algorithm Overview} % (fold)
+    \label{ssub:algorithm_overview}
+  	  Our goal is to develop an iterative process that `diffuses' each histological slice image toward its neighbours, in order to smooth out high-frequency transformational noise, whilst maintaining the low-frequency underlying geometry of the volume. An ITK transform $\mathbf{T}$ acting on a point $\mathbf{p}$ maps points in the resampling space to points in the original image space:
+		  
+  		\begin{equation}
+  			\mathbf{p'} = \mathbf{Tp}.
+  		\end{equation}
+      
+  		At iteration $n$ of the proposed process, each slice $i$ in a reconstructed histological stack has associated with it an invertible transform $\mathbf{T}_i^n$. We define the `diffusion transform' $\mathbf{\Delta T}_i^{n,n+1}$, which is formulated to move slice $i$ towards slices $i-1$ and $i+1$, based on the results of registrations between adjacent slices. $\mathbf{\Delta T}_i^{n,n+1}$ is pre-applied to a point in the resampling space of $i$ before $\mathbf{T}_i^n$ to give the adjusted transform $\mathbf{T}_i^{n+1}$, such that
+		  
+    	\begin{equation}
+  			\mathbf{T}_i^{n+1} = \mathbf{T}_i^n \mathbf{\Delta T}_i^{n,n+1}. \label{eqn:adjusted_transforms}
+  		\end{equation}
+		  
+	  How would this $\mathbf{\Delta T}_i^{n,n+1}$ be defined?
 		
-		\begin{gather}
-			\mathbf{p'} = \mathbf{Tp} \\
-			\mathbf{T}_i^{n+1} = \mathbf{T}_i^n \mathbf{\Delta T}_i^{n,n+1}.
-		\end{gather}
-		
-	  How would this $\mathbf{\Delta T}_i^{n,n+1}$ be defined? In the case of 1-dimensional diffusion, we can reformulate the right hand side of (\ref{eqn:diffusion_1d}) into two separate terms thusly:
-		
+    % subsubsection algorithm_overview (end)
+    
+    \subsubsection{Formulating the Diffusion Transforms} % (fold)
+    \label{ssub:formulating_the_diffusion_transforms}
+      In the case of 1-dimensional diffusion, we can reformulate the right hand side of (\ref{eqn:diffusion_1d}) into two separate terms thusly:
+     
 	  \begin{align}
 	    f(x_i, t_{n+1}) &= f(x_i, t_n) + \alpha ((f(x_{i+1}, t_n) - f(x_i, t_n)) - (f(x_{i-1}, t_n) - f(x_i, t_n)) \\
 			\Delta f_i^{n,n+1} &= \alpha (\Delta f_{i,i+1}^n - \Delta f_{i-1,i}^n) \\
@@ -168,8 +176,11 @@
 		 	\mathbf{\Delta T}_i^{n,n+1} = \alpha \cdot \mathbf{\Delta T}_{i,i+1}^n \oplus \alpha \cdot \mathbf{\Delta T}_{i,i-1}^n, \label{eqn:transformational_placeholder}
 		\end{equation}
 	 	
-	 	where $\mathbf{\Delta T}_{i,j}^n$ is defined as the transformation that registers a histological slice $i$ to slice $j$ at iteration $n$, operator $\cdot$ is a placeholder for a binary operator on a scalar and a transform, and operator $\oplus$ is a placeholder for a binary operator on a pair of transforms. The question now emerges: what precise form do the two binary operators take? We will start by outlining their desirable properties, and then discuss implementations that satisfy these constraints.
+	 	where $\mathbf{\Delta T}_{i,j}^n = (\mathbf{\Delta T}_{j,i}^n)^{-1}$ is defined as the transformation that registers a histological slice $i$ to slice $j$ at iteration $n$, operator $\cdot$ is a placeholder for a binary operator on a scalar and a transform, and operator $\oplus$ is a placeholder for a binary operator on a pair of transforms. We are now equipped to calculate the transforms for progressively smoother and smoother volumes, by first registering each slice to its neighbour to obtain $\mathbf{\Delta T}_{i,i+1}^n$, then computing the diffusion transforms $\mathbf{\Delta T}_i^{n,n+1}$ through \labelcref{eqn:transformational_placeholder}, and finally applying them to the original transforms through \labelcref{eqn:adjusted_transforms} to obtain $\mathbf{T}_i^{n+1}$. The question now emerges: what precise form do the two binary operators take? We will start by outlining their desirable properties, and then discuss implementations that satisfy these constraints.
+    % subsubsection formulating_the_diffusion_transforms (end)
 		
+    \subsubsection{Formulating the Transform Operators} % (fold)
+    \label{ssub:formulating_the_transform_operators}
 		The operator $\cdot$ takes two operands: a scalar and a transform. We would like $0$ to be the null operand on $\mathbf{T}$, so that when $\alpha = 0$, no diffusion occurs. We would like $1$ to be the identity operand on $\mathbf{T}$, so that when $\alpha = 1$, the transform from each term in (\ref{eqn:transformational_placeholder}) would diffuse the slice exactly to the position of its equivalent neighbour. Ideally, we would also like addition of the scalar operand to distribute over the serial application of the resultant transforms, so that transforms vary smoothly and naturally with respect to the scalar operand. This final condition can be satisfied for certain transforms, such as linear transforms and vector field transforms, but cannot be satisfied in general for others, such as b-spline transforms. To summarise in mathematical form, we would like the following to hold:
 		
 		\begin{gather}
@@ -405,18 +416,24 @@
         
         In the case where $\mathbf{M} - \mathbf{I}$ is singular and there is no central invariate coordinate along the singular dimensions, it is of course natural that operator $\cdot$ interpolates the translation coordinates linearly along those dimensions as in (\ref{eqn:translation_cdot}), and that operator $\oplus$ sums translations arithmetically as in (\ref{eqn:translation_oplus}).
         
-    Final discussion about general non-rigid transforms, need an infinitessimal generator, Lie algebra this, Lie group that, blah blah.
+        A similar Lie theoretical approach must be taken when implementing operators $\cdot$ and $\oplus$ for more general non-rigid transforms, such as displacement field transforms. However, any smooth transform will approximate an affine transformation at scales smaller than its curvature, and the implementations expounded here will suffice to smooth out those smaller subregions.
+    % subsubsection formulating_the_transform_operators (end)
 	% subsection transformational_diffusion (end)
 	
+  \subsection{Simulating Transformational Diffusion} % (fold)
+  \label{sub:simulating_transformational_diffusion}
+  
+  In order to test the efficacy of the algorithm in a quantitative way, it was necessary to devise several test geometries. Four stacks of 200 identical slices were constructed: one straight column with identical transforms for each slice; one column with sinusoidal, snake-like translation added; one column with sinusoidal rotation added; and one column incorporating both a translational and a rotational signal. The transform parameters of each slice were then purturbed by random Gaussian noise, with $\sigma$ equal to the amplitude of the translational and rotational signal, respectively.
+  
   % colour slice differences
   \begin{figure}[htbp]
     \centering
     \subfigure[][unperturbed image]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/colour_perfect_slice}} \quad
     \subfigure[][image with transformational noise]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/colour_noisy_slice}} \\
-    \subfigure[][squared differences in intensities]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/colour_red_blue_diff}} \quad
+    \subfigure[][Red-blue channels of intensities]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/colour_red_blue_diff}} \quad
     \subfigure[][squared differences in intensities]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/colour_squared_diff}}
-    \caption{slice 99 of straight volume. mean squared difference in bw image: 61.5265135808}
-    \label{fig:dummy_cross_sections}
+    \caption{Slice 200 from the Rat 28 dataset, the image used used for all test geometries. \textbf{(a)} shows the original image, whilst a small random affine transformation has been applied to \textbf{(b)}. \textbf{(c)} and \textbf{(d)} combine the two slices in two ways, in order to highlight their difference. The mean squared pixel intensity difference in \textbf{(d)} is 61.53.}
+    \label{fig:original_displacement}
   \end{figure}
   
   % segmentation slice differences
@@ -424,11 +441,14 @@
     \centering
     \subfigure[][unperturbed image]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_perfect_slice}} \quad
     \subfigure[][image with transformational noise]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_noisy_slice}} \\
-    \subfigure[][squared differences in intensities]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_red_blue_diff}} \quad
+    \subfigure[][Red-blue channels of intensities]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_red_blue_diff}} \quad
     \subfigure[][squared differences in intensities]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_squared_diff}}
-    \caption{slice 99 of straight volume, reconstructed using manual segmentation. mean squared difference in bw image: 12.9321}
-    \label{fig:dummy_cross_sections}
+    \caption{A manual segmentation of the same slice from Figure~\ref{fig:original_displacement}, with the same perturbation applied. The noise in the squared intensity differences in Figure~\ref{fig:original_displacement}~\textbf{(d)} are no longer present. This leads to a much smoother cost function, with much fewer local minima, and thus a more reliable registration. The improvement is reflected in the lower mean squared pixel intensity difference in \textbf{(d)} of 12.93.}
+    % \caption{A manual segmentation of the same slice from Figure~\ref{fig:original_displacement}, with the same perturbation applied. The noise in the squared intensity differences in Figure~\ref{fig:original_displacement}~\textbf{(d)} are no longer present. This leads to a much smoother cost_function, with much fewer local minima, and thus a more reliable registration. This improvement is reflected in the lower mean squared pixel intensity difference in \textbf{(d)} of 12.93.}
+    \label{fig:segmented_displacement}
   \end{figure}
+  
+  The process of registration between slices, of obtaining the values $\mathbf{\Delta T}_{i,i+1}^n$, is orthogonal to the calculation of the diffusion transforms $\mathbf{\Delta T}_i^{n,n+1}$ and subsequent adjustment of each slice transform $\mathbf{T}_i^{n+1}$. The first attempt to test the algorithm used the original heart slice image shown in Figure~\ref{fig:original_displacement}. Although the algorithm was reliably stable in smoothing the small amplitudes of noise it was designed to correct for, it was found that much larger perturbations could be damped by the algorithm, limited only by the success of the individual registrations. All registrations were therefore performed using the manual segmentations shown in Figure~\ref{fig:segmented_displacement}, with which much larger displacements could be corrected. As will be seen, cross-sections were then reconstructed from the original images, to show the effects of correction on the fine detail of the tissue, whilst clean volume isosurfaces were constructed from the segmentation.
   
   % straight
   \begin{figure}[htbp]
@@ -636,30 +656,16 @@
     \label{fig:test.png}
   \end{figure}
   
+  
   It is worth noting that the adjustment algorithm itself is stable with much larger levels of noise than shown here, comparable to those in Figures~\ref{fig:1d_diffusion_0_40}, \ref{fig:1d_diffusion_0_49}, \ref{fig:1d_diffusion_0_50} and \ref{fig:1d_diffusion_0_51}. It is simply that the registration is sensitive, wouldn't work blah blah.
   
   Parameters used for noisy dummies were x, y, z. The important factor is whether the slice-to-slice registrations are quickly and robustly successful, and so much greater noise could be filtered by the algorithm, as long as the parameters were tuned for large displacements for the first few iterations, and then smaller displacements for the finer smoothing in the later iterations.
   
-  Prove that random walk is binomial distribution, which tends to Gaussian distribution, therefore with enough iterations we are applying gaussian transformational smoothing to the volume.
-  
-  Particles undergoing brownian motion diffuse, hence the name.
-  
-  % `http://en.wikipedia.org/wiki/Random_walk#One-dimensional_random_walk'
-  1D analogy of diffusion and noise filtering, with sine wave and overlayed noise, and diagram
+  % subsection simulating_transformational_diffusion (end)
   
   Figure of banana-effect registration
   
-  Anisotropic diffusion: 
-  
   Divide MRI into slices, then apply artificial noise, then compare banana registration to diffusion registration.
-  
-  Pull image from Evernote
-  
-  \subsection{2D Transforms Diffusion} % (fold)
-  \label{sub:2d_transforms_diffusion}
-    This 1-dimensional model is trivially extended to a 2D translation of a slice image aligning with its neighbour, since both of the parameters are mutually orthogonal. But what about the more complex harder with say affine transform. Square root of transform blah blah.
-  
-  % subsection 2d_transforms_diffusion (end)
   
 % section methods (end)
 
@@ -779,6 +785,8 @@
           \Delta T = exp \left( \sum Binom term \log \Delta T_i \right)
   \end{equation}
     
+  a) less robust, has fewer chances to correct. b) doesn't save any computational time, as the same total number of slice-to-slice registrations have to be performed for a given smoothing. c) The further away two histological slices are from each other, the more different they appear, and so a successful registration between them is less likely.
+  
   Log-Euclidean statistics could be used for averaging registrations between 3D data sets e.g. different rat hearts. Diffusion framework could be used to smooth out jolting or transformational noise in 4D time-series datasets, whilst maintaining features...?
   
   Anisotropic diffusion such as in~\cite{Arsigny2005} eqn~37, with anisotropy based on gradient.
@@ -790,6 +798,13 @@
   \begin{equation}
     c(x) = exp(-x^2/\kappa^2)
   \end{equation}
+  
+  Future work:
+  
+  Anisotropic diffusion:
+  
+  Pull image from Evernote
+  
 % section discussion (end)
 
 % chapter diffusion_smoothing_registration_of_high_resolution_rat_histology (end)
