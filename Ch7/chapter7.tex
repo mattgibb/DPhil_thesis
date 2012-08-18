@@ -444,7 +444,6 @@
     \subfigure[][Red-blue channels of intensities]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_red_blue_diff}} \quad
     \subfigure[][squared differences in intensities]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_squared_diff}}
     \caption{A manual segmentation of the same slice from Figure~\ref{fig:original_displacement}, with the same perturbation applied. The noise in the squared intensity differences in Figure~\ref{fig:original_displacement}~\textbf{(d)} are no longer present. This leads to a much smoother cost function, with much fewer local minima, and thus a more reliable registration. The improvement is reflected in the lower mean squared pixel intensity difference in \textbf{(d)} of 12.93.}
-    % \caption{A manual segmentation of the same slice from Figure~\ref{fig:original_displacement}, with the same perturbation applied. The noise in the squared intensity differences in Figure~\ref{fig:original_displacement}~\textbf{(d)} are no longer present. This leads to a much smoother cost_function, with much fewer local minima, and thus a more reliable registration. This improvement is reflected in the lower mean squared pixel intensity difference in \textbf{(d)} of 12.93.}
     \label{fig:segmented_displacement}
   \end{figure}
   
@@ -462,7 +461,7 @@
     % filename format: cross_section_perfect_200_alpha0.4_DIMENSION_SLICE
     \subfigure[][without noise]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/cross_section_perfect_200_alpha0.4_0_352}}
     \caption{What a nice figure! Caption of subfigures \subref{fig:subfig1}, \subref{fig:subfig2} and \subref{fig:subfig3}}
-    \label{fig:dummy_cross_sections}
+    \label{fig:cross_section_0}
   \end{figure}
   
   \begin{figure}[htbp]
@@ -474,7 +473,7 @@
     \subfigure[][20 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/cross_section_200_alpha0.4_20_1_431}}
     \subfigure[][without noise]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/cross_section_perfect_200_alpha0.4_1_431}}
     \caption{What a nice figure!}
-    \label{fig:dummy_cross_sections}
+    \label{fig:cross_section_1}
   \end{figure}
     
   % rotated
@@ -487,7 +486,7 @@
     \subfigure[][20 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/cross_section_200_alpha0.4r_20_0_352}}
     \subfigure[][without noise]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/cross_section_perfect_200_alpha0.4r_0_352}}
     \caption{What a nice figure!}
-    \label{fig:dummy_cross_sections}
+    \label{fig:cross_section_0r}
   \end{figure}
   
   \begin{figure}[htbp]
@@ -499,7 +498,7 @@
     \subfigure[][20 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/cross_section_200_alpha0.4r_20_1_431}}
     \subfigure[][without noise]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/cross_section_perfect_200_alpha0.4r_1_431}}
     \caption{What a nice figure!}
-    \label{fig:dummy_cross_sections}
+    \label{fig:cross_section_1r}
   \end{figure}
   
   % translated
@@ -512,7 +511,7 @@
     \subfigure[][20 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/cross_section_200_alpha0.4t_20_0_352}}
     \subfigure[][without noise]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/cross_section_perfect_200_alpha0.4t_0_352}}
     \caption{What a nice figure!}
-    \label{fig:dummy_cross_sections}
+    \label{fig:cross_section_0t}
   \end{figure}
   
   \begin{figure}[htbp]
@@ -524,7 +523,7 @@
     \subfigure[][20 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/cross_section_200_alpha0.4t_20_1_431}}
     \subfigure[][without noise]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/cross_section_perfect_200_alpha0.4t_1_431}}
     \caption{What a nice figure!}
-    \label{fig:dummy_cross_sections}
+    \label{fig:cross_section_1t}
   \end{figure}
     
   % rotated and translated
@@ -537,7 +536,7 @@
     \subfigure[][20 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/cross_section_200_alpha0.4rt_20_0_352}}
     \subfigure[][without noise]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/cross_section_perfect_200_alpha0.4rt_0_352}}
     \caption{What a nice figure! Notice a quarter of the way up from the base, a bad registration between 1 and 3 has been corrected in 10.}
-    \label{fig:dummy_cross_sections}
+    \label{fig:cross_section_0rt}
   \end{figure}
   
   \begin{figure}[htbp]
@@ -549,8 +548,10 @@
     \subfigure[][20 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/cross_section_200_alpha0.4rt_20_1_431}}
     \subfigure[][without noise]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/cross_section_perfect_200_alpha0.4rt_1_431}}
     \caption{What a nice figure! Notice a quarter of the way up from the base, a bad registration between 1 and 3 has been corrected in 10}
-    \label{fig:dummy_cross_sections}
+    \label{fig:cross_section_1rt}
   \end{figure}
+  
+  Paragraph on cross-sections.
   
   % mean squared differences 3D
   \begin{sidewaysfigure}[htbp]
@@ -560,7 +561,7 @@
     \subfigure[][translation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_mean_square_differences_3Dt}}
     \subfigure[][rotation and translation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_mean_square_differences_3Drt}}
     \caption{3D evolution of mean squared difference. Discuss how, as is visible in the colour and segmentation mean squared difference slices, even though registration was performed with the colour image, mean squared differences were calculated with the segmentation, and the results are much less noisy and clearer. Discuss how boundary conditions mean edges are diffused like at the back of b, and how mistakes are robust like the spike in a.}
-    \label{fig:dummy_cross_sections}
+    \label{fig:mean_squared_differences_3D}
   \end{sidewaysfigure}
   
   % mean squared differences 2D
@@ -571,10 +572,12 @@
     \subfigure[][translation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_mean_square_differences_2Dt}}
     \subfigure[][rotation and translation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/segmentation_mean_square_differences_2Drt}}
     \caption{Comment on magnitude and spectrum of error (higher frequencies filtered out)}
-    \label{fig:dummy_cross_sections}
+    \label{fig:mean_squared_differences_2D}
   \end{sidewaysfigure}
+
+  Paragraph on metric values - shows that registrations are successful in overwhelming majority of cases.
     
-  this is a load of content
+  Notice spike in Figure~\ref{fig:mean_squared_differences_3D}~\textbf{(a)}, at iteration 6, the registration fails. Also visible in Figures~\labelcref{fig:cross_section_0,fig:cross_section_1}~\textbf{(d)}, as a large displacement two thirds of the way up from the base. a bad registration between 1 and 3 has been corrected in 10. This demonstrates that even when the cost function of the registration is spiky, and results of a single run are sensitive to initialisation, the iterative nature of the diffusion algorithm greatly improves robustness by providing multiple opportunities to escape local minima. Contrastingly in the case of banana registration, the displacement from one unsuccessful registration is propagated to every subsequent slice in the volume.
   
   this is a load of content
   
@@ -598,18 +601,7 @@
   
   this is a load of content
   
-  % old result
-  \begin{sidewaysfigure}[htbp]
-    \centering
-    \subfigure[][0 iterations]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/low_noise_with_original_images_cross_section_200_alpha0.4rt_0_0_088}}
-    \subfigure[][1 iteration]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/low_noise_with_original_images_cross_section_200_alpha0.4rt_1_0_088}}
-    \subfigure[][3 iterations]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/low_noise_with_original_images_cross_section_200_alpha0.4rt_3_0_088}}
-    \subfigure[][10 iterations]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/low_noise_with_original_images_cross_section_200_alpha0.4rt_10_0_088}}
-    \subfigure[][without noise]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch7/Figs/dummies/low_noise_with_original_images_cross_section_perfect_200_alpha0.4rt_0_088}}
-    \caption{What a nice figure! Notice a quarter of the way up from the base, a bad registration between 1 and 3 has been corrected in 10. This demonstrates that even when the cost function of the registration is spiky, and results of a single run are sensitive to initialisation, the iterative nature of the diffusion algorithm greatly improves robustness by providing multiple opportunities to escape local minima.}
-    \label{fig:dummy_cross_sections}
-  \end{sidewaysfigure}
-  
+  this is a load of content
   
   % full contours
   \begin{figure}[htbp]\texttt{}
