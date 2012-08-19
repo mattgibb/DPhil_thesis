@@ -630,9 +630,9 @@
   
   The nature of the 3-D geometry of the volumes --- the rotation and translation signals, and the transformational noise --- is most clearly understood from the segmentation volume isosurfaces in Figures~\labelcref{fig:dummy_contour,fig:dummy_contourr,fig:dummy_contourt,fig:dummy_contourrt}. Each of the 5 levels of smoothing depicted by Figures~\labelcref{fig:cross_section_0,fig:cross_section_1,fig:cross_section_0r,fig:cross_section_1r,fig:cross_section_0t,fig:cross_section_1t,fig:cross_section_0rt,fig:cross_section_1rt} are overlayed in red with their equivalent unperturbed volumes in green. Again, the smoothing brings the noisy volume much more closely in line with the ground truth, with the largest effect on the higher frequencies of noise. The conservation of the underlying structure is most evident in Figure~\ref{fig:dummy_contourrt}~(e), where the red isosurface deviates almost imperceptibly from the green.
   
-  It is worth noting that the adjustment algorithm itself is stable with much larger levels of noise than shown here, comparable to those in Figures~\ref{fig:1d_diffusion_0_40}, \ref{fig:1d_diffusion_0_49}, \ref{fig:1d_diffusion_0_50} and \ref{fig:1d_diffusion_0_51}. It is simply that the registration is sensitive, wouldn't work blah blah.
+  It is worth noting that as long as the registration process is refined enough to arrive dependably at the global minimum, the adjustment algorithm itself is stable with much larger levels of noise than showcased here.
   
-  Parameters used for noisy dummies were x, y, z. The important factor is whether the slice-to-slice registrations are quickly and robustly successful, and so much greater noise could be filtered by the algorithm, as long as the parameters were tuned for large displacements for the first few iterations, and then smaller displacements for the finer smoothing in the later iterations.
+  Parameters used the registration are listed in Table~\ref{tab:dummy_histo_to_histo}. The important factor is whether the slice-to-slice registrations are quickly and robustly successful, and so much greater noise could be filtered by the algorithm, as long as the parameters were tuned for large displacements for the first few iterations, and then smaller displacements for the finer smoothing in the later iterations.
   
   % subsection simulating_transformational_diffusion (end)
   
@@ -640,94 +640,93 @@
 
 \section{Results} % (fold)
 \label{sec:results}
+  \subsection{Global Diffusion} % (fold)
+  \label{sub:global_diffusion}
   
-  Figures:
+    Figures:
   
-  % x slices
-  \begin{figure}[htbp]
-    \centering
-    \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch7/Figs/adjusted_0_0_235}}
-    \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch7/Figs/adjusted_1_0_235}}
-    \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch7/Figs/adjusted_20_0_235}}
-    \caption{Cross-section after 0, 1 and 20 iterations of diffusion}
-    \label{fig:adjusted_0_235}
-  \end{figure}
+    % x slices
+    \begin{figure}[htbp]
+      \centering
+      \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch7/Figs/adjusted_0_0_235}}
+      \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch7/Figs/adjusted_1_0_235}}
+      \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch7/Figs/adjusted_20_0_235}}
+      \caption{Cross-section after 0, 1 and 20 iterations of diffusion}
+      \label{fig:adjusted_0_235}
+    \end{figure}
 
-  % y slices
-  \begin{figure}[htbp]
-    \centering
-    \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch7/Figs/adjusted_0_1_287}}
-    \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch7/Figs/adjusted_1_1_287}}
-    \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch7/Figs/adjusted_20_1_287}}
-    \caption{Cross-section after 0, 1 and 20 iterations of diffusion}
-    \label{fig:adjusted_1_287}
-  \end{figure}
+    % y slices
+    \begin{figure}[htbp]
+      \centering
+      \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch7/Figs/adjusted_0_1_287}}
+      \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch7/Figs/adjusted_1_1_287}}
+      \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch7/Figs/adjusted_20_1_287}}
+      \caption{Cross-section after 0, 1 and 20 iterations of diffusion}
+      \label{fig:adjusted_1_287}
+    \end{figure}
   
-  % lower 100 slices zoom
-  % x slices
-  \begin{sidewaysfigure}[htbp]
-    \centering
-    \subfigure[][]{\includegraphics[height=0.15\textheight]{Ch7/Figs/adjusted_0_0_235_zoomed}}
-    \subfigure[][]{\includegraphics[height=0.15\textheight]{Ch7/Figs/adjusted_1_0_235_zoomed}}
-    \subfigure[][]{\includegraphics[height=0.15\textheight]{Ch7/Figs/adjusted_20_0_235_zoomed}}
-    \caption{Lower 100 slices of cross-section after 0, 1 and 20 iterations of diffusion}
-    \label{fig:adjusted_0_235}
-  \end{sidewaysfigure}
+    % lower 100 slices zoom
+    % x slices
+    \begin{sidewaysfigure}[htbp]
+      \centering
+      \subfigure[][]{\includegraphics[height=0.15\textheight]{Ch7/Figs/adjusted_0_0_235_zoomed}}
+      \subfigure[][]{\includegraphics[height=0.15\textheight]{Ch7/Figs/adjusted_1_0_235_zoomed}}
+      \subfigure[][]{\includegraphics[height=0.15\textheight]{Ch7/Figs/adjusted_20_0_235_zoomed}}
+      \caption{Lower 100 slices of cross-section after 0, 1 and 20 iterations of diffusion}
+      \label{fig:adjusted_0_235}
+    \end{sidewaysfigure}
 
-  % y slices
-  \begin{sidewaysfigure}[htbp]
-    \centering
-    \subfigure[][]{\includegraphics[height=0.15\textheight]{Ch7/Figs/adjusted_0_1_287_zoomed}}
-    \subfigure[][]{\includegraphics[height=0.15\textheight]{Ch7/Figs/adjusted_1_1_287_zoomed}}
-    \subfigure[][]{\includegraphics[height=0.15\textheight]{Ch7/Figs/adjusted_20_1_287_zoomed}}
-    \caption{Lower 100 slices of cross-section after 0, 1 and 20 iterations of diffusion}
-    \label{fig:adjusted_1_287}
-  \end{sidewaysfigure}
+    % y slices
+    \begin{sidewaysfigure}[htbp]
+      \centering
+      \subfigure[][]{\includegraphics[height=0.15\textheight]{Ch7/Figs/adjusted_0_1_287_zoomed}}
+      \subfigure[][]{\includegraphics[height=0.15\textheight]{Ch7/Figs/adjusted_1_1_287_zoomed}}
+      \subfigure[][]{\includegraphics[height=0.15\textheight]{Ch7/Figs/adjusted_20_1_287_zoomed}}
+      \caption{Lower 100 slices of cross-section after 0, 1 and 20 iterations of diffusion}
+      \label{fig:adjusted_1_287}
+    \end{sidewaysfigure}
   
-  % diffused contours
-  \begin{sidewaysfigure}[p]
-    \centering
-    \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_diffused}}
-    \caption{}
-    \label{fig:image1.png}
-  \end{sidewaysfigure}
+    % diffused contours
+    \begin{sidewaysfigure}[p]
+      \centering
+      \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_diffused}}
+      \caption{}
+      \label{fig:image1.png}
+    \end{sidewaysfigure}
 
-  \begin{sidewaysfigure}[p]
-    \centering
-    \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_diffused}}
-    \caption{}
-    \label{fig:image1.png}
-  \end{sidewaysfigure}
+    \begin{sidewaysfigure}[p]
+      \centering
+      \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_diffused}}
+      \caption{}
+      \label{fig:image1.png}
+    \end{sidewaysfigure}
 
-  \begin{sidewaysfigure}[p]
-    \centering
-    \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_diffused}}
-    \caption{}
-    \label{fig:image1.png}
-  \end{sidewaysfigure}
+    \begin{sidewaysfigure}[p]
+      \centering
+      \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_diffused}}
+      \caption{}
+      \label{fig:image1.png}
+    \end{sidewaysfigure}
 
-  \begin{sidewaysfigure}[p]
-    \centering
-    \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_diffused}}
-    \caption{}
-    \label{fig:image1.png}
-  \end{sidewaysfigure}
+    \begin{sidewaysfigure}[p]
+      \centering
+      \subfigure[][]{\includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_diffused}}
+      \caption{}
+      \label{fig:image1.png}
+    \end{sidewaysfigure}
 
-  
-  
-  2 cross-sections and a contour surface of:
-    the straight column, rotation, translation, rotation + translation volumes
-      with perfect, noisy, smoothed 0.4, smoothed 0.3
+    2 cross-sections and a contour surface of:
+      the straight column, rotation, translation, rotation + translation volumes
+        with perfect, noisy, smoothed 0.4, smoothed 0.3
         
-  Figure of 0.4 200rt plot\_metric\_values\_and\_differences from the first step, showing that all the registrations are reaching their minimum of around the same low metric value, it's just that the computation of the Adjusted Transforms is unstable.
+    Figure of 0.4 200rt plot\_metric\_values\_and\_differences from the first step, showing that all the registrations are reaching their minimum of around the same low metric value, it's just that the computation of the Adjusted Transforms is unstable.
+    
+  % subsection global_diffusion (end)
   
-  
-  
-  
-  \subsection{Regional Registration} % (fold)
-  \label{sub:regional_registration}
+  \subsection{Regional Diffusion} % (fold)
+  \label{sub:regional_diffusion}
     Segment a largish blood vessel or vessel branch in the histology and show that it looks like a smooth surface and is aligned. 
-  % subsection regional_registration (end)
+  % subsection regional_diffusion (end)
 
 % section results (end)
 

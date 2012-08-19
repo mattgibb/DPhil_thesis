@@ -23,8 +23,9 @@
       \quad\quad gradient magnitude tolerance: & 0.0001 \\
       \hline
     \end{tabular}
-    
+      
     \caption{Parameters used to register adjacent pairs of block face images to correct for camera movement in Section~\ref{sub:image_preparation}.}
+    \label{tab:block_face_to_block_face}
   \end{table}
   
   % block face to histo
@@ -50,10 +51,10 @@
     \end{tabular}
     
     \caption{Parameters used to register the histological slices to the block face images in Section~\ref{sub:registration_algorithm}.}
-
+    \label{tab:block_face_to_histo}
   \end{table}
   
-  % histo to histo
+  % dummy histo to histo
   \begin{table}[h]
     \centering
     \begin{tabular}{|ll|}
@@ -74,6 +75,54 @@
     \end{tabular}
     
     \caption{Registration parameters used to smooth the test volumes in Section~\ref{sub:simulating_transformational_diffusion}.}
-
+    \label{tab:dummy_histo_to_histo}
+  \end{table}
+  
+  % global histo to histo
+  \begin{table}[h]
+    \centering
+    \begin{tabular}{|ll|}
+      \hline
+      metric: & mean squares \\
+      \multicolumn{2}{|l|}{optimiser:} \\
+      \quad maximise: & false\\
+      \multicolumn{2}{|l|}{\quad scale:} \\
+      \quad\quad matrix: & 300 \\
+      \quad\quad offset: & 0.000005 \\
+      \quad max. iterations: & 300 \\
+      \multicolumn{2}{|l|}{\quad regular step gradient descent:} \\
+      \quad\quad relaxation factor: & 0.7 \\
+      \quad\quad max. step length: & 3 \\
+      \quad\quad min. step length: & 0.05 \\
+      \quad\quad gradient magnitude tolerance: & 5000 \\
+      \hline
+    \end{tabular}
+    
+    \caption{Registration parameters used to smooth the Rat 28 full cardiac volume in Section~\ref{sub:global_diffusion}.}
+    \label{tab:global_histo_to_histo}
+  \end{table}
+  
+  % regional histo to histo
+  \begin{table}[h]
+    \centering
+    \begin{tabular}{|ll|}
+      \hline
+      metric: & mean squares \\
+      \multicolumn{2}{|l|}{optimiser:} \\
+      \quad maximise: & false\\
+      \multicolumn{2}{|l|}{\quad scale:} \\
+      \quad\quad matrix: & 300 \\
+      \quad\quad offset: & 0.000005 \\
+      \quad max. iterations: & 300 \\
+      \multicolumn{2}{|l|}{\quad regular step gradient descent:} \\
+      \quad\quad relaxation factor: & 0.7 \\
+      \quad\quad max. step length: & 3 \\
+      \quad\quad min. step length: & 0.05 \\
+      \quad\quad gradient magnitude tolerance: & 5000 \\
+      \hline
+    \end{tabular}
+    
+    \caption{Registration parameters used to smooth the Rat 28 region of interest around the epicardial vessel in Section~\ref{sub:regional_diffusion}.}
+    \label{tab:regional_histo_to_histo}
   \end{table}
 % chapter registration_parameters (end)
