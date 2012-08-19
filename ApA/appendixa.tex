@@ -4,8 +4,56 @@
 
 \chapter{Registration Parameters} % (fold)
 \label{cha:registration_parameters}
-  The registration parameters used to smooth the test volumes in Section~\ref{sub:simulating_transformational_diffusion} are displayed in Table
+  % block face to block face
+  \begin{table}[h]
+    \centering
+    \begin{tabular}{|ll|}
+      \hline
+      metric: & mean squares \\
+      \multicolumn{2}{|l|}{optimiser:} \\
+      \quad maximise: & false\\
+      \multicolumn{2}{|l|}{\quad scale:} \\
+      \quad\quad rotation: & 1 \\
+      \quad\quad offset: & 0.00001 \\
+      \quad max. iterations: & 100 \\
+      \multicolumn{2}{|l|}{\quad regular step gradient descent:} \\
+      \quad\quad relaxation factor: & 0.8 \\
+      \quad\quad max. step length: & 1000 \\
+      \quad\quad min. step length: & 1 \\
+      \quad\quad gradient magnitude tolerance: & 0.0001 \\
+      \hline
+    \end{tabular}
+    
+    \caption{Parameters used to register adjacent pairs of block face images to correct for camera movement in Section~\ref{sub:image_preparation}.}
+  \end{table}
   
+  % block face to histo
+  \begin{table}[h]
+    \centering
+    \begin{tabular}{|ll|}
+      \hline
+      normalise images: & true \\
+      metric: & normalised correlation \\
+      \multicolumn{2}{|l|}{optimiser:} \\
+      \quad maximise: & true \\
+      \multicolumn{2}{|l|}{\quad scale:} \\
+      \quad\quad rotation: & 100 \\
+      \quad\quad size: & 500 \\
+      \quad\quad matrix: & 500 \\
+      \quad\quad offset: & 0.0001 \\
+      \quad max. iterations (rigid): & 1500 \\
+      \quad max. iterations (similarity): & 100 \\
+      \quad max. iterations (affine): & 100 \\
+      \multicolumn{2}{|l|}{\quad gradient descent:} \\
+      \quad\quad learning rate: & 0.05 \\
+      \hline
+    \end{tabular}
+    
+    \caption{Parameters used to register the histological slices to the block face images in Section~\ref{sub:registration_algorithm}.}
+
+  \end{table}
+  
+  % histo to histo
   \begin{table}[h]
     \centering
     \begin{tabular}{|ll|}
@@ -25,7 +73,7 @@
       \hline
     \end{tabular}
     
-    \caption{Hey!}
+    \caption{Registration parameters used to smooth the test volumes in Section~\ref{sub:simulating_transformational_diffusion}.}
+
   \end{table}
-  
 % chapter registration_parameters (end)
