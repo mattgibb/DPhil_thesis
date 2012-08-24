@@ -1,195 +1,39 @@
-\chapter{2D and 3D Analysis of Fibre and Sheet Orientation}
-% If you like chapter abstracts ...
+%!TEX root = ../thesis.tex
+\chapter{Extraction of 3D Anatomical Structure}
 \dblspace
-\begin{quote}{\em \input{Ch7/abstract7}}\end{quote}
 
-\section{Slice Analysis} % (fold)
-\label{sec:image:slice_analysis}
-
-4 Feb  2011 - confirmation
-
-Use to check git repo
-
-\subsection{Image Curation} % (fold)
-\label{sub:image_curation}
-\begin{itemize}
-  \item Rough 3D volumes were constructed (figures)
-  \item Slice ranges selected where clefts were perpendicular to slice plane
-  \item Processing was carried out in Matlab on the OERC Windows cluster (link/cite).
-  \item Four regions were selected manually from each slice, such that tissue orientation was close to constant throughout each region: upper free wall, lower free wall, upper septum, lower septum (figure).
-  \item A threshold was applied to the red channel, which exhibited the strongest contrast between tissue and interstitial space (figure).
-  \item The threshold image was image was closed and then opened (description, reason and figures at each stage. doc imopen imclose).
-  \item (doc bwlabel) Propose problem: sometimes artifacts e.g. bubbles left thresholded regions. All contiguous regions in the threshold image corresponding to tissue were manually selected.
-  \item Internal `holes' were eliminated by selecting all regions corresponding to the heart's sourrounding exterior, and to 
+\section{Aims} % (fold)
+\label{sec:aims}
   
-\end{itemize}
+% section aims (end)
 
-\begin{figure}[htbp]
-  \centering
-  % \includegraphics[width=1\textwidth]{Ch7/Figs/}
-  \caption{Rough 3D volumes were constructed to select slice ranges where clefts were perpendicular to the slice plane.}
-  \label{fig:rough_volumes}
-\end{figure}
-
-\begin{figure}[htbp]
-  \centering
-  % \includegraphics[width=1\textwidth]{Ch7/Figs/}
-  \caption{Four red boxes mark the manually selected regions of slice XXX in Rat 28: the upper (a) and lower (b) free wall, and the upper (c) and lower (d) septum. Red arrows mark the approximated tissue orientations, which were close to constant within each region.}
-  \label{fig:four_regions}
-\end{figure}
-
-\begin{figure}[htbp]
-  \centering
-  % \includegraphics[width=1\textwidth]{Ch7/Figs/}
-  \caption{Same slice as Figure~\ref{fig:four_regions}. 3 channels, threshold segmentation of red channel.}
-  \label{fig:channels}
-\end{figure}
-
-\begin{figure}[htbp]
-  \centering
-  % \includegraphics[width=1\textwidth]{Ch7/Figs/}
-  \caption{Figure}
-  \label{fig:closed_opened}
-\end{figure}
-
-
-
-% subsection image_curation (end)
-
-\begin{verbatim}
-
-%Eliminate internal "holes"
-non_tissue_label_image=bwlabel(~tissue_label_image);
-f1=figure;
-imagesc(non_tissue_label_image)
-impixelinfo
-f2=figure;
-imagesc(non_tissue_label_image)
-title('Select all regions corresponding to background');
-background_cavity_image=uint8(bwselect);
-title('Select all regions corresponding to cavity');
-cavity_image=uint8(bwselect);
-close(f1);
-close(f2);
-background_cavity_image(cavity_image==1)=2;
-
-orient_test=calculate_orientation_ST_2D(im2,3,11, ~background_cavity_image);
-
-%Select the main orientation of the tissue
-f3 = figure;
-imagesc(background_cavity_image)
-title('Select two point to mark the main orientation of the structure')
-[x,y] = ginput(2);
-close(f3);
-
-% calculate reference angle
-ref_vector=[x(2)-x(1) y(2)-y(1)];
-ref_angle=atan(ref_vector(2)/ref_vector(1));
-
-orient_angle=squeeze(atan(orient_test(2,:,:)./orient_test(1,:,:)));
-angles = orient_angle - ref_angle;
-angles(angles < -pi/2) = angles(angles < -pi/2) + pi;
-angles(angles > pi/2) = angles(angles > pi/2) - pi;
-
-angles(background_cavity_image>0)=0;
-
-%Select only clefts
-cleft_thres = 180;  %Select the best threshold for clefts
-clefts=zeros(size(im2));
-clefts(im2>cleft_thres & ~background_cavity_image)=1;
-
-% Get rid of really large holes
-figure
-subplot(1,2,1);
-imagesc(clefts)
-title('Before opening')
-clefts2=imopen(clefts,strel('disk',11));
-
-clefts=clefts-clefts2;
-subplot(1,2,2);
-imagesc(clefts)
-title('After opening')
-
-angles(clefts==0)=0;
-figure
-imagesc(angles)
-title('Angles in clefts')
-
-dist_epi=bwdist(background_cavity_image==2);
-dist_endo=bwdist(background_cavity_image==1);
-e=dist_endo./(dist_endo+dist_epi);
-e(~clefts)=0;
-figure
-imagesc(e)
-title('e parameter in clefts')
-
-% save results
-mat_name = [slice_name '.bmp_' region_name '.mat'];
-mat_path = ['H:\cygwin\home\matthew.g\orientations\' data_set '\' mat_name ];
-save(mat_path,'angles','e','ref_angle','rect');
-end
-\end{verbatim}
-% section slice_analysis (end)
-
-
-CONFIRMATION REPORT
-PROBABLY WON'T BE INCLUDED
-\section{Comparison of Rat Cardiac Histology and DTMRI}
-  This chapter aims to extract information from the volumes generated in the previous chapter. Tissue segmentations exploiting the Trichrome staining will provide cellular resolution tissue geometries. Fibre direction will be inferred from the Gaussian-smoothed structure tensor within the myocardium. We will compare quantitatively the microstructural variation between rat hearts in highly heterogeneous areas: the apex, the junction of the septum and myocardial wall, the papillary insertions, and the epicardial arteries.
+\section{Methods} % (fold)
+\label{sec:methods}
   
-  These same regions are where the complexity of the microstructure might lead to poor definition from DTI, mainly because of the partial volume effects produced by limited resolution. The tools developed for the histology registration will be used to register the accompanying DTMRI image for each heart. This will allow us to scrutinise the quality of DTI data in the aforementioned regions, and quantify partial volume effects. It may be possible to infer rule-based models from our findings, thus allowing us to augment other DTI datasets in those regions where detailed information is lacking or of poor quality. In any case, conclusions can be drawn from the reliability of DTMRI near boundaries and heterogeneities.
-CONFIRMATION REPORT
+% section methods (end)
 
-PAPER OUTLINE FROM CONFIRMATION REPORT
-\subsection{A Multimodality Comparison of High Resolution Rat Cardiac Volume Images}
-  This paper seeks to expound the nature of tissue structure with unprecedented resolution and accuracy, both in tissue type and in fibre orientation. It will explore three dimensions of investigation, each one unfolding from the previous. In a first characterisation of the histology, the Trichrome-stained components of registered histological volumes will be segmented by tissue type. Structure tensor fields will then be calculated within the myocardium to infer fibre orientation. Secondly, the new data will be registered in 3-D to DTI data from the same rat hearts, using the same registration tools developed for the histological registration. The registered volumes will be compared  in regions where DTI is thought to perform poorly, in highly heterogeneous regions and at tissue boundaries. Thirdly, inter-subject variability and commonality will be examined across as many datasets as are available and of workable quality and completeness; approximately five rat hearts.
+\section{Results} % (fold)
+\label{sec:results}
+  \begin{sidewaysfigure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{Ch8/Figs/structure_tensor_glyphs}
+    \caption{A central slice through the epicardial vessel region from Section~\ref{sub:regional_diffusion}, overlayed with spheroid glyphs, scaled and oriented by the structure tensor of the pixel intensities.}
+    \label{fig:structure_tensor_glyphs}
+  \end{sidewaysfigure}
+    
+  \begin{figure}[htbp]
+    \centering
+    \subfigure[][x]{\includegraphics[width=0.45\textwidth]{Ch8/Figs/x_eigencomponent.png}}
+    \subfigure[][y]{\includegraphics[width=0.45\textwidth]{Ch8/Figs/y_eigencomponent.png}}
+    \subfigure[][z]{\includegraphics[width=0.45\textwidth]{Ch8/Figs/z_eigencomponent.png}}
+    \subfigure[][combined]{\includegraphics[width=0.45\textwidth]{Ch8/Figs/rgb_eigencomponents.png}}
+    \caption{\textbf{(a)}, \textbf{(b)} and \textbf{(c)} map the absolute magnitudes of the x-, y- and z- components of the largest eigenvector of the structure tensor, of the same central slice from Figure~\ref{fig:structure_tensor_glyphs}. The volumewise maximums for the x-, y-, and z- components were 15.8, 14.6 and 68.7, respectively; the intensities have thus been scaled from 0 (black) to 68.7 (white). \textbf{(d)} combines the intensities in an RGB image, with red x, green y and blue z.}
+    \label{fig:eigencomponents}
+  \end{figure}
   
-  \subsubsection{Aims and Hypotheses}
-    \begin{itemize}
-      \item Cellular resolution tissue segmentations and fibre fields will be generated as an authoritative reference, and for use in models for simulation.
-      \item It has been observed experimentally that epicardial arteries tend to anchor phase singularities and stabilise arrhythmia, and the first chapter of the thesis demonstrates that in an idealised geometry, a conductive myocardium surrounding epicardial arteries can act as a circuit of rotary conduction, perpetuating reentry. We propose that in actuality, there is little or no contiguous region of conductive myocardium around large epicardial arteries to engender this effect.
-      \item It is commonly considered that fibre direction is poorly characterised in highly heterogeneous regions, both where the scales of tissue variability are comparable to the DTI resolution, and also at tissue boundaries, where a significant proportion of the voxel volume is non-tissue. There remains however no clear way to augment the information gleaned from DTMRI in these regions. We aim to assess quantitatively the scale of such errors with registered histology. We look to observe structural patterns, consistent across subjects, which could form the basis for model-based augmentation of non-invasive MRI and DTI data.
-      \item NMR images offer poor contrast between tissue types without invasive injection of contrast agents, and even when segmented, the resulting fibre and sheet directions are difficult to validate. Structures visible in MRI, such as interstitial planes, could be corroborated by histology, to provide better interpretation of MRI data going forward.
-      \item Alternatively, where little inter-subject correlation is observed, we can characterise variational ranges with some confidence, given a substantial number of datasets.
-      \item \emph{Possibly check whether secondary direction of DTI lies perpendicular to sheets/interstitial spaces.}
-    \end{itemize}
-    
-  \subsubsection{Methods}
-    The tissue staining process highlights several structures: pink myocytes, cyan collagen, orange non-myocytes, blue-black nuclei and pale interstitial spaces. The volumes will be segmented based on RGB colour vector.
-    
-    A 3D non-rigid registration of myocardial tissue segmentation and fractional anisotropy (FA) will be performed using tools already developed, under the assumption that FA is linearly related to the percentage volume occupied by myocardium in a given voxel region. This registration will facilitate meaningful and accurate comparison between histology and DTI.
-    
-  \subsubsection{Results}
-    A comparison of volumes across modalities and subjects at unprecedented resolution will be achieved. The findings will be presented in three sections. Firstly, the segmentations of the three tissue types will be showcased for all rat hearts, both at the whole ventricular scale and zooming to interesting areas in each heart. Secondly, the myocardial tissue segmentations will be displayed around the epicardial arteries of each volume, highlighting the degree of contiguous myocardial casing around the arteries. Thirdly, several figures representing the contrasts and similarities between data from the two modalities will be presented, at the whole ventricular level and in ROIs; regions away from boundaries such as the septum free-wall junction and the papillary insertion sites should yield fruitful comparisons. Myocardial segmentations will be juxtaposed or superposed with fractional isotropy segmentations. 3D stream graphs of the two fibre datasets will be compared. A scalar field of euclidian distance between the two sets of fibre orientations will be calculated throughout the segmented myocardium, and translucent isosurfaces of this field will display where the modalities diverge most.
-    
-  \subsubsection{Discussion and Conclusions}
-PAPER OUTLINE FROM CONFIRMATION REPORT
+% section results (end)
 
-PROGRESS FROM CONFIRMATION REPORT ABOUT SEGMENTATION
-
-  \subsection{Segmentation}
-    Scalar images derived from the raw diffusion tensor data, such as fractional anisotropy and apparent diffusion coefficients, have been segmented using a combination of threshold level set and fast marching filtering techniques. A flow diagram of one pipeline is shown in Figure~\ref{fig:pipeline} and the results of a segmentation are displayed in Figure~\ref{fig:segmentation}. Tetrahedral meshes have been generated from the resulting segmentations, providing a set of rat heart geometries intrinsically coherent with their associated DTMRI data. 
-    Geometry has been extracted and meshed from rat DTMRI volumes.
-    
-    
-\begin{figure}[htbp]
-  \centering
-  % \includegraphics[width=1\textwidth]{1_progress_report/figures/segmentation-pipeline}
-  \caption{A flow diagram of the DTMRI segmentation pipeline. Configuration parameters are shown as smaller text under the name of each filter. The raw DT data is processed to give a scalar value at each point in the heart volume. Seg3D is then used to apply a rough initial tissue segmentation, which is used as the set of seed points for a fast marching filter. After fast marching is applied to expand the pointset slightly, it is used as input the threshold level set filter, along with the fractional isotropy as a feature image. The feature image of a level set filter controls the propagation rate of the frontier, so that regions of high anisotropy, likely to be tissue, are traversed quickly. A final binary threshold filter is applied, providing a segmentation volume.}
-  \label{fig:pipeline}
-\end{figure}
-
-\begin{figure}[htbp]
-  \centering
-  % \includegraphics[height=0.47\textwidth]{1_progress_report/figures/segmentation_isosurface}
-  % \includegraphics[height=0.47\textwidth]{1_progress_report/figures/segmentation_isosurface_cutplanes}  
-  \caption{The segmentation surfaces of output from the pipeline in Figure~\ref{fig:pipeline}. On the right, cutplanes expose the inner surfaces and structure of the rat heart.}
-  \label{fig:segmentation}
-\end{figure}
-
-\subsection{Fibre Extraction}
-  Fibres have been extracted from third party data. Various scalar, vector and tensor data have been derived from the raw DTMRI tensor field. A pipeline has been developed to extract interpolated principal component vectors from the diffusion tensor field at the centroids of tetrahedra composing the rat meshes. Fibre direction at mesh centroids has been extracted from rat DTMRI volumes.
-
-
-END PROGRESS FROM CONFIRMATION REPORT ABOUT SEGMENTATION
-
+\section{Discussion} % (fold)
+\label{sec:discussion}
+  
+% section discussion (end)
