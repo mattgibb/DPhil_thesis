@@ -8,28 +8,19 @@
 
 \section{Aims} % (fold)
 \label{sec:aims}
-  GENERAL POINT, `it will be shown later' in introductory paragraphs, to tittilate the reader.
-  
-  Introductory motivational paragraph about problems and failures with final affine result. Maybe repeat motivations from Chapter 6.
-  
-  \subsection{Problem}
-    \begin{itemize}
-      \item Underlying noise in reference images, from changes in camera position and illumination angles and intensities
-      \item Resolution of reference images are 8 times coarser at 8.8$\mu$ 
-      \item Large discontinuities in camera position have already been corrected for in the block reference images, introducing the `banana problem' across the discontinuity
-      \item Small non-rigid deformations when tissue is sliced and rehydrated, different in every slice and not fully represented by an affine transform.
-      \item Registration close, but does not always find the global minimum.
-    \end{itemize}
+  We have achieved a reasonable large-scale alignment of the great majority of histological slices to form a consistent tissue volume. Yet we are left with several limitations of the block face technique from Chapter~\ref{cha:coregistration_of_high_resolution_rat_histology}. There is significant underlying noise in the reference images, from the changes in camera position, and the illumination angles and intensities. At 26.6 $\mu$m, the in-plane resolution of the reference images is 24 times coarser than that of the histology slices, precluding an alignment on the scale of cardiac microstructure. Small non-rigid deformations introduced during slicing and rehydration are particular to each slice, and could not be represented fully by the affine registration. Despite obtaining a result that was relatively close to the block face geometry, the overlap of pixel intensities between tissue and wax, and the interslice variability therein, led to a noisy, jagged result that was not always at the global minimum.
     
-    Motivate with banana: Adjacent histological images are, in the main, extremely similar, and register very closely to one another. Previous approaches have done banana blah blah. Because each slice is positioned relative to it's predecessor, the displacement due to any single erroneous registration is propagated to every subsequent slice. Furthermore, CAN ONLY USE RIGID REGISTRATION, AS EVERY SLICE WOULD TAKE THE SHAPE OF THE FIRST. DON'T FORGET TO INCLUDE 8\_64 AND REGISTRATION PARAMS.
+  \begin{figure}[htbp]
+    \centering
+    \subfigure[][]{\includegraphics[width=0.9\pagewidth]{Ch7/Figs/banana_0_343}}
+    \subfigure[][]{\includegraphics[width=0.9\pagewidth]{Ch7/Figs/banana_1_301}}
+    \caption{The full histological volume, registered using the banana method. Even when constrained by a rigid transform, in many areas the slice-to-slice registration is accurate enough that detailed tissue structure is clearly visible. Yet, just as the cylinder does not represent the banana, the resulting geometry of the volume is quite unrelated to ground truth.}
+    \label{fig:banana}
+  \end{figure}
     
-    \begin{figure}[htbp]
-      \centering
-      \subfigure[][]{\includegraphics[width=0.9\pagewidth]{Ch7/Figs/banana_0_343}}
-      \subfigure[][]{\includegraphics[width=0.9\pagewidth]{Ch7/Figs/banana_1_301}}
-      \caption{The full histological volume, registered using the banana method. Even when constrained by a rigid transform, in many areas the slice-to-slice registration is accurate enough that detailed tissue structure is clearly visible. Yet, just as the cylinder does not represent the banana, the resulting geometry of the volume is quite unrelated to ground truth.}
-      \label{fig:banana}
-    \end{figure}
+  Adjacent histological images are, in the main, extremely similar in shape, have an extremely similar colour profile and are obtained at the same spatial resolution. These characteristics together make for highly accurate and reliable coregistration. Starting from the first slice in a dataset, previous approaches have registered each successive slice to its predecessor, thus constructing a coherent volume. Figure~\ref{fig:banana} exhibits the application of this method to the rat histology. However, there are several unacceptable characteristics of volumes generated with these techniques. Because each slice is positioned relative to the previous, the displacement due to any single erroneous registration is propagated to every subsequent slice. Furthermore, the volumes suffer from what is known as the `banana problem', stemming from the fact that if a curved banana were sliced evenly and perpendicularly to its length, a volume obtained with a slice-to-slice method would appear straight, having lost the original curvature of the banana. In the case of cardiac histology, volumes approach maximum pairwise symmetry, bearing, if any, a merely coincidental relation to the large-scale geometry of the heart. Finally in this case, only rigid registration may be used, as if the size or shape of slices were unconstrained, every slice would approximate the dimensions of the first, and the heart would approximate a meaty cylinder.
+  
+  Enter `transformational diffusion smoothing': a novel technique incorporating the best features from reference-based and slice-to-slice registration methods, and eliminating the weaknesses of both. In this chapter, we will expound its mathematical basis, verify its efficacy over a suite of test geometries, and finally present the much improved histological volumes which it gives rise to.
     
 % section aims (end)
 
