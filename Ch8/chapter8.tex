@@ -4,7 +4,7 @@
 
 \section{Aims} % (fold)
 \label{sec:aims}
-  
+  Having obtained a coherent histological volume in a region around an epicardial vessel, the challenge remains to extract an accurate, anatomically based model of tissue microstructure from the volume, firstly as an anatomical reference, but also to perform realistic simulations investigating the role of microstructure in electrophysiological wave propagation. In this chapter, we extract volumetric image gradients using what is known as the structure tensor, in the hope that these gradients will correlate closely with the local myocardial fibre direction. We find that in this case, even extremely small displacements of the slices relative to each other is enough to drown the gradient signal from the fibre direction.
 % section aims (end)
 
 \section{Methods} % (fold)
@@ -40,7 +40,7 @@
   
   In a perfectly registered histological volume, and at the scale of individual myocardial cells, the smallest intensity gradients will be found parallel to the fibre direction, and the largest in the plane perpendicular to them. The structure tensors should therefore appear disc-shaped, with their short axis aligned with the muscle fibres.
   
-  We apply the structure tensor to the regionally registered block from Section~\ref{sub:regional_diffusion}. It is important to have the same sampling rate within the plane of the slices as between them, so that artificial anisotropy is not introduced. A volume is therefore constructed from slice images that are downsampled and Gaussian smoothed so as to have the same spatial resolution of 10$\mu$m as the slicing.
+  We apply the structure tensor to the regionally registered block from Section~\ref{sub:regional_diffusion}. It is important to have the same sampling rate within the plane of the slices as between them, so that artificial anisotropy is not introduced. A volume is therefore constructed from slice images that are downsampled and Gaussian smoothed so as to have the same spatial resolution of 10$\mu$m as the slicing. A Gaussian windowing kernel is applied to the structure tensor volume, with $\sigma$ equal to the pixel spacing.
 % section methods (end)
 
 \section{Results} % (fold)
@@ -51,7 +51,7 @@
     \caption{A central slice through the epicardial vessel region from Section~\ref{sub:regional_diffusion}, overlayed with spheroid glyphs, scaled and oriented by the structure tensor of the pixel intensities.}
     \label{fig:structure_tensor_glyphs}
   \end{sidewaysfigure}
-    
+  
   \begin{figure}[htbp]
     \centering
     \subfigure[][x]{\includegraphics[width=0.45\textwidth]{Ch8/Figs/x_eigencomponent.png}}
@@ -62,9 +62,12 @@
     \label{fig:eigencomponents}
   \end{figure}
   
+  Figure~\ref{fig:structure_tensor_glyphs} illustrates the form of the structure tensor across the central histological slice of the epicardial block. A regular grid of spheroid glyphs are plotted at each pixel of the slice, with principal axes aligned and proportional to the eigenvectors and eigenvalues of the structure tensor. It is evident that the largest tensors are not, as expected, disc-like, but in fact javelin-like, as one eigenvalue greatly exceeds the other two. It is also evident the larger tensors are oriented predominantly in the z-direction perpendicular to the plane. Figure~\ref{fig:eigencomponents} echoes this finding, showing grayscale images of the magnitudes of the three components of the largest eigenvector. By far the brightest image is that of the z-component. This dominance is also expressed in the largely blue appearance of Figure~\ref{fig:eigencomponents}(d), with only small tinges of red and green.
 % section results (end)
 
 \section{Discussion} % (fold)
+  The dominance of intensity gradient in the z-direction is a result of slices being very slightly out of alignment with each other, by the distance of the width of a cell or greater. Unfortunately, the misalignment often leads to a `zig-zagging' of intensities perpendicular to the slices and at the frequency of the slicing, which manifests as an inflated z-gradient. An attempt to extract fibre direction and incorporate this information into a model for simulation would sadly be fruitless in this context.
+  
 \label{sec:discussion}
   
 % section discussion (end)
