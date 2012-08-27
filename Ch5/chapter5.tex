@@ -1,423 +1,517 @@
 %!TEX root = ../thesis.tex
-\chapter{Comparison of an Accurate and Simplified Fibre Model in an Idealised Geometry}
+\chapter{Coregistration of High Resolution Rat Histology} % (fold)
+\label{cha:coregistration_of_high_resolution_rat_histology}
 % If you like chapter abstracts ...
 \dblspace
-% \begin{quote}{\em \input{Ch5/abstract5}}\end{quote}
+% \begin{quote}{\em \input{Ch5/abstract6}}\end{quote}
 
-\section{Aims}
-\label{sec:cha5:aims}
-  As we saw in section~\ref{sub:vessels_trabeculae_and_papillary_insertions}, both optical and electrical mapping studies show a close colocalisation of phase singularities with sub-epicardial vessels, and we see an example of such behaviour from an optical study in Figure~\ref{fig:meandering}. We hypothesise that the detailed microstructure around blood vessels promotes wave curvature and could contribute to wave break-up. Moreover, we postulate that the nature of the microstructure increases the anchoring effect of phase singularities to vessels.
+\section{Aims} % (fold)
+\label{sec:aims}
 
-  \begin{figure}[htbp]
-		\centering
-		\includegraphics[width=1\textwidth]{Ch5/Figs/valderrabano}
-    \caption{A meandering phase singularity from \cite{Valderrabano2003} along a rabbit epicardial artery. Seven sequential phase maps are shown with the trajectory of the  singularity in the bottom right. The path is tightly restricted to the underlying artery.}
-		\label{fig:meandering}
-	\end{figure}
-
-  The aim in this chapter is to develop a computational representation of a blood vessel and the tissue surrounding it, in order to elucidate wavefront behaviour below the epicardium and the full 3-D interaction of excitation waves with intramural vessels. In this way, we attempt to build on the 2-D experimental findings from optical and electrical mapping studies, whilst complementing their weaknesses. We aim to clarify whether the inclusion of microstructure is important in whole ventricular models. We generate both a simplistic and a histologically based model of fibre direction around blood vessels, and use the models to construct idealised cuboid sections of ventricular wall containing transmural and epicardial vessels. We conduct electrophysiological simulations and compare the histologically based and the simplistic models, in order to distinguish the effects of the vessel cavity with those of the surrounding fibres. We also examine the effect of bidomain vs. monodomain simulations.
-
-  We show that the activation patterns around blood vessels are similar for bidomain and monodomain simulations. We conclude that inhomogeneities in cardiac tissue such as blood vessels can cause sharp wavefront curvature. We find that this curvature is less pronounced when fibre direction is modelled accurately around the vessels, as the wavefront is guided around the vessel by the curving fibres. Finally, we find that contrary to what we had hypothesised, negotiation of fibres around vessels actually diminishes vessel anchoring by funnelling the wavefront around the vessel, lessening its retarding and fragmenting effect. These findings motivate the use of microstructure in whole ventricular models, and the challenge is set to characterise this microstructure and evaluate its effects with simulation.
+  Having shown in an idealised geometry that fibre direction could have a significant effect on propagation, the challenge is set to characterise cardiac tissue at sufficient detail to resolve both fibre direction and other microstructure. Cell type distribution, the shape of tissue boundaries, the Purkinje fibre network, sheet structure and vasculature all affect macroscopic wave propagation, and must therefore be incorporated into electrophysiological models.
+	
+	Attempts have been made to construct volumes from block face images, but aside from the low resolutions and optical transmission problems, there is no way to distinguish between tissue types with the use of dyes. Attempts have also been made to coregister high resolution histological slice images together, but the results suffer from what is known as `the banana problem', and provide geometries unrepresentative of the original tissue.
+	
+  The aim of this chapter is to develop an automated pipeline to register high resolution rat cardiac datasets robustly and accurately, and generate for the first time coherent subcellular resolution 3-D cardiac histological images. One full rat heart dataset will be processed through the pipeline to provide registered volumes. These images will serve both as an authoritative anatomical reference, and as the basis for anatomically based models in simulation studies, laying the foundations for the investigation of the role of microstructure in propagation dynamics.
+	
 % section aims (end)
 
 \section{Methods} % (fold)
 \label{sec:methods}
-\subsection{Defining the Laminae of Equal Helical Angle} % (fold)
-\label{sec:defining_the_laminae_of_equal_helical_angle}
-  It is observed that the myocardial fibres that constitute ventricular tissue are organised such that their angle from the horizontal plane varies transmurally, from around $60^\circ$ to $-60^\circ$ \cite{StreeterJr1969}. This angle from the horizontal is known as the helical angle. In order to incorporate transmurally varying mean fibre direction into the model \cite{Potse2006}, every point in the tissue model must be assigned to a myocardial lamina, a curved surface containing contiguous muscle fibres, all of equal helical angle.
-  
-  The simplest model of myocardial laminae in the presence of a blood vessel, from here on referred to as the `simple model', ignores the effect of the vessel completely. The laminae are placed exactly as they would have been with no vessel, but terminate on the vessel boundaries and are undefined within the vessel. In the case of a cuboid wall segment, where $y$ is defined as the transmural direction, this is equivalent to saying that each lamina is the set of points that share the same $y$ value: a flat $x$-$z$ plane.
-
-	\begin{figure}[htbp]
-		\centering
-		\subfigure[][]{\includegraphics[height=55ex]{Ch5/Figs/histology}}
-		\qquad
-    \subfigure[][]{\includegraphics[height=55ex]{Ch5/Figs/cylinder}}
-    \caption{\textbf{(a)} A 10µm-thick histological image of rabbit mid-myocardial wall long-axis slice, provided by \cite{Burton2006}. \textbf{(b)} The equipotentials (vertical lines) and field lines (horizontal with arrow heads) of a conducting circle in an infinite uniform field derived from the analytical solution to Eq. \ref{eqn:potential}.}
-	  \label{fig:vessel}
-	\end{figure}
-  
-  With the development of a more `accurate model' in mind, we note from the histological image in Figure~\ref{fig:vessel}(a) that muscle laminae are distorted by blood vessels and wrap around vasculature to accommodate it. A neat mathematical way to represent non-intersecting curved surfaces is to define a continuous scalar field over the domain of the volume, from here on referred to as a potential $\phi$, where the surfaces are the equipotentials of the field. Appealing to an electrostatic analogy, the solution to a conducting circle in an infinite uniform field seems a helpful 2-dimensional starting point for a cylindrical vessel, and is depicted in Figure~\ref{fig:vessel}(b).
-  
-  We know that far away from the circle, the field is uniform and the potential is of the form
-  
-  \begin{equation}
-    \Phi(r\rightarrow\infty) = -E_0x = -E_0r\cos\theta,
-    \label{eqn:limit}
-  \end{equation}
-  
-  where $E_0$ is the strength of the unperturbed uniform field. The potential produced by the charges on the edge of the circle must be added to this so that the edge is an equipotential,
-  
-  \begin{equation}
-    \Phi(r=a) = 0.
-    \label{eqn:condition}
-  \end{equation}
-  
-  Any solution must satisfy Laplace’s equation of zero divergence, as outside the circle
-  
-  \begin{equation}
-    \nabla^2\Phi = \nabla\cdot\mathbf{E} = \frac{\rho}{\epsilon_0} = 0,
-  \end{equation}
-  
-  where $\mathbf{E}$ is the electric field vector, $\rho$ is the volume charge density and $\epsilon_0$ is the permittivity of free space. It must also have the same $\theta$ dependence as equation~\ref{eqn:limit} and decay to zero at infinity, so that equation~\ref{eqn:limit} still holds. The solution takes the form
-  
-  \begin{equation}
-    \Phi = \left(\frac{A}{r} - E_0r\right)\cos\theta,
-  \end{equation}
-  
-  where $A$ is an arbitrary constant. Applying the boundary condition of equation~\ref{eqn:condition},
-  
-  \begin{equation}
-    A = a^2E_0,
-  \end{equation}
-  
-  the full expression for the potential becomes
-  
-  \begin{equation}
-    \Phi = aE_0\left(\frac{a}{r} - \frac{r}{a} \right)\cos\theta\, .
-    \label{eqn:potential}
-  \end{equation}
-  
-  This solution is easily applied to a vessel whose axis is in the $x$-$z$ plane, as is clear from Figure~\ref{fig:coplanar}.
-  
-  \begin{figure}[htbp]
-    \centering
-    \subfigure[][A vessel at zero potential in red, and an equipotential just below zero in blue.]{\label{fig:coplanar1}\includegraphics[width=0.7\textwidth]{Ch5/Figs/coplanar1}}
-    \subfigure[][The same vessel with an equipotential just above zero.]{\label{fig:coplanar2}\includegraphics[width=0.7\textwidth]{Ch5/Figs/coplanar2}}
-    \subfigure[][An equipotential further above zero.]{\label{fig:coplanar3}\includegraphics[width=0.7\textwidth]{Ch5/Figs/coplanar3}}
-    \caption{A vessel lying parallel to the $x$-$z$ plane in red, and three different laminae (modelled as equipotentials) in blue, respectively. The first two pictures demonstrate the tight wrapping of the laminae around the vessel boundary, which is modelled as a conductor at zero potential, and thus is an equipotential itself. The third diagram illustrates how the deformation decreases with distance from the vessel. The vessel is pointing in the [1,0,1] direction.}
-    \label{fig:coplanar}
-  \end{figure}
-  
-  When the vessel is oriented along the $y$-direction, the model assumes that the tissue is displaced by the presence of the vessel only in the $x$- and $z$-directions. It is clear from Figure~\ref{fig:perpendicular} that the laminae are simply flat $x$-$z$ planes, just as they would be modelled in the absence of vasculature.
-  
-  \begin{figure}[htbp]
-    \centering
-    \subfigure[][Low $\Phi$.]{\label{fig:perpendicular1}\includegraphics[width=0.7\textwidth]{Ch5/Figs/perpendicular1}}
-    \subfigure[][Zero $\Phi$.]{\label{fig:perpendicular2}\includegraphics[width=0.7\textwidth]{Ch5/Figs/perpendicular2}}
-    \subfigure[][High $\Phi$.]{\label{fig:perpendicular3}\includegraphics[width=0.7\textwidth]{Ch5/Figs/perpendicular3}}
-    \caption{A vessel oriented along the $z$-axis, with three representative potential isosurfaces. It is assumed that a vessel perpendicular to the laminae only displaces the tissue in the $x$ and $z$ directions, thus the laminae remain in the same $x$-$z$ planes as if the vessel were not there. The blue isosurface is plotted inside the vessel boundary, but laminae are undefined within the vessel.}
-    \label{fig:perpendicular}
-  \end{figure}
-
-  The third and final regime models a vessel that crosses laminae obliquely. How do the laminae deform and split around the vessel? In the absence of conclusive results through fibre registration at the time of modelling, the assumption is made. Clearly, the laminae do not just deform in the $x$-$z$ plane, as in Figure~\ref{fig:perpendicular}. If they did, then a vessel pointing very slightly in the $y$-direction, e.g. [0, 0.01, 0], would carve an extremely long ellipse in each lamina.
-  
-  The approach taken here is a generalisation of the two cases in Figures~\ref{fig:coplanar} and Figures~\ref{fig:perpendicular}. The shortest distance from one side of a cylinder to the other is to move circularly around its radius, solely in the $\theta$ direction. The minimum cross-sectional area of a cylinder is observed when it is cut perpendicularly to its axis. Therefore, the minimum tear edge-length and hole area in a lamina that is split by a blood vessel occurs when the lamina wraps the vessel on a circular cross-section. This is how the vessel-lamina interface was modelled and the results can be seen in Figure~\ref{fig:oblique}. The following paragraphs are a mathematical discussion of the way this constraint was implemented. First we must define a point in the tissue in vascular coordinates.
-  
-  \begin{figure}[htbp]
-    \centering
-    \subfigure[][Low $\Phi$.]{\label{fig:oblique_no_vessel1}\includegraphics[width=0.469\textwidth]{Ch5/Figs/oblique_no_vessel1}} \qquad
-    \subfigure[][Low $\Phi$ with rendered vessel.]{\label{fig:oblique_vessel1}\includegraphics[width=0.469\textwidth]{Ch5/Figs/oblique_vessel1}}
-    \subfigure[][Zero $\Phi$.]{\label{fig:oblique_no_vessel2}\includegraphics[width=0.469\textwidth]{Ch5/Figs/oblique_no_vessel2}} \qquad
-    \subfigure[][Zero $\Phi$ with rendered vessel.]{\label{fig:oblique_vessel2}\includegraphics[width=0.469\textwidth]{Ch5/Figs/oblique_vessel2}}
-    \subfigure[][High $\Phi$.]{\label{fig:oblique_no_vessel3}\includegraphics[width=0.469\textwidth]{Ch5/Figs/oblique_no_vessel3}} \qquad
-    \subfigure[][High $\Phi$ with rendered vessel.]{\label{fig:oblique_vessel3}\includegraphics[width=0.469\textwidth]{Ch5/Figs/oblique_vessel3}}
-    \caption{An oblique vessel is modelled, oriented in the direction [1,1,-1]. In order to show clearly the laminae close to the vessel boundary, each lamina is plotted with and without the vessel being rendered. Again, despite the illuminated circle of the blue surfaces being plotted, the laminae are undefined within the vessel.}
-    \label{fig:oblique}
-  \end{figure}
-  
-  To calculate the potential at any given point \textbf{x}, its coordinates are first represented in the cylindrical coordinate system of the vessel, so that $\mathbf{x} = \mathbf{x}(r,\theta,h)$. When $\theta = 0$, the unit vector in the $r$-direction $\mathbf{e}_r$ is defined as
-  
-  \begin{equation}
-    \mathbf{e}_r(\theta = 0) \mathbf{e}_{r0} = \frac{\mathbf{e}_y - (\mathbf{e}_h \cdot \mathbf{e}_y) \mathbf{e}_h}{\sqrt{1 - \left(\mathbf{e}_h \cdot \mathbf{e}_y\right)^2}},
-  \end{equation}
-  
-  or, put another way, the normalised component of $\mathbf{e}_y$ perpendicular to $\mathbf{e}_h$. Far away from the vessel, the field points in the direction of -$\mathbf{e}_y$ and so the potential increases along $\mathbf{e}_y$. Thus this is the direction in a cross-sectional plane of the steepest mean potential gradient.
-  
-  Having defined the cylindrical coordinate system, the tissue potential must be expressed as a function of these coordinates. The total potential can be considered as the sum of two components, that due to its $h$-coordinate, and that due to its position in the plane of that $h$-coordinate:
-  
-  \begin{equation}
-    \Phi = \Phi_{\text{axis}} + \Phi_{\text{plane}}\,.
-  \end{equation}
-  
-  Since we wish the laminae to deform symmetrically around the vessel, it makes sense to set the potential along the axis, $\mathbf{x}(0,0,h)$, to what it would have been in the absence of a vessel. From equation \ref{eqn:limit},
-  
-  \begin{align}
-    \Phi_{\text{axis}} & = -E_0h(\mathbf{e}_h \cdot \mathbf{e}_y) \\
-    & = -E_0h\cos\phi,
-  \end{align}
-  
-  where $\phi$ is the angle between the y-axis and the vessel axis. the planar potential can then be described by the 2-D solution \ref{eqn:potential} (graphically displayed in Figure~\ref{fig:vessels}(b)), with a factor to account for the angle between the plane and the uniform field direction $\mathbf{e}_y$:
-  
-  \begin{align}
-    \Phi_{\text{plane}} &= -aE_0\left( \frac{r}{a} - \frac{a}{r} \right) \cos \theta \left(\mathbf{e}_{r0} \cdot \mathbf{e}_y \right) \\
-    &= -aE_0\left( \frac{r}{a} - \frac{a}{r} \right) \cos \theta \sqrt{ 1 - \left( \mathbf{e}_h \cdot \mathbf{e}_y \right)^2 } \\
-    &= -aE_0\left( \frac{r}{a} - \frac{a}{r} \right) \cos \theta \sin \phi \, .
-  \end{align}
-  
-  We can now describe the potential at any point in the tissue,
-  
-  \begin{equation}
-    \Phi = -E_0\left[ h \cos \phi + a \left( \frac{r}{a} - \frac{a}{r} \right) \cos \theta \sin \phi \, \right].
-    \label{eqn:potential_3D}
-  \end{equation}
-  
-
-\subsection{Defining the Fibre Direction Within the Laminae}
-\label{sec:defining_the_fibre_direction_within_the_laminae}
-  Having defined the myocardial laminae, a fibre direction must be modelled within them. This modelling consists of 3 stages:
-  
-  \begin{itemize}
-    \item calculating $\nabla\Phi$,
-    \item projecting a compressed form of the 2-D solution \ref{eqn:potential} along $\mathbf{e}_y$ onto each lamina,
-    \item normalising the cross-product of these two vectors.
-  \end{itemize}
-  
-  \subsubsection{Calculating $\nabla\Phi$}
-  \label{sub:calculating_nablaphi}
-    Fibres must always lie within the lamina surface and are therefore perpendicular to the potential gradient. This gradient can be obtained simply by differentiating equation~\ref{eqn:potential_3D}; the results are visualised in Figure~\ref{fig:del_phi}.
+	The methods developed to fulfil the aims of this work form the meat of the chapter. First we discuss the experimental acquisition, curation and digital preparation of the images. We go on to cover the algorithms that calculate reasonable starting transformations and refine those transformations via iterative registration. An overview of the tools' architecture precedes the methods developed for diagnostics and parameter tuning.
+	
+  \subsection{Image Acquisition} % (fold)
+  \label{sub:image_acquisition}
+    Hearts were isolated from female rats and cannulated via the aorta to a Langendorff perfusion system, in a similar manner to that presented in \cite{Burton2006}. The hearts were then fixed and stabilised in agar, and 26.4 x 26.4 x 26.4$\mu$m MRI scans were performed. The hearts were immersed in increasing concentrations of alcohol, in order to dehydrate them before embedding them in black wax. The wax blocks were then serially sectioned at 10$\mu$m thickness using a microtome. An image of the top surface of the block was taken with 25$\mu$m resolution after each slicing. Every 5th section was Trichrome stained, labelling connective tissue bluish-green, myocytes pinkish-red and nuclei blue-black. Each slice was relaxed and re-hydrated, before histology imaging was performed using a 5x objective with 1.1$\mu$m resolution. Examples of the block face and slice images is displayed in Figures~\labelcref{fig:original_lores_images,fig:original_hires_images}, respectively.
+		
+		\begin{figure}[htbp]
+		  \centering
+		  \subfigure[][]{\includegraphics[width=0.8\pagewidth]{Ch5/Figs/LoRes_rgb_downsamples_1_0582}}
+		  \subfigure[][]{\includegraphics[width=0.8\pagewidth]{Ch5/Figs/LoRes_rgb_downsamples_8_0582}}
+		  \caption{Block face images of slice 582 of Rat 28. The original image is shown in \textbf{(a)}, with \textbf{(b)} Gaussian smoothed and downsampled by a factor of 8 in each dimension.}
+		  \label{fig:original_lores_images}
+		\end{figure}
     
     \begin{figure}[htbp]
       \centering
-      \includegraphics[width=1\textwidth]{Ch5/Figs/del_phi}
-      \caption{A 3-D quiver plot of $\nabla\Phi$ at an array of points on an equipotential.}
-      \label{fig:del_phi}
+      \subfigure[][]{\includegraphics[width=0.8\pagewidth]{Ch5/Figs/HiRes_downsamples_8_0582}}
+      \subfigure[][]{\includegraphics[width=0.8\pagewidth]{Ch5/Figs/HiRes_downsamples_64_0582}}
+      \caption{Slice images of slice 582. \textbf{(a)} is Gaussian smoothed and downsampled by a factor of 8, and \textbf{(b)} by 64. The slice must be reflected and rotated in order to align with the block face image in Figure~\ref{fig:original_lores_images}.}
+      \label{fig:original_hires_images}
     \end{figure}
-  
-  \subsubsection{Projecting a 2-D Solution} % (fold)
-  \label{sub:projecting_a_2_d_solution}
-    When viewed along the $y$-axis, the circular sheet boundary describes an ellipse, with semimajor axis equal to the vessel diameter and semiminor axis shorter by a factor of $\cos \phi$. The isolines of equation~\ref{eqn:potential} in Figure~\ref{fig:vessels}(b) can be compressed by $\cos \phi$ and mapped onto a lamina, so that the isolines at the edge of the ellipse are tangent to it. A grid of vectors perpendicular to these isolines is shown in Figure~\ref{fig:projected}. From here on, we shall refer to the 2-D coordinate system $\left[ x, y \right]$ in the tissue coordinates as compressed, and the system $\left[ x', y' \right]$ in the natural coordinates of equation~\ref{eqn:potential} as non-compressed.
+	
+  % subsection image_acquisition (end)
+
+  \subsection{Image Curation} % (fold)
+  \label{sub:image_curation}
+    The images provided by Burton et al. yield unprecedented detail and quality. Although every possible step was taken during image acquisition, certain unavoidable experimental practicalities arose. A master subset of the images was selected, removing any slices with unacceptable damage such as that found in Figure~\ref{fig:damaged_slice}. Wherever a slice or group of slices was missing or removed, the acceptable adjacent slices were repeated symmetrically to fill the gap, in order to preserve the macroscopic geometry of the tissue. In the rare case where two images of the same slice existed, both slices were examined and the higher quality version was selected.
     
     \begin{figure}[htbp]
       \centering
-      \subfigure[][A view along the $x$-axis, showing the vessel intersecting the surface.]{\label{fig:projected1}\includegraphics[width=1\textwidth]{Ch5/Figs/projected1}}
-      \subfigure[][The same view, with no vessel rendering and translucent surface rendering. The quivers are more visible and it is clear that none have a $y$-component.]{\label{fig:projected2}\includegraphics[width=1\textwidth]{Ch5/Figs/projected2}}
-      \subfigure[][A view along the $y$-axis. The vectors in the $x$-$z$ plane have a direction trend up and to the left, at $90^\circ$ to $\alpha$. However, at the edge of the ellipse, where the vessel intersects the lamina, all vectors are perpendicular to the elliptical projection of the circle onto the $x$-$z$ plane.]{\label{fig:projected3}\includegraphics[width=1\textwidth]{Ch5/Figs/projected3}}
-      \caption{A 3-D quiver plot of the compressed 2-D solution, plotted on the same isosurface as in Figures~\ref{fig:oblique_vessel} and \ref{fig:oblique_no_vessel}.}
-      \label{fig:projected}
+      \includegraphics[width=.8\textwidth]{Ch5/Figs/damaged_slice}
+      \caption{A damaged slice close to the left extremity of the heart. The tissue is severely damaged and folded in place. There is also a large bubble trapped between the two imaging slides.}
+      \label{fig:damaged_slice}
     \end{figure}
-
-    The questions remains, in which orientation should solution~\ref{eqn:potential} be mapped? The following dependency of overall fibre direction on depth of myocardial tissue is observed experimentally \cite{Potse2006}, \cite{StreeterJr1969}. Let $e$ be a tissue depth parameter
-
-    \begin{equation}
-      e = \frac{\Phi_\text{endo}}{\Phi_\text{endo}+\Phi_\text{epi}}\,,
-    \end{equation}
-
-    where $\Phi_\text{endo}$ and $\Phi_\text{epi}$ are the potentials at the endocardium and epicardium, respectively. Then the fibre angle from the horizontal $\alpha$, graphed in Figure~\ref{fig:transmural_variation},  varies transmurally such that
-
-    \begin{equation}
-      \alpha = \frac{\pi}{3} \left( 1 - 2e \right)^3\,.
-    \end{equation}
     
-    \begin{figure}[htbp]
+  % subsection image_curation (end)
+  
+  \subsection{Image Preparation} % (fold)
+  \label{sub:image_preparation}
+  	The digital camera used to obtain the images created files with four channels: red, green, blue and alpha. Since transparency is meaningless in the context of a photograph, the alpha channel was uniformly black. Unfortunately, the implementation of the RGBA BMP reader in ITK labels the channels incorrectly. To correct for this, channels were explicitly permuted and the redundant alpha channel removed.
+  
+    On occasion, part way through image acquisition, the block face camera would be moved relative to the surface of the wax block. All images acquired from then on had to be translated and rotated to compensate for this movement. At each perturbation, the two slices between which the camera had moved were registered in order to calculate the corrective transform, which was then applied to all subsequent slices. Figure~\ref{fig:LoRes_cross_sections} depicts the results of these corrections, and the isosurface of the corrected segmented volume are shown from 6 sides in Figures~\labelcref{fig:LoRes_positive_x,fig:LoRes_negative_x,fig:LoRes_positive_y,fig:LoRes_negative_y,fig:LoRes_positive_z,fig:LoRes_negative_z}. The isosurface was generated from a threshold segmentation of the intensity magnitude of the volume. A dense cloud of wax bubbles and other small artefacts obscured the main surface of the heart, and so a binary shape opening filter was applied to remove all but the largest connected region from the segmentation before the contour was extracted.
+    
+    % lores cross sections
+    \begin{sidewaysfigure}[htbp]
       \centering
-      \subfigure[][Depth parameter $e$ against $\alpha$.]{\label{fig:transmural_variation1}\includegraphics[width=0.469\textwidth]{Ch5/Figs/transmural_variation1}} \qquad
-      \subfigure[][Depth parameter $e$ against unit direction vectors plotted in the x-z plane.]{\label{fig:transmural_variation2}\includegraphics[width=0.469\textwidth]{Ch5/Figs/transmural_variation2}}
-      \caption{Two representations of the transmural variation in $\alpha$.}
-      \label{fig:transmural_variation}
-    \end{figure}
-
-    Let $u(x,z)$ and $v(x,z)$ be the components of a unit vector in the x-z plane at an angle $\alpha$ from the x-axis
+      \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch5/Figs/LoRes_without_adjustments_0_235}}
+      \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch5/Figs/LoRes_without_adjustments_1_287}}
+      \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch5/Figs/LoRes_0_235}\label{subfig:LoRes_adjusted_long_cross_section}}
+      \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch5/Figs/LoRes_1_287}}
+      \caption{Central cross-sections of the cropped block-face volume. \textbf{(a)} and \textbf{(b)} show the volume before adjustment, where a large camera displacement is apparent approximately a quarter of the way from the bottom of the image. Several thin stripes are visible further up, where the occasional single image has been displaced. The volume is fully aligned in \textbf{(c)} and \textbf{(d)}, with striations visible due to discrete changes in the positioning and intensity of illumination. These changes will propagate to the final registration result.}
+      \label{fig:LoRes_cross_sections}
+    \end{sidewaysfigure}
     
-    \begin{equation}
-      \left( \begin{array}{c}
-        u \\
-        v
-      \end{array} \right)
-       =
-       \left( \begin{array}{c}
-         \cos \alpha \\
-         \sin \alpha
-       \end{array} \right)\,.
-    \end{equation}
-    
-    Then the components in the non-compressed coordinates $u'\left(x',z'\right)$ and $v'\left(x',z'\right)$ are found by applying three transformations. First the axes are rotated through the angle $\gamma$, between the projection of the vessel orientation onto the $x$-$z$ plane and the $x$-axis. This rotation aligns the semiminor axis of the ellipse with the $x$-axis and the semimajor with the $y$-axis. Then the ellipse is stretched along the x-axis to become circular, and finally the inverse rotation is applied to the result:
-    
-    \begin{equation}
-      \left( \begin{array}{c}
-        u' \\
-        v'
-      \end{array} \right)
-      =
-      \left( \begin{array}{cc}
-        \cos \gamma & - \sin \gamma \\
-        \sin \gamma &   \cos \gamma
-      \end{array} \right)
-      \left( \begin{array}{cc}
-        1/\cos \phi & 0 \\
-        0 & 1
-      \end{array} \right)
-      \left( \begin{array}{cc}
-         \cos \gamma & \sin \gamma \\
-        -\sin \gamma & \cos \gamma
-      \end{array} \right)
-      \left( \begin{array}{c}
-        u' \\
-        v'
-      \end{array} \right) .
-    \end{equation}
-    
-    The mean fibre angle from the horizontal in the non-compressed frame is therefore
-    
-    \begin{equation}
-      \alpha' = \arctan \frac{u'}{v'}\,.
-    \end{equation}
-    
-    This angle must be added at all points on the lamina as a constant rotation of the solution~\ref{eqn:potential}, so that in the non-compressed coordinate system
-    
-    \begin{equation}
-      \Psi(r',\theta') = -aE_0 \left( \frac{r}{a} - \frac{a}{r} \right) \cos\left( \theta' + \alpha' \right)\,,
-      \label{eqn:potential_projected}
-    \end{equation}
-    
-    where $r'$ and $\theta'$ are the non-compressed 2-D polar coordinates.
-  
-  \subsubsection{Normalising the Cross Product} % (fold)
-  \label{sub:normalising_the_cross_product}
-    The final stage in defining fibre direction is to calculate the normalised cross-product of the results from the previous two sections: $\nabla\Phi$, the 3-D gradient of equation~\ref{eqn:potential_3D}; and $\nabla\Psi$, the 3-D vector constructed from the 2-D gradient of equation~\ref{eqn:potential_projected} in the $x$- and $z$-directions and zero in the $y$-direction. At any point in the tissue, the resulting fibre vector will lie tangential to the lamina. A vector will also lie tangential to the vessel boundary, should it reside there. Figures~\ref{fig:oblique_vessel} and \ref{fig:oblique_no_vessel} display the final results from three different viewpoints.
-    
-    \begin{figure}[htbp]
+    % lores contours
+    \begin{sidewaysfigure}[htbp]
       \centering
-      \vspace{-2.5em}
-      \subfigure[][]{\label{fig:oblique_vessel1}\includegraphics[width=1\textwidth]{Ch5/Figs/fibres_vessel1}}
-      \subfigure[][]{\label{fig:oblique_vessel2}\includegraphics[width=1\textwidth]{Ch5/Figs/fibres_vessel2}} 
-      \subfigure[][]{\label{fig:oblique_vessel3}\includegraphics[width=1\textwidth]{Ch5/Figs/fibres_vessel3}}
-      \caption{Three views of a vessel of radius 1mm, intersecting a myocardial lamina obliquely. Note the defomration of the sheet to accommodate the vessel, whilst minimising the area of the hole in its surface to $\pi r^2$ and the hole edge length to $2\pi r$. The fibre directions at various grid points on the lamina are also rendered, and can be seen more clearly in Figure~\ref{fig:oblique_no_vessel}.}
-      \label{fig:oblique_vessel}
-    \end{figure}
-
-    \begin{figure}[htbp]
+      \includegraphics[width=\textheight]{Ch5/Figs/Rat28/contours/LoRes_positive_x}
+      \caption{A contour of the adjusted block face volume, viewed along the positive x direction. The round surface of the heart apex is clearly visible to the right. Oddly shaped protrusions in the top third of slices are due to gradually brightening reflection from the suface of the wax.}
+      \label{fig:LoRes_positive_x}
+    \end{sidewaysfigure}
+    
+    \begin{sidewaysfigure}[htbp]
       \centering
-      \vspace{-2.5em}
-      \subfigure[][]{\label{fig:oblique_no_vessel1}\includegraphics[width=1\textwidth]{Ch5/Figs/fibres_no_vessel1}}
-      \subfigure[][]{\label{fig:oblique_no_vessel2}\includegraphics[width=1\textwidth]{Ch5/Figs/fibres_no_vessel2}} 
-      \subfigure[][]{\label{fig:oblique_no_vessel3}\includegraphics[width=1\textwidth]{Ch5/Figs/fibres_no_vessel3}}
-      \caption{The same three views of the same vessel displayed in Figure~\ref{fig:oblique_vessel}, but with no vessel rendering and translucent lamina rendering, in order to display the fibre vectors clearly. From all angles, the fibres can be seen spreading around the vessel close to its boundary. A lamina close to the endocardium is visualised, and an overall $\alpha$ angle of $\sim20^\circ$ is observed away from the vessel.}
-      \label{fig:oblique_no_vessel}
+      \includegraphics[width=\textheight]{Ch5/Figs/Rat28/contours/LoRes_negative_x}
+      \caption{The block face contour viewed along the negative x direction. The more complex surface of the valve and vascular machinery at the base of the heart is visible to the right.}
+      \label{fig:LoRes_negative_x}
+    \end{sidewaysfigure}
+    
+    \begin{sidewaysfigure}[htbp]
+      \centering
+      \includegraphics[width=\textheight]{Ch5/Figs/Rat28/contours/LoRes_positive_y}
+      \caption{The block face contour viewed along the positive y direction. The bulge of an epicardial vessel at the bottom right hand side is clearly visible (it is also faintly visible towards the bottom left of Figure~\ref{fig:LoRes_negative_x}). The discrete change in illumination from Figure~\ref{subfig:LoRes_adjusted_long_cross_section} manifests as an apparent increase in surface size approximately a third of the height from the bottom.}
+      \label{fig:LoRes_positive_y}
+    \end{sidewaysfigure}
+    
+    \begin{sidewaysfigure}[htbp]
+      \centering
+      \includegraphics[width=\textheight]{Ch5/Figs/Rat28/contours/LoRes_negative_y}
+      \caption{The block face contour viewed along the negative y direction.}
+      \label{fig:LoRes_negative_y}
+    \end{sidewaysfigure}
+    
+    \begin{sidewaysfigure}[htbp]
+      \centering
+      \includegraphics[width=\textheight]{Ch5/Figs/Rat28/contours/LoRes_positive_z}
+      \caption{The block face contour viewed along the positive z direction. The detail and composition of the images is clearly visible from this angle. Note the protruding epicardial vessel in the top left. The surface of the first third of slices near the bottom left looks eroded, in a region where the threshold intensity values have failed to pick up the tissue boundary faithfully.}
+      \label{fig:LoRes_positive_z}
+    \end{sidewaysfigure}
+    
+    \begin{sidewaysfigure}[htbp]
+      \centering
+      \includegraphics[width=\textheight]{Ch5/Figs/Rat28/contours/LoRes_negative_z}
+      \caption{The block face contour viewed along the negative z direction. Bright reflection obscures much of the tissue surface from this angle, and the accurate registration of these top slices will prove impossible.}
+      \label{fig:LoRes_negative_z}
+    \end{sidewaysfigure}
+    
+	As is evident from Figures~\labelcref{fig:original_lores_images,fig:original_hires_images} for one slice, the vast majority of slices had been flipped over between sectioning from the block surface and being photographed. Slice images were therefore reflected across one axis in order to restore geometric parity with the associated block face image.
+	
+	 Several sets of downsamples of varying factors were generated, the lowest of which were used for debugging and testing, working up in detail, size and computational expense as the techniques were perfected. Before downsampling, a Gaussian smoothing was applied in each case, with sigma equal to the new larger pixel spacing. In this way, all original pixels in the region of a large downsampled pixel contribute to its final value, and aliasing noise problems associated with frthe Nyquist frequency are avoided. This results in a smoother and more accurate cost function. Figures~\labelcref{fig:original_lores_images,fig:original_hires_images} juxtapose the full images with various levels of downsampling.
+	 
+	 When registering two images, it is important that they are of comparable resolution, in order to minimise processing time and to ensure the smoothest possible cost function. In Figure~\ref{fig:downsample_zooms}, the effects of the downsampling can be seen more clearly. Individual cell nuclei are resolved at the highest resolution of slice image, but the maximum resolution block face images are of much lower detail. Clearly, the original slice images, with 1.1$\mu$m pixel spacings, are needlessly detailed compared to their block face counterparts, with a mere 26.6$\mu$m. As is discussed in Section~\ref{ssub:multiresolution_registration}, it is therefore appropriate to register slice images at a factor of 8 times more downsampled than the block face images.
+    
+	%  Lo/HiRes zooms
+    \begin{sidewaysfigure}[htbp]
+      \centering
+      \subfigure[][]{\includegraphics[width=0.39\pagewidth]{Ch5/Figs/HiRes_downsamples_1_0582_zoom}}
+      \subfigure[][]{\includegraphics[width=0.39\pagewidth]{Ch5/Figs/HiRes_downsamples_8_0582_zoom}}
+      \subfigure[][]{\includegraphics[width=0.39\pagewidth]{Ch5/Figs/HiRes_downsamples_64_0582_zoom}}
+      \subfigure[][]{\includegraphics[width=0.39\pagewidth]{Ch5/Figs/LoRes_rgb_downsamples_1_0582_zoom}}
+      \subfigure[][]{\includegraphics[width=0.39\pagewidth]{Ch5/Figs/LoRes_rgb_downsamples_8_0582_zoom}}
+      \caption{An epicardial vessel in slice 582 of Rat 28, in both the slice and the block face images. \textbf{(a)}, \textbf{(b)} and \textbf{(c)} show the slice original, 8x and 64x downsampled, while \textbf{(d)} and \textbf{(e)} show the block face original and 8x downsampled. The fibres parallel to the internal wall at the bottom of \textbf{(a)} are angled such that they reflect the illumination strongly at the top right of \textbf{(d)}, and are in much sharper contrast to the black wax than the rest of the tissue. Indeed, they are in much sharper contrast to the other tissue than the other tissue is to the non-tissue.}
+      \label{fig:downsample_zooms}
+    \end{sidewaysfigure}
+  % subsection image_preparation_and_curation (end)
+  
+  \subsection{Initialisation} % (fold)
+  \label{sub:initialisation}
+    The optimisation algorithms used in registration do not assure convergence to the global minimum and are thus sensitive to initialisation and to the presence of local minima in the cost function. A reasonable initialisation is necessary for robust and accurate registration.
+	
+		\subsubsection{Geometric Initialisation} % (fold)
+		\label{ssub:geometric_initialisation}
+			The block face images are already coherent from their acquisition. White space under the microscope surrounding the slices had already been cropped, such that each slice sat approximately centrally within the bounds of its image. Having been reflected across the x-axis, an anticlockwise rotation of $90\,^{\circ}$ oriented most slices approximately with the block face, as is seen from Figures~\labelcref{fig:original_lores_images,fig:original_hires_images}. A small set of slices required $180\,^{\circ}$ rotations. Slice images were then initialised to their common centre to form a volume. The initial translation and pixel spacing of the block face volume was then manually tuned to overlap maximally with the slice volume. As is exhibited in Section~\ref{sec:results}, this naïve geometric initialisation provides an adequate starting point.
+		% subsubsection geometric_initialisation (end)
+	
+		\subsubsection{PCA Initialisation} % (fold)
+		\label{ssub:pca_initialisation}
+			Although geometric initialisation provided a reasonable starting point for most slices, this was purely a consequence of how the experimentalist had manually obtained and cropped the original images. A more sophisticated method might make use of the information in the image. If the pixels containing tissue could be identified, the centres of mass and principal components of each pair of images can be aligned to provide a close initial matching.
+		
+		  Various segmentation methods were tested in an effort to identify tissue reliably in both sets of images. Because the block face volume was already coherent, volume-wise refinements and filters could be applied, whilst only 2D segementation techniques could be considered for the slice images.
+			
+			After applying any image preprocessing, such as a gradient magnitude or Hessian filter, many segmentation methods, such as opening and closing or level sets, are designed to refine the edges or surfaces of an approximate segmentation. Yet here it is to be noted that only the segmentation's moments are of consequence, in particular the centre of mass and the variance matrix. It is therefore unnecessary for the segmentation to overlap closely with the tissue at a small scale, only that the global distribution of tissue be represented precisely. That being said, methods to remove macroscopic artefacts, such as connected component filtering and selection proved beneficial in most contexts.
+			
+		  There is no facility to align the principal components of two images in ITK, only to align their centres of mass. The class itk::CenteredTransformPCAInitializer was implemented to encapsulate the details of this process. The results of applying this class compared to the simple geometric initialisation are shown in Figure~\ref{fig:582_pca}, and the segmentations upon which they are based are shown in Figure~\ref{fig:582_segmentation}.
+		
+	    It is somewhat clear from Figure~\ref{fig:LoRes_cross_sections} that the broad range of tissue colours and intensities in the block face volume overlap significantly with the colours and intensities of non-tissue. In Figures~\labelcref{fig:582_segmentation,fig:582_pca}, the threshold segmentation values were optimised for these particular slices as a proof of concept, but this slice was chosen as one of the best examples of the technique. Issues such as wax bubbles, the bright blob at the top of the block face volume, optical transmission from layers below, and differential brightness from differing fibre directions or anatomical features plagued efforts to segment the images, and in fact went on to plague registration. Even if a segmentation method could yield reasonable results for every slice in the dataset, it is impractical to tune parameters manually for each slice, and there would certainly not be a single parameter set suitable for every slice in the volume. For these reasons, the PCA method could not be used to improve robustly upon a simple geometric initialisation of the high-resolution slices seen in Figure~\ref{fig:geometric_initialisation}.
+    
+	  \begin{figure}[htbp]
+	    \centering
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch5/Figs/pca/LoRes_562}}
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch5/Figs/pca/LoRes_segmentation_562}}
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch5/Figs/pca/HiRes_562}}
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch5/Figs/pca/HiRes_segmentation_562}}
+      \caption{Originals and threshold segmentations of the block face and slice images of slice 582.}
+	    \label{fig:582_segmentation}
+	  \end{figure}
+    
+	  \begin{figure}[htbp]
+	    \centering
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch5/Figs/pca/geometric_redblue}}
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch5/Figs/pca/geometric_segmentation_redblue}}
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch5/Figs/pca/pca_redblue}}
+      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch5/Figs/pca/pca_segmentation_redblue}}
+      \caption{Intensity superpositions of block face (red channel) and slice (blue channel). The original images are used \textbf{(a)} and \textbf{(c)}, while the segmentations are shown in \textbf{(b)} and \textbf{(d)}. \textbf{(a)} and \textbf{(b)} show geometric initialisation, and \textbf{(c)} and \textbf{(d)} PCA initialisation. It is clear that PCA provides a much closer match from which the registration algorithm can begin.}
+      \label{fig:582_pca}
     \end{figure}
+    
+		% subsubsection pca_initialisation (end)
+  % subsection initialisation (end)
   
-\subsection{Mesh Generation} % (fold)
-\label{sec:mesh_generation}
-  Binary voxel images of cuboid segments of tissue were generated in Matlab, with 0 representing the presence of tissue and 1 its absence. Initially, the open source program TetGen (tetgen.berlios.de) was used to process the array and generate tetrahedral meshes.
+	\subsection{Registration Algorithm} % (fold)
+  \label{sub:registration_algorithm}
+    Each main aspect of the registration method is outlined in this section. A well-founded registration algorithm must embody three traits: numerically, it must converge reliably to the global minimum; computationally, it must be efficient so as to be tractable; and physically, it must correspond to the process that it was designed to correct for. It is through the lens of these three benchmarks that we examine the following components.
+    
+    \subsubsection{Transforms} % (fold)
+    \label{ssub:transforms}
+			The sectioning of the slices introduces 2-D, slice-specific deformation and in some cases damage. The subsequent relaxing and rehydration of each slice causes further deformation. A large proportion of this deformation will be of similarity or affine form. By first registering the simplest of transforms with the lowest dimensional parameter space, and then incrementally relaxing transformational constraint by increasing the number of parameters, we can provide the best possible starting point in each higher dimensional parameter space.
+			
+      Transforms were optimised in the following order, the final result of each initialising its successor: a centered rigid 2D transform - a rotation about an arbitrary centre followed by a translation; a centred similarity transform - as before but with a scaling factor; and a centred affine transform - an affine transformation around an arbitrary centre followed by a translation. For all transforms, the centre of rotation was exposed for optimisation as metric parameters. Finally, a coarse grid and subsequent fine grid bspline deformable transform was tested, but found to be unstable.
+    % subsubsection transforms (end)
+    
+    \subsubsection{Metrics} % (fold)
+    \label{ssub:metrics}
+      Mutual Information (MI) is usually considered to be most effective when registering images from different modalities. However, after a plethora of parameterisations and configurations was explored based on this metric with little success, incrementally simpler and simpler metrics were tested. Each demanded more image preconditioning and tuning, but yielded monotonically closer and more consistent registrations, with a larger capture range, and required fewer iterations to converge. First, a normalised correlation was employed, with the simplest mean squares difference algorithm proving most suitable. It would appear that the simpler the intensity relationship, the smoother the cost landscape, with fewer local minima.
+    % subsubsection metrics (end)
   
-  The four points of a tetrahedron define a unique circumsphere. The ratio of the radius of this circumsphere to the shortest edge of the tetrahedron can be used as a quality constraint on the tetrahedra of any mesh. Even with maximum volume and radius-edge ratio constraints, the resulting TetGen meshes were irregularly arranged and shaped. An example of this irregular meshing can be seen in Figure~\ref{fig:tetgen}. It was decided instead to generate meshes with a piece of proprietary software called Tarantula. Figure~\ref{fig:tarantula} is in stark contrast to Figure~\ref{fig:tetgen}; the Tarantula mesh is nearly entirely regular, apart from a pattern of switching between the orientations of the tetrahedra that make up cubic mesh segments.
-  
-  \begin{figure}[htbp]
-    \centering
-    \subfigure[][A 10x10x3mm mesh generated from a 100$\mu$m resolution voxel image with {[0,0,1]} vessel direction and 1mm radius.]{\includegraphics[width=0.6\textwidth]{Ch5/Figs/tetgen}}
-    \subfigure[][An enlarged view of the same mesh.]{\includegraphics[width=0.6\textwidth]{Ch5/Figs/tetgen_zoom}} 
-    \caption{An example of a mesh generated by TetGen and visualised in Meshalyzer (part of the CARP package). Despite a regular, symmetrical input node array, the mesh is very irregular, with seemingly inexplicable patches of dense tetrahedralisation. The long thin tetrahedra at the edges of the tissue associated with bad mesh quality have been replaced with several smaller ones, but the mesh is still far from ideal.}
-    \label{fig:tetgen}
-  \end{figure}
-  
-  \begin{figure}[htbp]
-    \centering
-    \subfigure[][]{\includegraphics[width=0.6\textwidth]{Ch5/Figs/tarantula}}
-    \subfigure[][]{\includegraphics[width=0.6\textwidth]{Ch5/Figs/tarantula_zoom}} 
-    \caption{An example of a mesh generated by Tarantula. This mesh is clearly much more regular than that of Figure~\ref{fig:tetgen} and was used in simulation. The mesh constitutes 50,000 nodes and approximately 270,000 tetrahedral elements.}
-    \label{fig:tarantula}
-  \end{figure}
-  
-  There were several formatting issues associated with the final workflow. Once Tarantula had generated a tetrahedral mesh from the voxel image file built in Matlab, A C++ script written by Anton Prassl was used to convert the various Tarantula file formats so that they could be interpreted by the electrophysiological simulation package CARP (Cardiac Arrhythmias Research Package) \cite{Vigmond2003}. Tarantula generates both an intracellular (tissue) mesh and a surrounding extracellular box, so CARP was then used to extract out just the intracellular space from the total mesh, for the purposes of monodomain simulations.
-  
-\subsection{Evaluating the Fibre Direction at the Element Centroids} % (fold)
-\label{sec:evaluating_the_fibre_direction_at_the_element_centroids}
-  The final step before running simulations was to use the model from sections~\ref{sec:defining_the_laminae_of_equal_helical_angle} and \ref{sec:defining_the_fibre_direction_within_the_laminae} to calculate the fibre directions at the centre of each tetrahedron. Given the coordinates of each of the four vertices of a tetrahedron $\mathbf{p}_i$, the formula for the centroid is
-  
-  \begin{equation}
-    \mathbf{p}_{\text{centroid}} = \frac{\mathbf{p}_1+\mathbf{p}_2+\mathbf{p}_3+\mathbf{p}_4}{4} .
-  \end{equation}
-  
+    \subsubsection{Optimisation} % (fold)
+    \label{ssub:optimisation}
+      Gradient Descent (GD) and Regular Step Gradient Descent (RSGD) optimisers have been applied. RSGD terminates before the maximum number of iterations has passed, and so in simple cases it is computationally more efficient. In most scenarios, however, the GD optimiser often proves more robust. In both cases, a choice to maximise or minimise the cost function must be chosen, the latter being dependent on both the choice of metric and the preconditioning of the image intensity ranges.
 
-\subsection{Electrophysiological Simulation} % (fold)
-\label{sec:electrophysiological_simulation}  
-  Once each tetrahedron has been assigned a conductivity tensor, based on the modelled fibre direction at its centroid, simulations were run in CARP, using the UCLA rabbit ventricular action potential model \cite{Mahajan2008}. Simulations were run in parallel on the Oxford OeRC cluster and took approximately a few hundred seconds to compute 300ms of activation on 32 cores.
-% section methods (end)
-
-\section{Results} % (fold)
-\label{sec:results}
-  
-  It is observed from the extracted vasculature in Figure~\ref{fig:vessels} that the major myocardial vessels are sub-epicardially or transmurally oriented: they lay either along the outer surface of the heart, or sink directly through the heart wall. The largest of the vessels, for example the coronary artery, are approximately 2mm in diameter.
-  
-  \begin{figure}[htbp]
-		\centering
-		\subfigure[][Vertical MRI slice.]{\includegraphics[height=51ex]{Ch5/Figs/vertical_mri}}
-		\qquad
-    \subfigure[][Extracted vascular tree.]{\includegraphics[height=51ex]{Ch5/Figs/extracted_vessels}}
-    \caption{\textbf{(a)} A 2-D image in the coronal plane from a 3-D Rabbit MRI dataset at resolution 26.4×26.4×24.4$\mu$m from \cite{Burton2006}. Circular and elliptical cavities distributed within the myocardium can be observed.  These are the major vessels supplying the heart. \textbf{(b)} The vascular tree was extracted from the MRI dataset by Bishop et al \cite{Bishop2009}. The main vessels are positioned either sub-epicardially or transmurally.}
-	  \label{fig:vessels}
-	\end{figure}
-  
-  With these findings in mind, meshes were generated that contained a 2mm vessel, either spanning from endocardium to epicardium, or situated parallel to the epicardium, 0.5mm from the surface. In the following sections we consider two sets of experimental protocol: first, a pair of square 10 x 10 x 3mm meshes to which a single stimulus was applied, inducing a planar wave that progresses once across the domain; and second a wider, 35 x 10 x 3mm mesh, where a first stimulus induces a planar wave and precedes a second stimulus triggers an artificial arrhythmic episode in the wake of the wave. It is noted that all meshes measure 10mm in the $y$-direction, in accordance with the approximate width of left-ventricular rabbit heart wall.
+      The optimisation space, as dictated by the transform, must be scaled along each dimension to correct for discrepant effects per unit change of each parameter. For example, a translation of one micron at the epicardium might result from a rotation of just $10^{-5}$ radians about the centre of the slice. This makes the metric space more isotropic and reduces the eccentricity of cost function basins, allowing the optimisation algorithm to fall more directly toward minima.
+    % subsubsection optimisation (end)
+	% subsection registration_algorithm (end)
     
-  \subsection{Planar Propagation} % (fold)
-  \label{sub:planar_propagation}
-    The first set of simulations aimed to clarify the differences in propagation dependent on four sets of binary criteria: transmural or sub-epicardial vessel orientation; a transmural or circumferential wave propagation direction; the usage of a bidomain or monodomain model; and the implementation of a simple or an accurate fibre model. Simulations based on each of the 16 points in this discrete space are arranged neatly in a table in Figures~\ref{fig:planar_propagation_1} and \ref{fig:planar_propagation_2}. Perhaps the most striking difference in the figures is the speed of propagation between the transmural and circumferential protocols. The wave is comparatively retarded in the top half of the tables, as it travels from the endocardium at the bottom edge of the cuboid, to the epicardium at the top edge. Regardless of transmural variation in fibre direction, this vertical direction is always perpendicular to the fibres, resulting in minimum conduction speed. Contrastingly, the transmural variation is evident in the bottom half. As the wave travels fastest through the central horizontal band of the mid-myocardium, where the fibres point from left to right, conduction is slower near the muscle walls, where the fibres are more transverse to the propagation direction.
+  \subsection{Software Architecture} % (fold)
+  \label{sub:software_architecture}
+		From early on, the requirements of the problem diversified, and a range of related tools were built. Common patterns and functionality needed to be extracted and isolated. This prevented duplication and the potential for bugs and inconsistencies, and lead to more readable and manageable code. Because the final result was unknown, it was often extremely difficult to know whether the code was operating correctly. Bugs or errors in calculation were not usually apparent, and proved very difficult to find. We outline the main problems encountered during the development process, along with the solutions crafted to isolate and overcome them.
+		
+		\subsubsection{Languages and Frameworks} % (fold)
+		\label{ssub:languages_and_frameworks}
+      All file handling and networking algorithms were written in Ruby. Imaging algorithms were written in C++ or, in some simple cases, Python, using the venerable ITK library. C++ executables were compiled using the cross-platform build system CMake. YAML was used as a declarative language for configuration files, providing a syntax that is easily human readable and curatable, yet machine parsable. Source code management and code deployment was implemented in Git, and the project is freely available at \url{http://github.com/mattgibb/registration} under an MIT license.
+		% subsubsection languages_and_frameworks (end)
+		
+    \subsubsection{Stacks} % (fold)
+    \label{ssub:stacks}
+      Each block image must be paired with its equivalent slice image, and blank images must be interpolated where images are missing. Slices must be transformed independently and by a range of transform types. Resampler spacings must be set according to the original image spacings and the downsample ratios. Binary masks must be generated for each image, so that metrics will only take pixel intensities into account from inside the boundaries of the original untransformed images. A stack volume must be reconstructed from the transformed, resampled slices. A minimum percentage overlap is required for many metrics to function, and for small slice images close to the apex of the heart, block mask areas must be cropped until this constraint is satisfied.
+	  	
+      A heirarchy of Stack classes has been developed - along with associated builder classes, IO helpers and transform converters - to encapsulate the solutions to all of these problems. A Stack represents the 3D composition of a set of 2D slices. It handles ROI selection, generic transform storage, image and mask resampling and generation (both for 2D slices and for the 3D volume) and various error handling strategies. An MRI class is also available to solve the complementary problem of extracting arbitrarily oriented slices from a 3D image. However, for these specific datasets the block face images are intrinsically registered to the histological samples.
+    % subsubsection stacks (end)
     
-    The two criteria of vessel orientation and stimulation protocol separate the tables into 4 sub-squares. It is only meaningful to compare activation times of a particular tetrahedron, a particular point in the tissue, in two simulations from the same sub-square, where both the mesh and the stimulation protocol are the same. Each subsquare is divided again by domain and fibre models. It is just visible from the two figures that monodomain waves propagate slightly faster than their bidomain partners, yet no discernable qualitative difference was found between the two regimes, and so since monodomain computation was faster by an order of magnitude or more, it was decided to use monodomain from here onwards. Differences were observed, however, between the accurate and simple fibre orientation models in all cases, the significance of which depended upon both the orientation of the vessel and the direction of propagation of the wavefront. Figure~\ref{fig:difference_maps} arranges the four monodomain time difference maps between the simple and accurate fibre models. Activation times differed only slightly during transmural stimulation around a transmural vessel (top left of Figure~\ref{fig:difference_maps}), in the only scenario where propagation direction was parallel to vessel orientation. Larger timing differences can be seen in the region surrounding the vessels in the other three maps. We see slower reds before the wave hits the vessel, but faster blues and even blacks in the vessel wake, indicating that the negotiationg fibres have guided the wavefront around the vessel faster than in the simple model. Indeed, during cirumferential stimulation across an epicardial vessel (bottom right of Figure~\ref{fig:difference_maps}) a maximum difference in activation time of -4ms was observed just behind the vessel in blue, and an elongated blue wake extends from the vessel to the right. This demonstrates that wavefront curvature induced by the presence of the vessel was sustainedly more severe in the accurate model than in the simple.
+    \subsubsection{Multiresolution Registration} % (fold)
+    \label{ssub:multiresolution_registration}
+			The total size of the block face and slice images approaches two terabytes. Even with an 8x downsampled slice dataset, one full rigid registration to test one parameter set would take nearly 100 hours on a modern quad core processor. An affine registration performed with a regular step gradient descent optimizer is parameterised in 10 dimensions. Rapid feedback is required if the right parameters are to be found in any reasonable time, and so a multiresolution approach must be taken. There are 2 ways to reduce the resolution of the dataset: in-plane downsampling and out-of-plane slice selection.
+			
+      In-plane downsampling and Gaussian smoothing not only reduces time, but smooths the cost function and can lead to more robust registration results. In multiresolution registration, the resulting transforms can then be used to initialise a more accurate but more fragile registration at a higher resolution.
+			
+      To start with, a quick order-of-magnitude overview of the global performance of a particular parameter set was required. In this case, regularly spaced subsets of the full curated list were created, such as every thirtieth slice or every fifth slice. Alternatively, every slice within a region might be selected, for example, the band of slices spanning an epicardial vessel. Of course, these two reductions can be applied together for very rapid feedback. As will be made clearer in Chapter~\ref{cha:diffusion_smoothing_registration_of_high_resolution_rat_histology}, full out-of-plane resolution is required to parameterise effectively the coregistration of adjacent slices. However, the fruitful region of parameters near the apex of the heart for elliptical discs of tissue is different (yet not disjunct) from that in more complex, central slices. In this case, a group of representative slice sublists at full resolution, e.g. 100-110, 200-210, 300-310 etc., provide the best compromise between speed and accuracy.
+			
+			The slice list is loaded dynamically by all tools from a central config file, and so switching between lists when prototyping is as simple as redirecting a symlink.
+    % subsubsection multiresolution_registration (end)
     
-    \begin{figure}[htbp]
-  		\centering
-  	    \includegraphics[width=1\textwidth]{Ch5/Figs/planar_propagation_1}
-              \caption{An array of 16 simulated electric waves on 10 x 10 x 3mm cuboid meshes. Each simulation is initialised with 5ms of externally applied shock, along either the bottom or left edge of the domain. The resulting waves are displayed at 160ms. Black areas represent fully polarised tissue which has yet to be stimulated, red and white areas represent fully depolarised tissue, and just visible at the wavefronts are the blue, green and yellow spectra in between, representing tissue in the upstroke phase. It is clear that the left-hand two columns are simulations of a transmural vessel, and the right hand columns of an epicardial vessel. In the top two rows, a wave has been stimulated from the bottom of the diagrams, the endocardium, to the top, at the epicardium, but in the bottom two rows a wavefront is stimulated that propagates from the left of the diagrams over to the right. The snapshots are further divided into monodomain and bidomain simulations, and into simple and accurate fibre modelling.}
-  	  \label{fig:planar_propagation_1}
-  	\end{figure}
-    
-    \begin{figure}[htbp]
-  		\centering
-  	    \includegraphics[width=1\textwidth]{Ch5/Figs/planar_propagation_2}
-              \caption{The same array of simulations as displayed in Figure~\ref{fig:planar_propagation_2}, the waves being displayed at the later time of 270ms, in order to show the interaction of the epicardial vessel with the wavefront.}
-  	  \label{fig:planar_propagation_2}
-  	\end{figure}
-
-    \begin{figure}[htbp]
-  		\centering
-  	    \includegraphics[width=0.95\textwidth]{Ch5/Figs/difference_maps}
-              \caption{Four difference maps comparing the time of first stimulation in the simple and accurate fibre models, for both propagation directions and both vessel orientations. The monodomain models were used in all cases. Times from the simple fibre model are subtracted from those of the accurate model, so that positive values represent a longer time until first stimulation in the accurate model, and negative values signify a faster stimulation. The scale is shown on the right: yellow means no time difference, reds and whites mean a delay in the accurate model compared to the simple model, and the greens and blues in the top right mean quicker activation times in the accurate model. A view of the epicardial edge is presented in the bottom left map, in order to show strong deviations on the inner vessel wall.}
-  	  \label{fig:difference_maps}
-  	\end{figure}
-  	
-  
-  \subsection{Induced Arrhythmia} % (fold)
-  \label{sub:induced_arrhythmia}
-    Where the first stage of experiment aimed to demonstrate possible arrhythmogenic mechanisms, acting through the increase in wave curvature due to vessels, this next stage examined the role of vessels and fibres once an arrhythmia was in progress. Since mapping studies \cite{Valderrabano2003,Cysyk2008,Qin2005} attributed phase singularity anchoring to epicardial vessels, we initiated singularities around an epicardial vessel, on a domain large enough to contain an arrhythmia meandering in the vicinity of the vessel. The extended 35 x 10 x 3mm mesh was subject to a double stimulation protocol: for the first 5ms, the bottom edge was shocked to initiate a transmural wave, much in the manner adopted in section~\ref{sub:planar_propagation}; then after 600ms, one half of the tissue between the vessel and the endocardium is shocked, triggering a reentrant spiral wave. Figures~\ref{fig:shock_induced_54ms}--\ref{fig:shock_induced_2160ms} chronicle the double stimulation and subsequent arrhythmic episode for both fibre models. Both vessels reveal some anchoring effect, but it is stronger and perpetuated for longer in the simple model, where vertical propagation at the vessel boundary is more strongly retarded. Wave breakup is also more pronounced, with more angular, fibrillatory waveforms visible.
-  	
-    \begin{figure}[htbp]
-  		\centering
-  	    \includegraphics[width=0.95\textwidth]{Ch5/Figs/shock_induced_54ms}
-              \caption{Monodomain simulations on a 35 x 10 x 3mm mesh representing a transmural section of rabbit left-ventricular heart wall around a 2mm sub-epicardial vessel. The two snapshots are taken 54ms after an endocardial stimulus. The simple fibre model is employed in the top snapshot, and the accurate in the bottom.}
-  	  \label{fig:shock_induced_54ms}
-  	\end{figure}
-  	
-    \begin{figure}[htbp]
-  		\centering
-  	    \includegraphics[width=0.95\textwidth]{Ch5/Figs/shock_induced_558ms}
-              \caption{A second shock is applied at 558ms in order to induce arrhythmia. Green tissue above the shock zone has not recovered from the previous stimulation, and so conduction upwards is blocked. The wave will move laterally for a short time until the green band recovers and an anticlockwise spiral wave ensues.}
-  	  \label{fig:shock_induced_558ms}
-  	\end{figure}
-  	
-    \begin{figure}[htbp]
-  		\centering
-  	    \includegraphics[width=0.95\textwidth]{Ch5/Figs/shock_induced_1530ms}
-              \caption{At 1530ms, the accurate arrythmia (bottom) has dissipated and tissue will restore to a polarised state, whereas the simple arrhythmia has fractionated into several wavefronts, showing complex 3-D dynamics.}
-  	  \label{fig:shock_induced_1530ms}
-  	\end{figure}
-  	
-    \begin{figure}[htbp]
-  		\centering
-  	    \includegraphics[width=0.95\textwidth]{Ch5/Figs/shock_induced_1710ms}
-              \caption{At 1710ms, the simple arrhythmia exhibits several phase singularities, with one staying local to the vessel.}
-  	  \label{fig:shock_induced_1710ms}
-  	\end{figure}
-  	
-    \begin{figure}[htbp]
-  		\centering
-  	    \includegraphics[width=0.95\textwidth]{Ch5/Figs/shock_induced_1890ms}
-              \caption{At 1890ms, all but the anchored singularity are on the verge of extinction. The vessel extends the circuit length of the reentrant wave, allowing tissue to recover and reactivate when the wavefront returns. In the simple fibre model, the fibre direction remains horizontal at the vessel boundary, rather than tangent to the boundary. Propagation is thus significantly retarded in the vertical direction to the left and right of the vessel. This effect further extends the effective circuit length.}
-  	  \label{fig:shock_induced_1890ms}
-  	\end{figure}
-  	
-    \begin{figure}[htbp]
-  		\centering
-  	    \includegraphics[width=0.95\textwidth]{Ch5/Figs/shock_induced_2160ms}
-              \caption{The spiral finally blocks itself shortly after 2160ms, having lasted nearly twice as long after the second shock as with the accurate model. Clearly, it has remained in close proximity to the vessel.}
-  	  \label{fig:shock_induced_2160ms}
-  	\end{figure}
+    \subsubsection{Builders} % (fold)
+    \label{ssub:builders}
+      A minimal registration pipeline is composed of several generic actors, including a metric, an optimiser, a transform, and an interpolator. The details of which types of actors are optimal and how they should interact are peculiar to the registration problem at hand. Furthermore, the specific type of each component often requires unique configuration beyond the generic interface of its family, and the choice of image preprocessing is dependent on the choice of metric. Once several types must be chosen from and configured, even for just one component, an ad hoc procedural approach quickly became unwieldy. These two requirements colluded combinatorially to demand a great deal of testing, tailoring and configuration in order to achieve registrations of high quality. More often than not, modifications would degrade the registration.
+			
+      At the pipeline level, we developed a heirarchy of frameworks employing the Builder pattern (\cite{Gamma1995}), which abstracts away the heavy lifting of wiring up the various components together.  At the component level, a conflation of the Abstract Factory and the Strategy patterns (\cite{Gamma1995}), together with a configuration system using the human-friendly YAML markup language, serves not only to decouple the actors' representations from the minutiae of their construction, but to move these volatile decisions from compile-time to runtime. These tools vastly reduce the cost of experimentation and testing. With all the variables clearly grouped together, with no need to recompile the toolchain or pore through source code to find if and where one can make a change, the feedback from results is faster and less error prone.
       
+			The StackAligner class encapsulates the registration process, for tools employing affine or b-spline deformable transforms, across the whole heart or in a region of interest. At least two sets of stack configurations were required, for the block face and slice stacks, across a great many registration and reconstruction tools. This logic was pulled into a StackBuilder class tree, rooted from an untemplated StackBuilderBase class to prevent template infection across the codebase.
+    % subsubsection builders (end)
+		
+		\subsubsection{Events, Checkpointing and IO} % (fold)
+		\label{ssub:events_checkpointing_and_io}
+			It is necessary to save intermediate information about the progress of the registration, for parameter tuning and analysis. ITK exposes this functionality through the Command Observer pattern (see \cite{Gamma1995})). Any ITK object can publish events, and other objects may subscribe to those events. An object whose purpose is to subscribe to an event and perform an action when that event is triggered is called a Command Observer. Figure~\ref{fig:command_heirarchy} shows the class tree developed to display and record the required information.
+			
+    \begin{figure}[htbp]
+      \centering
+      \includegraphics[width=\pagewidth]{Ch5/Figs/command_heirarchy}
+      \caption{Command Observer heirarchy to output various types of information when specific events are triggered.}
+      \label{fig:command_heirarchy}
+    \end{figure}
+		
+      At any stage during the registration process, the vector of transforms held by a given Stack can be persisted to a series of files with a single function call. Just as easily, a new Stack can be initialised with a set of transforms on storage. This machinery facilitates greater process granularity in three dimensions: in the sequence of transforms to be optimised, in the increasing image resolutions to be registered, and spatially in the pairs of slices within the Stack. In the first case, a user can tune one registration stage until they are happy that it is optimal, and then use the results as a starting point for all subsequent runs of the next stage. In the second case, approximate registrations can be performed with images at lower resolutions, which can then initialise registrations at higher resolutions with different images. In the third case, the result from separate jobs for each slice pair using images of a scalar floating point pixel type or a segmentation image type can be aggregated and used to reconstruct a colour volume, perhaps at a different resolution. This division of workload and memory is of particular importance when organising jobs on clusters and shared memory machines.
+			
+			Even aside from process granularity, working with transforms is vastly superior to working directly with the images. Composing transforms rather than repeatedly resampling prevents a loss of image quality due to rasterisation in differing coordinate systems. Advanced composition of transforms makes possible registration refinement, either in regions of interest, or with the diffusion smoothing techniques discussed in Chapter~\ref{cha:diffusion_smoothing_registration_of_high_resolution_rat_histology}.
+          
+          Several other aspects of the architecture are not discussed here, including configuration, file management, testing, as well as the opportunities and challenges posed by high performance computing.
+		% subsubsection events_checkpointing_and_io (end)
+		
+  % subsection software_architecture (end)
+  
+  \subsection{Diagnostics and Parameter Tuning} % (fold)
+    \label{sub:diagnostics}
+      For almost a year and a half, it was very difficult to see why registration was failing to yield robustly accurate results. The output of raw parameters was somewhat elucidating, but only for obvious issues such as parameter scaling and step length, where almost zero change in some or all parameters signalled what to adjust. The space of possible parameters was enormous, and the computing time before feedback significant. With visual representation of nothing but the final result, divining which parameters to change and how was perhaps analogous to deciding how each player in a sports team could improve given only the final scores.
+      
+      Armed with the intermediate transforms and metric values discussed in Section~\ref{ssub:events_checkpointing_and_io}, the causes of the suboptimal registration results were immediately apparent. The progression of metric values for all slices could be plotted in graphs like those in Figures~\labelcref{fig:rigid_metric_values,fig:similarity_metric_values,fig:affine_metric_values,fig:affine_metric_value_differences}. Progress volumes of a particular slice could be constructed as seen in Figures~\labelcref{fig:progress_cross_sections,fig:progress_contour}.
+			
+			The regular step gradient descent optimiser is parameterised with four values: two behavioural values (maximum step length and relaxation factor), and two cutoff values (minimum step length and gradient magnitude tolerance). Bad behavioural values manifest in static or `zigzagging' unstable progress volumes and metric values, whilst premature or overcautious cutoff values yield either no region or a needlessly large region of equilibrium at the end. Bad parameter scaling is not evident solely from the intermediate metric values, which can still remain smoothly increasing with a quasi-equilibrated final section. However, the progress volume will appear restricted in one or more dimension. For example, the slice may rotate freely, but remain at a fixed translation, despite an obvious translational cost gradient.
+			
+			Not all symptoms could be diagnosed. In rare cases, the metric value would gradually and consistently worsen, and it was unclear why this was happening. Perhaps an oddly shaped cost basin or saddle point was to blame, deepening steeply along one dimension and shallowly along a perpendicular one.
+			
+      Interestingly, before an upgrade to ITKv4, the registration algorithm would often not optimise, but rather diffuse in a seemingly random way between metric values. Even though the upgrade should not have affected the registration outcome, but just the speed of the code, results were suddenly much better.
+      
+    % subsection diagnostics (end)
+% section methods (end)
+   
+\section{Results} % (fold)
+\label{sec:registration_results}
+	The work leading up to this chapter is composed of a great many dead ends and failed experiments, and the result presented here is merely the best outcome. Details of computation times are followed by the plotting of intermediate and final metric values. The progress of a single representative slice is scrutinised, ending with cross-sections and contours of the registered histological volumes after each successive registration.
+	
+  To begin with, lower resolution images were used to approximate parameters in reasonable time, but all registrations shown here were performed with the full resolution block face images and 8x downsampled slice images. On a MacBook Pro with a 2.4GHz Intel Quad Core i7 processor, registering the original block face image to an 8x downsampled slice image took approximately 0.25 seconds per iteration. For the 1500 iterations required for rigid registration, and for 900 slices, this extrapolates to 93 hours total run time. When jobs were distributed on the cluster, 12 parallel registrations could be run concurrently in times of low demand. The total registration time was reduced from 93 hours to just below 7 hours.
+	
+  \begin{sidewaysfigure}[htbp]
+    \centering
+    \includegraphics[width=\textheight]{Ch5/Figs/diagnostics/rigid_metric_values}
+    \caption{Intermediate metric values for all slices during rigid registration.}
+    \label{fig:rigid_metric_values}
+  \end{sidewaysfigure}
+      
+  \begin{sidewaysfigure}[htbp]
+    \centering
+    \includegraphics[width=\textheight]{Ch5/Figs/diagnostics/similarity_metric_values}
+    \caption{Intermediate metric values for all slices during similarity registration.}
+    \label{fig:similarity_metric_values}
+  \end{sidewaysfigure}
+      
+  \begin{sidewaysfigure}[htbp]
+    \centering
+    \includegraphics[width=\textheight]{Ch5/Figs/diagnostics/affine_metric_values}
+    \caption{Intermediate metric values for all slices during affine registration.}
+    \label{fig:affine_metric_values}
+  \end{sidewaysfigure}
+  
+	Figures~\labelcref{fig:rigid_metric_values,fig:similarity_metric_values,fig:affine_metric_values} graph the intermediate metric values of each iteration for each slice, during the rigid, similarity and affine registrations. Each graph is viewed from below, in order to see all values clearly. Evidently, the overwhelming majority of the optimisation is done in the first rigid step, and this is reflected in the number of iterations required to reach a global optimum: 1500, as apposed to 100 for similarity and affine registrations. Nearly all curves increase smoothly and monotonically, before reaching a distinct flat maximum. In Figure~\ref{fig:rigid_metric_values} after around slice 600, where the blob-shaped artefact appears, the final metric values decrease almost linearly as the intensity of the blob increases. Slices in the region of 400-600 start from a much lower metric value, and take up to 1500 iterations to maximise; their geometric initialisations were much further from their final optimal position. Diagnostics were of critical importance here, not least to ensure that enough iterations had passed so that all slices had reached their flat optimum position.
+	
+  \begin{sidewaysfigure}[htbp]
+    \centering
+    \includegraphics[width=\textheight]{Ch5/Figs/diagnostics/affine_metric_value_differences}
+    \caption{Intermediate \emph{delta} metric values for all slices during affine registration.}
+    \label{fig:affine_metric_value_differences}
+  \end{sidewaysfigure}
+  
+	The changes in metric value in Figure~\ref{fig:affine_metric_values} are very small compared to the range of metric values across slices. Figure~\ref{fig:affine_metric_value_differences} depicts the change in metric value upon each iteration. It is viewed from the zero plane, and demonstrates -- at least to some extent -- that these changes are weighted largely to the positive side of zero. The affine registration is a small but certain improvement upon the similarity registration.
+	
+  \begin{sidewaysfigure}[htbp]
+    \centering
+    \includegraphics[width=\textheight]{Ch5/Figs/diagnostics/initial_and_final_values_comparison}
+    \caption{Initial and final metric values before and after each stage of registration.}
+    \label{fig:initial_and_final_values_comparison}
+  \end{sidewaysfigure}
+  
+	Para on final values.
+	Figure \ref{fig:initial_and_final_values_comparison} shows the initial metric values after geometric initialisation, and the final metric values after rigid, similarity and affine registrations. Again is it clear that each successive registration increases correlation, but the majority of improvement comes from the rigid registration. Slices from 380 to 600 were photographed at a larger angle from that of their block-face images, and this is reflected in a sharply reduced initial correlation value. From Slice 600 onwards, the blob precludes successful registration and both initial and final correlation values decline.
+	
+	\begin{figure}[htbp]
+    \centering
+    \subfigure[][]{\includegraphics[height=0.3\textheight]{Ch5/Figs/diagnostics/fixed_progress_slice_0562_1_287.pdf}}
+    \subfigure[][]{\includegraphics[height=0.3\textheight]{Ch5/Figs/diagnostics/moving_progress_slice_0562_1_287.pdf}}
+    \subfigure[][]{\includegraphics[height=0.3\textheight]{Ch5/Figs/diagnostics/fixed_progress_slice_0562_0_235.pdf}}
+    \subfigure[][]{\includegraphics[height=0.3\textheight]{Ch5/Figs/diagnostics/moving_progress_slice_0562_0_235.pdf}}
+    \caption{Central cross-sections of the progress volume of 1500 iterations of slice 0562, together with the fixed progress volume of the equivalent block face image.}
+    \label{fig:progress_cross_sections}
+  \end{figure}
+      
+  \begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\pagewidth]{Ch5/Figs/diagnostics/0562_contour.png}
+    \caption{Contours of the progress volume of 1500 iterations of slice 0562 in blue, and of the fixed eqiuvalent block face image in yellow. Isosurfaces were extracted from volumes built from manual segmentations of both the block face and the slice image.}
+    \label{fig:progress_contour}
+  \end{figure}
+      
+  \begin{figure}[p]
+    \centering
+    \subfigure[][]{\includegraphics[width=0.9\pagewidth]{Ch5/Figs/diagnostics/0562_correlation}}
+    \subfigure[][]{\includegraphics[width=0.9\pagewidth]{Ch5/Figs/diagnostics/0562_delta_correlation}}
+    \caption{Metric values and delta metric values during the rigid registration of slice 0562.}
+    \label{fig:0562_correlation}
+  \end{figure}
+	
+	Para on single slice.
+	Figures~\labelcref{fig:progress_cross_sections,fig:progress_contour,fig:0562_correlation} showcase the diagnostics for a single representative slice during rigid registration. Figures~\labelcref{fig:progress_cross_sections,fig:progress_contour} are representations of the progress volume: a stack of the same 0562 image, transformed by the updating rigid transform at each of the 1500 steps in the registration. The rotation angle is quickly optimised in the first 100 iterations at the base. A flatter, slower translational optimisation ensues, which finally reaches a stationary minimum over the last iterations at the top. The top of Figure~\ref{fig:progress_contour} shows a very close fit compared with the starting point. The distinct phases of the registration are mirrored in the metric values of Figure~\ref{fig:0562_correlation}. The rapid rotational phase is seen again in the first 100 steps, with the largest metric gradients of the whole registration. a smooth, monotonic translational phasefor the next 700 iterations accelerates as it gets close to the optimum, until coming to rest at around 1450 iterations.
+	
+	% initialisation figure
+	\begin{sidewaysfigure}[htbp]
+	  \centering
+	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch5/Figs/geometric_0_235}}
+	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch5/Figs/geometric_1_287}}
+	  \caption{Central cross-sections of the slice image stack before registration.}
+	  \label{fig:geometric_initialisation}
+	\end{sidewaysfigure}
+
+	% x slices
+	\begin{figure}[htbp]
+	  \centering
+	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch5/Figs/rigid_0_235}}
+	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch5/Figs/size_0_235}}
+	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch5/Figs/affine_0_235}}
+	  \caption{Cross-sections of the rigid, similarity and affine volumes perpendicular to the x-axis.}
+	  \label{fig:hires_0_235}
+	\end{figure}
+
+	% y slices
+	\begin{figure}[htbp]
+	  \centering
+	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch5/Figs/rigid_1_287}}
+	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch5/Figs/size_1_287}}
+	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch5/Figs/affine_1_287}}
+	  \caption{Cross-sections of the rigid, similarity and affine volumes perpendicular to the y-axis.}
+	  \label{fig:hires_1_287}
+	\end{figure}
+
+	Central cross-sections of the geometrically initialised volume before registration are shown in Figure~\ref{fig:geometric_initialisation}, and cross-sections after each stage of the registration are shown in Figures~\labelcref{fig:hires_0_235,fig:hires_1_287}. The incoherent volumes in Figure~\ref{fig:geometric_initialisation} are brought into alignment by rigid registration, with small incremental improvements from similarity and affine. The improvements in the later stages are most evident at the extremeties to the left and right of the figures, where the effects of small changes in parameters are most evident; edges are smoother, tissue microstructure is more clearly discerned and large displacements are mostly removed. Discontinuities in intensity between block face images, visible in Figure~\ref{fig:LoRes_cross_sections}, are mirrored in the registration. It is also clear that registration has failed from slice 600 upwards.
+	
+	% geometric contours
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch6/Figs/Rat28/contours/whole_positive_x_geometric}
+	  \caption{Geometric slice volume, viewed along the positive x direction.}
+	  \label{fig:positive_x_geometric_contour}
+	\end{sidewaysfigure}
+
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch6/Figs/Rat28/contours/whole_negative_x_geometric}
+	  \caption{Geometric slice volume, viewed along the negative x direction.}
+	  \label{fig:negative_x_geometric_contour}
+	\end{sidewaysfigure}
+
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch6/Figs/Rat28/contours/whole_positive_y_geometric}
+	  \caption{Geometric slice volume, viewed along the positive y direction.}
+	  \label{fig:positive_y_geometric_contour}
+	\end{sidewaysfigure}
+
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch6/Figs/Rat28/contours/whole_positive_z_geometric}
+	  \caption{Geometric slice volume, viewed along the positive z direction.}
+	  \label{fig:positive_z_geometric_contour}
+	\end{sidewaysfigure}
+
+	% rigid contours
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch6/Figs/Rat28/contours/whole_positive_x_rigid}
+	  \caption{Rigid slice volume, viewed along the positive x direction.}
+	  \label{fig:positive_x_rigid_contour}
+	\end{sidewaysfigure}
+
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch6/Figs/Rat28/contours/whole_negative_x_rigid}
+	  \caption{Rigid slice volume, viewed along the negative x direction.}
+	  \label{fig:negative_x_rigid_contour}
+	\end{sidewaysfigure}
+
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch6/Figs/Rat28/contours/whole_positive_y_rigid}
+	  \caption{Rigid slice volume, viewed along the positive y direction.}
+	  \label{fig:positive_y_rigid_contour}
+	\end{sidewaysfigure}
+
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch6/Figs/Rat28/contours/whole_positive_z_rigid}
+	  \caption{Rigid slice volume, viewed along the positive z direction.}
+	  \label{fig:positive_z_rigid_contour}
+	\end{sidewaysfigure}
+
+	% size contours
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch6/Figs/Rat28/contours/whole_positive_x_size}
+	  \caption{Similarity slice volume, viewed along the positive x direction.}
+	  \label{fig:positive_x_similarity_contour}
+	\end{sidewaysfigure}
+
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch6/Figs/Rat28/contours/whole_negative_x_size}
+	  \caption{Similarity slice volume, viewed along the negative x direction.}
+	  \label{fig:negative_x_similarity_contour}
+	\end{sidewaysfigure}
+
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch6/Figs/Rat28/contours/whole_positive_y_size}
+	  \caption{Similarity slice volume, viewed along the positive y direction.}
+	  \label{fig:positive_y_similarity_contour}
+	\end{sidewaysfigure}
+
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch6/Figs/Rat28/contours/whole_positive_z_size}
+	  \caption{Similarity slice volume, viewed along the positive z direction.}
+	  \label{fig:positive_z_similarity_contour}
+	\end{sidewaysfigure}
+
+	% affine contours
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch6/Figs/Rat28/contours/whole_positive_x_affine}
+	  \caption{Affine slice volume, viewed along the positive x direction.}
+	  \label{fig:positive_x_affine_contour}
+	\end{sidewaysfigure}
+
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch6/Figs/Rat28/contours/whole_negative_x_affine}
+	  \caption{Affine slice volume, viewed along the negative x direction.}
+	  \label{fig:negative_x_affine_contour}
+	\end{sidewaysfigure}
+
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch6/Figs/Rat28/contours/whole_positive_y_affine}
+	  \caption{Affine slice volume, viewed along the positive y direction.}
+	  \label{fig:positive_y_affine_contour}
+	\end{sidewaysfigure}
+
+	\begin{sidewaysfigure}[p]
+	  \centering
+	  \includegraphics[width=0.9\textheight]{Ch6/Figs/Rat28/contours/whole_positive_z_affine}
+	  \caption{Affine slice volume, viewed along the positive z direction.}
+	  \label{fig:positive_z_affine_contour}
+	\end{sidewaysfigure}
+	
+	Threshold segmentation contours illustrate further in Figures~\labelcref{fig:positive_x_geometric_contour,fig:negative_x_geometric_contour,fig:positive_y_geometric_contour,fig:positive_z_geometric_contour,fig:positive_x_rigid_contour,fig:negative_x_rigid_contour,fig:positive_y_rigid_contour,fig:positive_z_rigid_contour,fig:positive_x_similarity_contour,fig:negative_x_similarity_contour,fig:positive_y_similarity_contour,fig:positive_z_similarity_contour,fig:positive_x_affine_contour,fig:negative_x_affine_contour,fig:positive_y_affine_contour,fig:positive_z_affine_contour}. In all cases, contours were generated from a threshold segmentation with intensity limits 0 to 240, using the original slice images, Gaussian smoothed by a kernel of standard deviation 64, because the detail from a simple threshold on nonsmoothed images generated egregiously convoluted surfaces. Because this smoothing only operates within the plane of the slices, individual displacements between edges of adjacent slices is still clearly visible. After segmentation, a label map filter was applied to remove all but the largest connected component. This went some way to removing bubbles and other artefacts obscuring the surface of the heart. In Figures~\labelcref{fig:positive_x_geometric_contour,fig:negative_x_geometric_contour,fig:positive_y_geometric_contour,fig:positive_z_geometric_contour}, the y-dimension of the geometry bounding box is extended from 575 to 700 to encompass the increased spread of the slices. The improvements from each stage are most perceptible here, with the smoothest and most coherent surfaces in Figures~\labelcref{fig:positive_x_affine_contour,fig:negative_x_affine_contour,fig:positive_y_affine_contour,fig:positive_z_affine_contour}.
+	
+% section results (end)
 
 \section{Discussion} % (fold)
 \label{sec:discussion}
-  We have investigated the effects of blood vessels and fibre orientation around them on propagation patterns. We have shown that the activation patterns around blood vessels are similar for bidomain and monodomain simulations. We conclude that inhomogeneities in cardiac tissue such as blood vessels can cause sharp wavefront curvature. We find that this curvature is less pronounced when fibre direction is modelled accurately around the vessels, as the wavefront is guided around the vessel by the curving fibres. Finally, we find that contrary to what we had hypothesised, negotiation of fibres around vessels actually diminishes vessel anchoring by funnelling the wavefront around the vessel, lessening its retarding and fragmenting effect.
+  We have constructed a comprehensive, generic and flexible pipeline to register histological slices to block face images, that can be configured to generate rapid results on the broadest spectrum of computational facilities, from laptop, to cluster, to shared memory supercomputer. A high resolution rat heart volume has been reconstructed, with coherence approximating the tissue microstructure. With recent advances in the field of histological image acquisition, and with datasets of higher and higher quality, a simple application of this pipeline will lead to even better results.
+	
+	An effort to apply coarse and fine grained B-spline registrations to the dataset was made. It was found that in certain regions, no matter how the system was parameterised, deformations would vary wildly from what was reasonable or physical, let alone precise. In future, it might be worthwhile to introduce constraints analogous to the physical forces and relaxations that lead to the deformations in the first place. A rudimentary framework for partial differential equations exists in ITK, and if images could be segmented to identify tissue, and physical properties such as elasticity could introduce strain terms into the cost function being optimised, results could perhaps be refined. However, the implementation would be a large undertaking, and so for the purposes of this thesis we proposed that in smaller regions, the deformations are quasi-linear, much as they are in a Reimannian manifold. This being the case, tools were developed to perform regional refined registrations with the same affine transforms, initialised by the results of full heart registrations, and these tools will be put to use in Chapter~\ref{cha:diffusion_smoothing_registration_of_high_resolution_rat_histology}.
+    
+  It has not escaped us that the method for choosing the various components and optimising their registration parameters is a crude and intuitive version of the optimisation algorithms applied to the image registrations. If one were to attempt to automate some of this process, at least partially, it would not easily be possible to calculate the gradient of a final in parameter space. One could perhaps develop an algorithm to perturb coordinates along the basis axes, such as the parameter scaling, the choice of metric or optimiser, the gradient descent learning rate, the regular step gradient descent relaxation factor, whether to prenormalise images etc. Two salient strategies present themselves: to split the space heirarchically into two groups of `preferred' axes, and secondary axes, then perform a prototype parameter explorative search in the preferred subspace, and for each preferred coordinate perform a cheaper, iterative optimisation in the secondary space. Alternatively, one could simply perform an iterative stochastic search across the whole space. The feasibility of this approach is unclear. In particular, the `quality' measure to be optimised is somewhat subjective, based on the goals and requirements of the scientist, and requiring detailed examination of the final volumes.
+  
+  Some approaches relinquished for this dataset may yield much better results in other contexts. For example, when histogram matching was tested on this dataset, there was no monotonic mapping between the intensity in the lores and that of the hires, with tissue and with non-tissue. With mutual information, a mapping need not be monotonic, but must only be one-to-one. In fact, this constraint did not hold either, since many regions of tissue in the block face images occupy the same intensity range as non-tissue.
+	
+	Whilst much progress has been made with traditional registration techniques in this chapter, the final volumes are still jagged and noisy. This approach is essentially a series of independent two-dimensional registrations; information flow is restricted to the two dimensions within the plane of the images, with no use of or reference to the neighbouring slices to strengthen and refine the results. In the next chapter, a new algorithm is developed, particular to this method of image acquisition, that registers adjacent slices together and uses the results of these registrations to `diffuse' each slice toward its neighbours.
 
-  Despite its findings, the study is limited in many respects. The model makes several fundamental assumptions. The tissue is modelled as homogenous, with a single tissue type and no interstitial spaces or smaller vasculature. Even the ‘accurate’ model is highly speculative and inflexible in its current form, and the model geometry is simplistic. Overall, it is patent that the accurate representation of cardiac tissue structure is important in the understanding of electrophysiological pathologies. The next challenge is to provide this accurate representation, and that will be the focus of the next chapter.
 % section discussion (end)
+
+% chapter coregistration_of_high_resolution_rat_histology (end)

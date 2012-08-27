@@ -1,517 +1,775 @@
 %!TEX root = ../thesis.tex
-\chapter{Coregistration of High Resolution Rat Histology} % (fold)
-\label{cha:coregistration_of_high_resolution_rat_histology}
+\chapter{Diffusion Smoothing Registration of High Resolution Rat Histology} % (fold)
+\label{cha:diffusion_smoothing_registration_of_high_resolution_rat_histology}
+
 % If you like chapter abstracts ...
 \dblspace
-% \begin{quote}{\em \input{Ch6/abstract6}}\end{quote}
+% \begin{quote}{\em \input{Ch6/abstract7}}\end{quote}
 
 \section{Aims} % (fold)
 \label{sec:aims}
-
-  Having shown in an idealised geometry that fibre direction could have a significant effect on propagation, the challenge is set to characterise cardiac tissue at sufficient detail to resolve both fibre direction and other microstructure. Cell type distribution, the shape of tissue boundaries, the Purkinje fibre network, sheet structure and vasculature all affect macroscopic wave propagation, and must therefore be incorporated into electrophysiological models.
-	
-	Attempts have been made to construct volumes from block face images, but aside from the low resolutions and optical transmission problems, there is no way to distinguish between tissue types with the use of dyes. Attempts have also been made to coregister high resolution histological slice images together, but the results suffer from what is known as `the banana problem', and provide geometries unrepresentative of the original tissue.
-	
-  The aim of this chapter is to develop an automated pipeline to register high resolution rat cardiac datasets robustly and accurately, and generate for the first time coherent subcellular resolution 3-D cardiac histological images. One full rat heart dataset will be processed through the pipeline to provide registered volumes. These images will serve both as an authoritative anatomical reference, and as the basis for anatomically based models in simulation studies, laying the foundations for the investigation of the role of microstructure in propagation dynamics.
-	
+  We have achieved a reasonable large-scale alignment of the great majority of histological slices to form a consistent tissue volume. Yet we are left with several limitations of the block face technique from Chapter~\ref{cha:coregistration_of_high_resolution_rat_histology}. There is significant underlying noise in the reference images, from the changes in camera position, and the illumination angles and intensities. At 26.6 $\mu$m, the in-plane resolution of the reference images is 24 times coarser than that of the histology slices, precluding an alignment on the scale of cardiac microstructure. Small non-rigid deformations introduced during slicing and rehydration are particular to each slice, and could not be represented fully by the affine registration. Despite obtaining a result that was relatively close to the block face geometry, the overlap of pixel intensities between tissue and wax, and the interslice variability therein, led to a noisy, jagged result that was not always at the global minimum.
+    
+  \begin{figure}[htbp]
+    \centering
+    \subfigure[][]{\includegraphics[width=0.9\pagewidth]{Ch6/Figs/banana_0_343}}
+    \subfigure[][]{\includegraphics[width=0.9\pagewidth]{Ch6/Figs/banana_1_301}}
+    \caption{The full histological volume, registered using the banana method. Even when constrained by a rigid transform, in many areas the slice-to-slice registration is accurate enough that detailed tissue structure is clearly visible. Yet, just as the cylinder does not represent the banana, the resulting geometry of the volume is quite unrelated to ground truth.}
+    \label{fig:banana}
+  \end{figure}
+    
+  Adjacent histological images are, in the main, extremely similar in shape, have an extremely similar colour profile and are obtained at the same spatial resolution. These characteristics together make for highly accurate and reliable coregistration. Starting from the first slice in a dataset, previous approaches have registered each successive slice to its predecessor, thus constructing a coherent volume. Figure~\ref{fig:banana} exhibits the application of this method to the rat histology. However, there are several unacceptable characteristics of volumes generated with these techniques. Because each slice is positioned relative to the previous, the displacement due to any single erroneous registration is propagated to every subsequent slice. Furthermore, the volumes suffer from what is known as the `banana problem', stemming from the fact that if a curved banana were sliced evenly and perpendicularly to its length, a volume obtained with a slice-to-slice method would appear straight, having lost the original curvature of the banana. In the case of cardiac histology, volumes approach maximum pairwise symmetry, bearing, if any, a merely coincidental relation to the large-scale geometry of the heart. Finally in this case, only rigid registration may be used, as if the size or shape of slices were unconstrained, every slice would approximate the dimensions of the first, and the heart would approximate a meaty cylinder.
+  
+  Enter `transformational diffusion smoothing': a novel technique incorporating the best features from reference-based and slice-to-slice registration methods, and eliminating the weaknesses of both. In this chapter, we will expound its mathematical basis, verify its efficacy over a suite of test geometries, and finally present the much improved histological volumes which it gives rise to.
+    
 % section aims (end)
 
 \section{Methods} % (fold)
 \label{sec:methods}
-	The methods developed to fulfil the aims of this work form the meat of the chapter. First we discuss the experimental acquisition, curation and digital preparation of the images. We go on to cover the algorithms that calculate reasonable starting transformations and refine those transformations via iterative registration. An overview of the tools' architecture precedes the methods developed for diagnostics and parameter tuning.
-	
-  \subsection{Image Acquisition} % (fold)
-  \label{sub:image_acquisition}
-    Hearts were isolated from female rats and cannulated via the aorta to a Langendorff perfusion system, in a similar manner to that presented in \cite{Burton2006}. The hearts were then fixed and stabilised in agar, and 26.4 x 26.4 x 26.4$\mu$m MRI scans were performed. The hearts were immersed in increasing concentrations of alcohol, in order to dehydrate them before embedding them in black wax. The wax blocks were then serially sectioned at 10$\mu$m thickness using a microtome. An image of the top surface of the block was taken with 25$\mu$m resolution after each slicing. Every 5th section was Trichrome stained, labelling connective tissue bluish-green, myocytes pinkish-red and nuclei blue-black. Each slice was relaxed and re-hydrated, before histology imaging was performed using a 5x objective with 1.1$\mu$m resolution. Examples of the block face and slice images is displayed in Figures~\labelcref{fig:original_lores_images,fig:original_hires_images}, respectively.
-		
-		\begin{figure}[htbp]
-		  \centering
-		  \subfigure[][]{\includegraphics[width=0.8\pagewidth]{Ch6/Figs/LoRes_rgb_downsamples_1_0582}}
-		  \subfigure[][]{\includegraphics[width=0.8\pagewidth]{Ch6/Figs/LoRes_rgb_downsamples_8_0582}}
-		  \caption{Block face images of slice 582 of Rat 28. The original image is shown in \textbf{(a)}, with \textbf{(b)} Gaussian smoothed and downsampled by a factor of 8 in each dimension.}
-		  \label{fig:original_lores_images}
-		\end{figure}
-    
-    \begin{figure}[htbp]
-      \centering
-      \subfigure[][]{\includegraphics[width=0.8\pagewidth]{Ch6/Figs/HiRes_downsamples_8_0582}}
-      \subfigure[][]{\includegraphics[width=0.8\pagewidth]{Ch6/Figs/HiRes_downsamples_64_0582}}
-      \caption{Slice images of slice 582. \textbf{(a)} is Gaussian smoothed and downsampled by a factor of 8, and \textbf{(b)} by 64. The slice must be reflected and rotated in order to align with the block face image in Figure~\ref{fig:original_lores_images}.}
-      \label{fig:original_hires_images}
-    \end{figure}
-	
-  % subsection image_acquisition (end)
-
-  \subsection{Image Curation} % (fold)
-  \label{sub:image_curation}
-    The images provided by Burton et al. yield unprecedented detail and quality. Although every possible step was taken during image acquisition, certain unavoidable experimental practicalities arose. A master subset of the images was selected, removing any slices with unacceptable damage such as that found in Figure~\ref{fig:damaged_slice}. Wherever a slice or group of slices was missing or removed, the acceptable adjacent slices were repeated symmetrically to fill the gap, in order to preserve the macroscopic geometry of the tissue. In the rare case where two images of the same slice existed, both slices were examined and the higher quality version was selected.
-    
-    \begin{figure}[htbp]
-      \centering
-      \includegraphics[width=.8\textwidth]{Ch6/Figs/damaged_slice}
-      \caption{A damaged slice close to the left extremity of the heart. The tissue is severely damaged and folded in place. There is also a large bubble trapped between the two imaging slides.}
-      \label{fig:damaged_slice}
-    \end{figure}
-    
-  % subsection image_curation (end)
+  This section introduces and details transformational diffusion smoothing in full, in a manner driven by the requirements of the problem at hand. A revision of the theoretical underpinnings of 1-dimensional brownian motion is followed by some simple simulation of diffusion on a discrete grid. In a similar vein, a mathematical exposition of transformational diffusion is followed by its application in several simulated geometries with added artificial affine noise.
   
-  \subsection{Image Preparation} % (fold)
-  \label{sub:image_preparation}
-  	The digital camera used to obtain the images created files with four channels: red, green, blue and alpha. Since transparency is meaningless in the context of a photograph, the alpha channel was uniformly black. Unfortunately, the implementation of the RGBA BMP reader in ITK labels the channels incorrectly. To correct for this, channels were explicitly permuted and the redundant alpha channel removed.
+	\subsection{1D Brownian Diffusion} % (fold)
+	\label{sub:a_1d_random_walk_analogy}
+	  The central limit theorem states that the mean of a sufficiently large number of independent random variables will be approximately normally distributed, regardless of their individual distribution. Indeed, Einstein's theory of the Brownian motion of a diffusive particle is based on this precept. With this in mind, the simplest model of microscopic diffusion is one in which a particle may move in a random walk in one dimension along the integer number line $\mathbb{Z}$, in steps of either $+1$ or $-1$, with equal probability. Taking each step as an independent random variable $Z_1, Z_2,\ldots$, if the particle's position $S$ starts at $S_0 = 0$, we can express the position of the particle after $N$ steps as
+	  \begin{equation}
+	    S_N = \sum\limits_{i=1}^N Z_i .
+	  \end{equation}
+	  The probability of taking $k$ positive steps out of a total of $N$ steps is given by
+	  \begin{equation}
+	    P(k;N) = \binom{N}{k}\left(\frac{1}{2} \right)^N,
+	  \end{equation}
+	  where the binomial coefficient
+	  \begin{equation}
+	    \label{eq:registration:binomial-coefficient}
+	     \binom{N}{k} = \frac{N!}{k!(N-k)!},
+	  \end{equation}
+	  since there are $\binom{N}{k}$ possible ways of taking $k$ and $N - k$ steps of $-1$ and $+1$, respectively. At each independent step, the probability of taking one or the other direction is $\frac{1}{2}$, leading to the product $\frac{1}{2}^N$.
   
-    On occasion, part way through image acquisition, the block face camera would be moved relative to the surface of the wax block. All images acquired from then on had to be translated and rotated to compensate for this movement. At each perturbation, the two slices between which the camera had moved were registered in order to calculate the corrective transform, which was then applied to all subsequent slices. Figure~\ref{fig:LoRes_cross_sections} depicts the results of these corrections, and the isosurface of the corrected segmented volume are shown from 6 sides in Figures~\labelcref{fig:LoRes_positive_x,fig:LoRes_negative_x,fig:LoRes_positive_y,fig:LoRes_negative_y,fig:LoRes_positive_z,fig:LoRes_negative_z}. The isosurface was generated from a threshold segmentation of the intensity magnitude of the volume. A dense cloud of wax bubbles and other small artefacts obscured the main surface of the heart, and so a binary shape opening filter was applied to remove all but the largest connected region from the segmentation before the contour was extracted.
-    
-    % lores cross sections
-    \begin{sidewaysfigure}[htbp]
-      \centering
-      \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/LoRes_without_adjustments_0_235}}
-      \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/LoRes_without_adjustments_1_287}}
-      \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/LoRes_0_235}\label{subfig:LoRes_adjusted_long_cross_section}}
-      \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/LoRes_1_287}}
-      \caption{Central cross-sections of the cropped block-face volume. \textbf{(a)} and \textbf{(b)} show the volume before adjustment, where a large camera displacement is apparent approximately a quarter of the way from the bottom of the image. Several thin stripes are visible further up, where the occasional single image has been displaced. The volume is fully aligned in \textbf{(c)} and \textbf{(d)}, with striations visible due to discrete changes in the positioning and intensity of illumination. These changes will propagate to the final registration result.}
-      \label{fig:LoRes_cross_sections}
-    \end{sidewaysfigure}
-    
-    % lores contours
-    \begin{sidewaysfigure}[htbp]
-      \centering
-      \includegraphics[width=\textheight]{Ch6/Figs/Rat28/contours/LoRes_positive_x}
-      \caption{A contour of the adjusted block face volume, viewed along the positive x direction. The round surface of the heart apex is clearly visible to the right. Oddly shaped protrusions in the top third of slices are due to gradually brightening reflection from the suface of the wax.}
-      \label{fig:LoRes_positive_x}
-    \end{sidewaysfigure}
-    
-    \begin{sidewaysfigure}[htbp]
-      \centering
-      \includegraphics[width=\textheight]{Ch6/Figs/Rat28/contours/LoRes_negative_x}
-      \caption{The block face contour viewed along the negative x direction. The more complex surface of the valve and vascular machinery at the base of the heart is visible to the right.}
-      \label{fig:LoRes_negative_x}
-    \end{sidewaysfigure}
-    
-    \begin{sidewaysfigure}[htbp]
-      \centering
-      \includegraphics[width=\textheight]{Ch6/Figs/Rat28/contours/LoRes_positive_y}
-      \caption{The block face contour viewed along the positive y direction. The bulge of an epicardial vessel at the bottom right hand side is clearly visible (it is also faintly visible towards the bottom left of Figure~\ref{fig:LoRes_negative_x}). The discrete change in illumination from Figure~\ref{subfig:LoRes_adjusted_long_cross_section} manifests as an apparent increase in surface size approximately a third of the height from the bottom.}
-      \label{fig:LoRes_positive_y}
-    \end{sidewaysfigure}
-    
-    \begin{sidewaysfigure}[htbp]
-      \centering
-      \includegraphics[width=\textheight]{Ch6/Figs/Rat28/contours/LoRes_negative_y}
-      \caption{The block face contour viewed along the negative y direction.}
-      \label{fig:LoRes_negative_y}
-    \end{sidewaysfigure}
-    
-    \begin{sidewaysfigure}[htbp]
-      \centering
-      \includegraphics[width=\textheight]{Ch6/Figs/Rat28/contours/LoRes_positive_z}
-      \caption{The block face contour viewed along the positive z direction. The detail and composition of the images is clearly visible from this angle. Note the protruding epicardial vessel in the top left. The surface of the first third of slices near the bottom left looks eroded, in a region where the threshold intensity values have failed to pick up the tissue boundary faithfully.}
-      \label{fig:LoRes_positive_z}
-    \end{sidewaysfigure}
-    
-    \begin{sidewaysfigure}[htbp]
-      \centering
-      \includegraphics[width=\textheight]{Ch6/Figs/Rat28/contours/LoRes_negative_z}
-      \caption{The block face contour viewed along the negative z direction. Bright reflection obscures much of the tissue surface from this angle, and the accurate registration of these top slices will prove impossible.}
-      \label{fig:LoRes_negative_z}
-    \end{sidewaysfigure}
-    
-	As is evident from Figures~\labelcref{fig:original_lores_images,fig:original_hires_images} for one slice, the vast majority of slices had been flipped over between sectioning from the block surface and being photographed. Slice images were therefore reflected across one axis in order to restore geometric parity with the associated block face image.
-	
-	 Several sets of downsamples of varying factors were generated, the lowest of which were used for debugging and testing, working up in detail, size and computational expense as the techniques were perfected. Before downsampling, a Gaussian smoothing was applied in each case, with sigma equal to the new larger pixel spacing. In this way, all original pixels in the region of a large downsampled pixel contribute to its final value, and aliasing noise problems associated with frthe Nyquist frequency are avoided. This results in a smoother and more accurate cost function. Figures~\labelcref{fig:original_lores_images,fig:original_hires_images} juxtapose the full images with various levels of downsampling.
-	 
-	 When registering two images, it is important that they are of comparable resolution, in order to minimise processing time and to ensure the smoothest possible cost function. In Figure~\ref{fig:downsample_zooms}, the effects of the downsampling can be seen more clearly. Individual cell nuclei are resolved at the highest resolution of slice image, but the maximum resolution block face images are of much lower detail. Clearly, the original slice images, with 1.1$\mu$m pixel spacings, are needlessly detailed compared to their block face counterparts, with a mere 26.6$\mu$m. As is discussed in Section~\ref{ssub:multiresolution_registration}, it is therefore appropriate to register slice images at a factor of 8 times more downsampled than the block face images.
-    
-	%  Lo/HiRes zooms
-    \begin{sidewaysfigure}[htbp]
-      \centering
-      \subfigure[][]{\includegraphics[width=0.39\pagewidth]{Ch6/Figs/HiRes_downsamples_1_0582_zoom}}
-      \subfigure[][]{\includegraphics[width=0.39\pagewidth]{Ch6/Figs/HiRes_downsamples_8_0582_zoom}}
-      \subfigure[][]{\includegraphics[width=0.39\pagewidth]{Ch6/Figs/HiRes_downsamples_64_0582_zoom}}
-      \subfigure[][]{\includegraphics[width=0.39\pagewidth]{Ch6/Figs/LoRes_rgb_downsamples_1_0582_zoom}}
-      \subfigure[][]{\includegraphics[width=0.39\pagewidth]{Ch6/Figs/LoRes_rgb_downsamples_8_0582_zoom}}
-      \caption{An epicardial vessel in slice 582 of Rat 28, in both the slice and the block face images. \textbf{(a)}, \textbf{(b)} and \textbf{(c)} show the slice original, 8x and 64x downsampled, while \textbf{(d)} and \textbf{(e)} show the block face original and 8x downsampled. The fibres parallel to the internal wall at the bottom of \textbf{(a)} are angled such that they reflect the illumination strongly at the top right of \textbf{(d)}, and are in much sharper contrast to the black wax than the rest of the tissue. Indeed, they are in much sharper contrast to the other tissue than the other tissue is to the non-tissue.}
-      \label{fig:downsample_zooms}
-    \end{sidewaysfigure}
-  % subsection image_preparation_and_curation (end)
+	  Applying Stirling's approximation:
+	  \begin{align}
+	    \label{eq:registration:stirling}
+	    \ln \left( n! \right) &= n\ln n - n + O(\ln n) \notag \\
+	           &\approx n\ln n - n \quad \text{as}\: n \to \infty,
+	  \end{align}
   
-  \subsection{Initialisation} % (fold)
-  \label{sub:initialisation}
-    The optimisation algorithms used in registration do not assure convergence to the global minimum and are thus sensitive to initialisation and to the presence of local minima in the cost function. A reasonable initialisation is necessary for robust and accurate registration.
-	
-		\subsubsection{Geometric Initialisation} % (fold)
-		\label{ssub:geometric_initialisation}
-			The block face images are already coherent from their acquisition. White space under the microscope surrounding the slices had already been cropped, such that each slice sat approximately centrally within the bounds of its image. Having been reflected across the x-axis, an anticlockwise rotation of $90\,^{\circ}$ oriented most slices approximately with the block face, as is seen from Figures~\labelcref{fig:original_lores_images,fig:original_hires_images}. A small set of slices required $180\,^{\circ}$ rotations. Slice images were then initialised to their common centre to form a volume. The initial translation and pixel spacing of the block face volume was then manually tuned to overlap maximally with the slice volume. As is exhibited in Section~\ref{sec:results}, this naïve geometric initialisation provides an adequate starting point.
-		% subsubsection geometric_initialisation (end)
-	
-		\subsubsection{PCA Initialisation} % (fold)
-		\label{ssub:pca_initialisation}
-			Although geometric initialisation provided a reasonable starting point for most slices, this was purely a consequence of how the experimentalist had manually obtained and cropped the original images. A more sophisticated method might make use of the information in the image. If the pixels containing tissue could be identified, the centres of mass and principal components of each pair of images can be aligned to provide a close initial matching.
+	  we can see that in the limit of large $N$, the distribution of $k$ and thus $S_N$ tend to Gaussian:
+	  \begin{equation}
+	    \label{eq:registration:gaussian-approximation}
+	    \binom{N}{k}\left(\frac{1}{2}\right)^N \approx \sqrt{\frac{2}{\pi N}} \
+	      e^{-2(k - \frac{N}{2})^2/N}.
+	  \end{equation}
+  
+	  \emph{Possibly include proof of de Moivre-Laplace theorem?}
+	  % Proof can be found here:
+	  % http://en.wikipedia.org/wiki/De_Moivre%E2%80%93Laplace_theorem
+  
+	  We might consider a concentration of particles $f$ over a discrete 1-dimensional grid $x$. After a discretised timestep $\Delta t$, a proportion $2\alpha$ of the particles have taken one step, such that half of them have diffused to the left and half to the right:
+  	
+	  \begin{align}
+	    f(x_i, t_{n+1}) &= f(x_i, t_n) + \alpha (f(x_{i-1}, t_n) - 2f(x_i, t_n) + f(x_{i+1}, t_n)), \label{eqn:diffusion_1d} \\
+	    \frac{\Delta f(x, t + \Delta t)}{\Delta t} &= \alpha (f(x - \Delta x, t) - 2f(x, t) + f(x + \Delta x, t)).
+		\end{align}
+  	
+	  This diffusion will of course act to smooth and homogenise $f$, since regions of high concentration relative to their neighbours will be reduced, and those of low concentration augmented. It is also clear from (\ref{eq:registration:gaussian-approximation}) that multiple application of this smoothing operation approximates a Gaussian diffusion smoothing.
 		
-		  Various segmentation methods were tested in an effort to identify tissue reliably in both sets of images. Because the block face volume was already coherent, volume-wise refinements and filters could be applied, whilst only 2D segementation techniques could be considered for the slice images.
-			
-			After applying any image preprocessing, such as a gradient magnitude or Hessian filter, many segmentation methods, such as opening and closing or level sets, are designed to refine the edges or surfaces of an approximate segmentation. Yet here it is to be noted that only the segmentation's moments are of consequence, in particular the centre of mass and the variance matrix. It is therefore unnecessary for the segmentation to overlap closely with the tissue at a small scale, only that the global distribution of tissue be represented precisely. That being said, methods to remove macroscopic artefacts, such as connected component filtering and selection proved beneficial in most contexts.
-			
-		  There is no facility to align the principal components of two images in ITK, only to align their centres of mass. The class itk::CenteredTransformPCAInitializer was implemented to encapsulate the details of this process. The results of applying this class compared to the simple geometric initialisation are shown in Figure~\ref{fig:582_pca}, and the segmentations upon which they are based are shown in Figure~\ref{fig:582_segmentation}.
-		
-	    It is somewhat clear from Figure~\ref{fig:LoRes_cross_sections} that the broad range of tissue colours and intensities in the block face volume overlap significantly with the colours and intensities of non-tissue. In Figures~\labelcref{fig:582_segmentation,fig:582_pca}, the threshold segmentation values were optimised for these particular slices as a proof of concept, but this slice was chosen as one of the best examples of the technique. Issues such as wax bubbles, the bright blob at the top of the block face volume, optical transmission from layers below, and differential brightness from differing fibre directions or anatomical features plagued efforts to segment the images, and in fact went on to plague registration. Even if a segmentation method could yield reasonable results for every slice in the dataset, it is impractical to tune parameters manually for each slice, and there would certainly not be a single parameter set suitable for every slice in the volume. For these reasons, the PCA method could not be used to improve robustly upon a simple geometric initialisation of the high-resolution slices seen in Figure~\ref{fig:geometric_initialisation}.
-    
+	% subsection a_1d_random_walk_analogy (end)
+	
+	\subsection{Simulating 1D Diffusion} % (fold)
+	\label{sub:simulating_1d_diffusion}
 	  \begin{figure}[htbp]
 	    \centering
-      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/LoRes_562}}
-      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/LoRes_segmentation_562}}
-      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/HiRes_562}}
-      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/HiRes_segmentation_562}}
-      \caption{Originals and threshold segmentations of the block face and slice images of slice 582.}
-	    \label{fig:582_segmentation}
+			\subfigure[][0 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.40/000}}
+			\subfigure[][1 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.40/001}}
+			\subfigure[][3 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.40/003}}
+			\subfigure[][15 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.40/015}}
+			\subfigure[][99 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.40/099}}
+			\subfigure[][299 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.40/299}}
+	    \caption{A simulation of 1-D diffusion, with $\alpha = 0.4$.}
+		  \label{fig:1d_diffusion_0_40}
+	  \end{figure}
+	
+	  \begin{figure}[htbp]
+	    \centering
+			\subfigure[][0 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.49/000}}
+			\subfigure[][1 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.49/001}}
+			\subfigure[][3 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.49/003}}
+			\subfigure[][15 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.49/015}}
+			\subfigure[][99 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.49/099}}
+			\subfigure[][299 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.49/299}}
+	    \caption{A simulation of 1-D diffusion, with $\alpha = 0.49$.}
+		  \label{fig:1d_diffusion_0_49}
+	  \end{figure}
+  
+	  \begin{figure}[htbp]
+	    \centering
+			\subfigure[][0 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.50/000}}
+			\subfigure[][1 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.50/001}}
+			\subfigure[][3 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.50/003}}
+			\subfigure[][15 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.50/015}}
+			\subfigure[][99 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.50/099}}
+			\subfigure[][299 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.50/299}}
+	    \caption{A simulation of 1-D diffusion, with $\alpha = 0.5$.}
+		  \label{fig:1d_diffusion_0_50}
+	  \end{figure}
+  
+	  \begin{figure}[htbp]
+	    \centering
+	  	\subfigure[][0 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.51/000}}
+	  	\subfigure[][1 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.51/001}}
+	  	\subfigure[][3 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.51/003}}
+	  	\subfigure[][15 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.51/015}}
+	  	\subfigure[][99 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.51/099}}
+	  	\subfigure[][299 iterations]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/1d_noise/alpha_0.51/299}}
+	    \caption{A simulation of 1-D diffusion, with $\alpha = 0.51$.}
+	    \label{fig:1d_diffusion_0_51}
 	  \end{figure}
     
-	  \begin{figure}[htbp]
-	    \centering
-      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/geometric_redblue}}
-      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/geometric_segmentation_redblue}}
-      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/pca_redblue}}
-      \subfigure[][]{\includegraphics[width=0.4\pagewidth]{Ch6/Figs/pca/pca_segmentation_redblue}}
-      \caption{Intensity superpositions of block face (red channel) and slice (blue channel). The original images are used \textbf{(a)} and \textbf{(c)}, while the segmentations are shown in \textbf{(b)} and \textbf{(d)}. \textbf{(a)} and \textbf{(b)} show geometric initialisation, and \textbf{(c)} and \textbf{(d)} PCA initialisation. It is clear that PCA provides a much closer match from which the registration algorithm can begin.}
-      \label{fig:582_pca}
-    \end{figure}
-    
-		% subsubsection pca_initialisation (end)
-  % subsection initialisation (end)
-  
-	\subsection{Registration Algorithm} % (fold)
-  \label{sub:registration_algorithm}
-    Each main aspect of the registration method is outlined in this section. A well-founded registration algorithm must embody three traits: numerically, it must converge reliably to the global minimum; computationally, it must be efficient so as to be tractable; and physically, it must correspond to the process that it was designed to correct for. It is through the lens of these three benchmarks that we examine the following components.
-    
-    \subsubsection{Transforms} % (fold)
-    \label{ssub:transforms}
-			The sectioning of the slices introduces 2-D, slice-specific deformation and in some cases damage. The subsequent relaxing and rehydration of each slice causes further deformation. A large proportion of this deformation will be of similarity or affine form. By first registering the simplest of transforms with the lowest dimensional parameter space, and then incrementally relaxing transformational constraint by increasing the number of parameters, we can provide the best possible starting point in each higher dimensional parameter space.
-			
-      Transforms were optimised in the following order, the final result of each initialising its successor: a centered rigid 2D transform - a rotation about an arbitrary centre followed by a translation; a centred similarity transform - as before but with a scaling factor; and a centred affine transform - an affine transformation around an arbitrary centre followed by a translation. For all transforms, the centre of rotation was exposed for optimisation as metric parameters. Finally, a coarse grid and subsequent fine grid bspline deformable transform was tested, but found to be unstable.
-    % subsubsection transforms (end)
-    
-    \subsubsection{Metrics} % (fold)
-    \label{ssub:metrics}
-      Mutual Information (MI) is usually considered to be most effective when registering images from different modalities. However, after a plethora of parameterisations and configurations was explored based on this metric with little success, incrementally simpler and simpler metrics were tested. Each demanded more image preconditioning and tuning, but yielded monotonically closer and more consistent registrations, with a larger capture range, and required fewer iterations to converge. First, a normalised correlation was employed, with the simplest mean squares difference algorithm proving most suitable. It would appear that the simpler the intensity relationship, the smoother the cost landscape, with fewer local minima.
-    % subsubsection metrics (end)
-  
-    \subsubsection{Optimisation} % (fold)
-    \label{ssub:optimisation}
-      Gradient Descent (GD) and Regular Step Gradient Descent (RSGD) optimisers have been applied. RSGD terminates before the maximum number of iterations has passed, and so in simple cases it is computationally more efficient. In most scenarios, however, the GD optimiser often proves more robust. In both cases, a choice to maximise or minimise the cost function must be chosen, the latter being dependent on both the choice of metric and the preconditioning of the image intensity ranges.
-
-      The optimisation space, as dictated by the transform, must be scaled along each dimension to correct for discrepant effects per unit change of each parameter. For example, a translation of one micron at the epicardium might result from a rotation of just $10^{-5}$ radians about the centre of the slice. This makes the metric space more isotropic and reduces the eccentricity of cost function basins, allowing the optimisation algorithm to fall more directly toward minima.
-    % subsubsection optimisation (end)
-	% subsection registration_algorithm (end)
-    
-  \subsection{Software Architecture} % (fold)
-  \label{sub:software_architecture}
-		From early on, the requirements of the problem diversified, and a range of related tools were built. Common patterns and functionality needed to be extracted and isolated. This prevented duplication and the potential for bugs and inconsistencies, and lead to more readable and manageable code. Because the final result was unknown, it was often extremely difficult to know whether the code was operating correctly. Bugs or errors in calculation were not usually apparent, and proved very difficult to find. We outline the main problems encountered during the development process, along with the solutions crafted to isolate and overcome them.
-		
-		\subsubsection{Languages and Frameworks} % (fold)
-		\label{ssub:languages_and_frameworks}
-      All file handling and networking algorithms were written in Ruby. Imaging algorithms were written in C++ or, in some simple cases, Python, using the venerable ITK library. C++ executables were compiled using the cross-platform build system CMake. YAML was used as a declarative language for configuration files, providing a syntax that is easily human readable and curatable, yet machine parsable. Source code management and code deployment was implemented in Git, and the project is freely available at \url{http://github.com/mattgibb/registration} under an MIT license.
-		% subsubsection languages_and_frameworks (end)
-		
-    \subsubsection{Stacks} % (fold)
-    \label{ssub:stacks}
-      Each block image must be paired with its equivalent slice image, and blank images must be interpolated where images are missing. Slices must be transformed independently and by a range of transform types. Resampler spacings must be set according to the original image spacings and the downsample ratios. Binary masks must be generated for each image, so that metrics will only take pixel intensities into account from inside the boundaries of the original untransformed images. A stack volume must be reconstructed from the transformed, resampled slices. A minimum percentage overlap is required for many metrics to function, and for small slice images close to the apex of the heart, block mask areas must be cropped until this constraint is satisfied.
-	  	
-      A heirarchy of Stack classes has been developed - along with associated builder classes, IO helpers and transform converters - to encapsulate the solutions to all of these problems. A Stack represents the 3D composition of a set of 2D slices. It handles ROI selection, generic transform storage, image and mask resampling and generation (both for 2D slices and for the 3D volume) and various error handling strategies. An MRI class is also available to solve the complementary problem of extracting arbitrarily oriented slices from a 3D image. However, for these specific datasets the block face images are intrinsically registered to the histological samples.
-    % subsubsection stacks (end)
-    
-    \subsubsection{Multiresolution Registration} % (fold)
-    \label{ssub:multiresolution_registration}
-			The total size of the block face and slice images approaches two terabytes. Even with an 8x downsampled slice dataset, one full rigid registration to test one parameter set would take nearly 100 hours on a modern quad core processor. An affine registration performed with a regular step gradient descent optimizer is parameterised in 10 dimensions. Rapid feedback is required if the right parameters are to be found in any reasonable time, and so a multiresolution approach must be taken. There are 2 ways to reduce the resolution of the dataset: in-plane downsampling and out-of-plane slice selection.
-			
-      In-plane downsampling and Gaussian smoothing not only reduces time, but smooths the cost function and can lead to more robust registration results. In multiresolution registration, the resulting transforms can then be used to initialise a more accurate but more fragile registration at a higher resolution.
-			
-      To start with, a quick order-of-magnitude overview of the global performance of a particular parameter set was required. In this case, regularly spaced subsets of the full curated list were created, such as every thirtieth slice or every fifth slice. Alternatively, every slice within a region might be selected, for example, the band of slices spanning an epicardial vessel. Of course, these two reductions can be applied together for very rapid feedback. As will be made clearer in Chapter~\ref{cha:diffusion_smoothing_registration_of_high_resolution_rat_histology}, full out-of-plane resolution is required to parameterise effectively the coregistration of adjacent slices. However, the fruitful region of parameters near the apex of the heart for elliptical discs of tissue is different (yet not disjunct) from that in more complex, central slices. In this case, a group of representative slice sublists at full resolution, e.g. 100-110, 200-210, 300-310 etc., provide the best compromise between speed and accuracy.
-			
-			The slice list is loaded dynamically by all tools from a central config file, and so switching between lists when prototyping is as simple as redirecting a symlink.
-    % subsubsection multiresolution_registration (end)
-    
-    \subsubsection{Builders} % (fold)
-    \label{ssub:builders}
-      A minimal registration pipeline is composed of several generic actors, including a metric, an optimiser, a transform, and an interpolator. The details of which types of actors are optimal and how they should interact are peculiar to the registration problem at hand. Furthermore, the specific type of each component often requires unique configuration beyond the generic interface of its family, and the choice of image preprocessing is dependent on the choice of metric. Once several types must be chosen from and configured, even for just one component, an ad hoc procedural approach quickly became unwieldy. These two requirements colluded combinatorially to demand a great deal of testing, tailoring and configuration in order to achieve registrations of high quality. More often than not, modifications would degrade the registration.
-			
-      At the pipeline level, we developed a heirarchy of frameworks employing the Builder pattern (\cite{Gamma1995}), which abstracts away the heavy lifting of wiring up the various components together.  At the component level, a conflation of the Abstract Factory and the Strategy patterns (\cite{Gamma1995}), together with a configuration system using the human-friendly YAML markup language, serves not only to decouple the actors' representations from the minutiae of their construction, but to move these volatile decisions from compile-time to runtime. These tools vastly reduce the cost of experimentation and testing. With all the variables clearly grouped together, with no need to recompile the toolchain or pore through source code to find if and where one can make a change, the feedback from results is faster and less error prone.
-      
-			The StackAligner class encapsulates the registration process, for tools employing affine or b-spline deformable transforms, across the whole heart or in a region of interest. At least two sets of stack configurations were required, for the block face and slice stacks, across a great many registration and reconstruction tools. This logic was pulled into a StackBuilder class tree, rooted from an untemplated StackBuilderBase class to prevent template infection across the codebase.
-    % subsubsection builders (end)
-		
-		\subsubsection{Events, Checkpointing and IO} % (fold)
-		\label{ssub:events_checkpointing_and_io}
-			It is necessary to save intermediate information about the progress of the registration, for parameter tuning and analysis. ITK exposes this functionality through the Command Observer pattern (see \cite{Gamma1995})). Any ITK object can publish events, and other objects may subscribe to those events. An object whose purpose is to subscribe to an event and perform an action when that event is triggered is called a Command Observer. Figure~\ref{fig:command_heirarchy} shows the class tree developed to display and record the required information.
-			
-    \begin{figure}[htbp]
-      \centering
-      \includegraphics[width=\pagewidth]{Ch6/Figs/command_heirarchy}
-      \caption{Command Observer heirarchy to output various types of information when specific events are triggered.}
-      \label{fig:command_heirarchy}
-    \end{figure}
-		
-      At any stage during the registration process, the vector of transforms held by a given Stack can be persisted to a series of files with a single function call. Just as easily, a new Stack can be initialised with a set of transforms on storage. This machinery facilitates greater process granularity in three dimensions: in the sequence of transforms to be optimised, in the increasing image resolutions to be registered, and spatially in the pairs of slices within the Stack. In the first case, a user can tune one registration stage until they are happy that it is optimal, and then use the results as a starting point for all subsequent runs of the next stage. In the second case, approximate registrations can be performed with images at lower resolutions, which can then initialise registrations at higher resolutions with different images. In the third case, the result from separate jobs for each slice pair using images of a scalar floating point pixel type or a segmentation image type can be aggregated and used to reconstruct a colour volume, perhaps at a different resolution. This division of workload and memory is of particular importance when organising jobs on clusters and shared memory machines.
-			
-			Even aside from process granularity, working with transforms is vastly superior to working directly with the images. Composing transforms rather than repeatedly resampling prevents a loss of image quality due to rasterisation in differing coordinate systems. Advanced composition of transforms makes possible registration refinement, either in regions of interest, or with the diffusion smoothing techniques discussed in Chapter~\ref{cha:diffusion_smoothing_registration_of_high_resolution_rat_histology}.
-          
-          Several other aspects of the architecture are not discussed here, including configuration, file management, testing, as well as the opportunities and challenges posed by high performance computing.
-		% subsubsection events_checkpointing_and_io (end)
-		
-  % subsection software_architecture (end)
-  
-  \subsection{Diagnostics and Parameter Tuning} % (fold)
-    \label{sub:diagnostics}
-      For almost a year and a half, it was very difficult to see why registration was failing to yield robustly accurate results. The output of raw parameters was somewhat elucidating, but only for obvious issues such as parameter scaling and step length, where almost zero change in some or all parameters signalled what to adjust. The space of possible parameters was enormous, and the computing time before feedback significant. With visual representation of nothing but the final result, divining which parameters to change and how was perhaps analogous to deciding how each player in a sports team could improve given only the final scores.
-      
-      Armed with the intermediate transforms and metric values discussed in Section~\ref{ssub:events_checkpointing_and_io}, the causes of the suboptimal registration results were immediately apparent. The progression of metric values for all slices could be plotted in graphs like those in Figures~\labelcref{fig:rigid_metric_values,fig:similarity_metric_values,fig:affine_metric_values,fig:affine_metric_value_differences}. Progress volumes of a particular slice could be constructed as seen in Figures~\labelcref{fig:progress_cross_sections,fig:progress_contour}.
-			
-			The regular step gradient descent optimiser is parameterised with four values: two behavioural values (maximum step length and relaxation factor), and two cutoff values (minimum step length and gradient magnitude tolerance). Bad behavioural values manifest in static or `zigzagging' unstable progress volumes and metric values, whilst premature or overcautious cutoff values yield either no region or a needlessly large region of equilibrium at the end. Bad parameter scaling is not evident solely from the intermediate metric values, which can still remain smoothly increasing with a quasi-equilibrated final section. However, the progress volume will appear restricted in one or more dimension. For example, the slice may rotate freely, but remain at a fixed translation, despite an obvious translational cost gradient.
-			
-			Not all symptoms could be diagnosed. In rare cases, the metric value would gradually and consistently worsen, and it was unclear why this was happening. Perhaps an oddly shaped cost basin or saddle point was to blame, deepening steeply along one dimension and shallowly along a perpendicular one.
-			
-      Interestingly, before an upgrade to ITKv4, the registration algorithm would often not optimise, but rather diffuse in a seemingly random way between metric values. Even though the upgrade should not have affected the registration outcome, but just the speed of the code, results were suddenly much better.
-      
-    % subsection diagnostics (end)
-% section methods (end)
-   
-\section{Results} % (fold)
-\label{sec:registration_results}
-	The work leading up to this chapter is composed of a great many dead ends and failed experiments, and the result presented here is merely the best outcome. Details of computation times are followed by the plotting of intermediate and final metric values. The progress of a single representative slice is scrutinised, ending with cross-sections and contours of the registered histological volumes after each successive registration.
+	  
 	
-  To begin with, lower resolution images were used to approximate parameters in reasonable time, but all registrations shown here were performed with the full resolution block face images and 8x downsampled slice images. On a MacBook Pro with a 2.4GHz Intel Quad Core i7 processor, registering the original block face image to an 8x downsampled slice image took approximately 0.25 seconds per iteration. For the 1500 iterations required for rigid registration, and for 900 slices, this extrapolates to 93 hours total run time. When jobs were distributed on the cluster, 12 parallel registrations could be run concurrently in times of low demand. The total registration time was reduced from 93 hours to just below 7 hours.
-	
-  \begin{sidewaysfigure}[htbp]
-    \centering
-    \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/rigid_metric_values}
-    \caption{Intermediate metric values for all slices during rigid registration.}
-    \label{fig:rigid_metric_values}
-  \end{sidewaysfigure}
-      
-  \begin{sidewaysfigure}[htbp]
-    \centering
-    \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/similarity_metric_values}
-    \caption{Intermediate metric values for all slices during similarity registration.}
-    \label{fig:similarity_metric_values}
-  \end{sidewaysfigure}
-      
-  \begin{sidewaysfigure}[htbp]
-    \centering
-    \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/affine_metric_values}
-    \caption{Intermediate metric values for all slices during affine registration.}
-    \label{fig:affine_metric_values}
-  \end{sidewaysfigure}
+	  This process can be simulated quite trivially. A numerical approximation of a sine wave is graphed in blue in each of Figures~\labelcref{fig:1d_diffusion_0_40,fig:1d_diffusion_0_49,fig:1d_diffusion_0_50,fig:1d_diffusion_0_51}, on 200 equispaced points from $0$ to $2\pi$. Random noise from a Gaussian distribution is added, with variance equal to the amplitude of the sine wave, and is plotted in green. The subfigures show the evolution of the noise after 0, 1, 3, 15, 99 and 299 timesteps.
   
-	Figures~\labelcref{fig:rigid_metric_values,fig:similarity_metric_values,fig:affine_metric_values} graph the intermediate metric values of each iteration for each slice, during the rigid, similarity and affine registrations. Each graph is viewed from below, in order to see all values clearly. Evidently, the overwhelming majority of the optimisation is done in the first rigid step, and this is reflected in the number of iterations required to reach a global optimum: 1500, as apposed to 100 for similarity and affine registrations. Nearly all curves increase smoothly and monotonically, before reaching a distinct flat maximum. In Figure~\ref{fig:rigid_metric_values} after around slice 600, where the blob-shaped artefact appears, the final metric values decrease almost linearly as the intensity of the blob increases. Slices in the region of 400-600 start from a much lower metric value, and take up to 1500 iterations to maximise; their geometric initialisations were much further from their final optimal position. Diagnostics were of critical importance here, not least to ensure that enough iterations had passed so that all slices had reached their flat optimum position.
-	
-  \begin{sidewaysfigure}[htbp]
-    \centering
-    \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/affine_metric_value_differences}
-    \caption{Intermediate \emph{delta} metric values for all slices during affine registration.}
-    \label{fig:affine_metric_value_differences}
-  \end{sidewaysfigure}
-  
-	The changes in metric value in Figure~\ref{fig:affine_metric_values} are very small compared to the range of metric values across slices. Figure~\ref{fig:affine_metric_value_differences} depicts the change in metric value upon each iteration. It is viewed from the zero plane, and demonstrates -- at least to some extent -- that these changes are weighted largely to the positive side of zero. The affine registration is a small but certain improvement upon the similarity registration.
-	
-  \begin{sidewaysfigure}[htbp]
-    \centering
-    \includegraphics[width=\textheight]{Ch6/Figs/diagnostics/initial_and_final_values_comparison}
-    \caption{Initial and final metric values before and after each stage of registration.}
-    \label{fig:initial_and_final_values_comparison}
-  \end{sidewaysfigure}
-  
-	Para on final values.
-	Figure \ref{fig:initial_and_final_values_comparison} shows the initial metric values after geometric initialisation, and the final metric values after rigid, similarity and affine registrations. Again is it clear that each successive registration increases correlation, but the majority of improvement comes from the rigid registration. Slices from 380 to 600 were photographed at a larger angle from that of their block-face images, and this is reflected in a sharply reduced initial correlation value. From Slice 600 onwards, the blob precludes successful registration and both initial and final correlation values decline.
-	
-	\begin{figure}[htbp]
-    \centering
-    \subfigure[][]{\includegraphics[height=0.3\textheight]{Ch6/Figs/diagnostics/fixed_progress_slice_0562_1_287.pdf}}
-    \subfigure[][]{\includegraphics[height=0.3\textheight]{Ch6/Figs/diagnostics/moving_progress_slice_0562_1_287.pdf}}
-    \subfigure[][]{\includegraphics[height=0.3\textheight]{Ch6/Figs/diagnostics/fixed_progress_slice_0562_0_235.pdf}}
-    \subfigure[][]{\includegraphics[height=0.3\textheight]{Ch6/Figs/diagnostics/moving_progress_slice_0562_0_235.pdf}}
-    \caption{Central cross-sections of the progress volume of 1500 iterations of slice 0562, together with the fixed progress volume of the equivalent block face image.}
-    \label{fig:progress_cross_sections}
-  \end{figure}
+	  Our purpose is to smooth out the high frequency random noise from the green wave as quickly and as computationally cheaply as is possible, whilst maintaining the underlying low frequency signal. There is a tradeoff to be made when deciding upon a value for $\alpha$. The greater $\alpha$, the more particles move to the left and right at each iteration, and so the faster the noise is damped. But when $\alpha$ approaches 0.5, almost all of the particles from each bin are moving out at each iteration, and unstable oscillations start to appear. In Figure~\ref{fig:1d_diffusion_0_40}, $\alpha$ is set to 0.4, a great compromise between speed of smoothing and stability. $\alpha$ is set to 0.49 in Figure~\ref{fig:1d_diffusion_0_49}, and the highest frequency is actually damped much more slowly, as oscillatory `swapping' effects start to appear. When $\alpha = 0.5$ in Figure~\ref{fig:1d_diffusion_0_50}, the highest frequency is still undamped after 300 iterations, and by the time $\alpha$ is at 0.51 in Figure~\ref{fig:1d_diffusion_0_51}, the system is unstable. This is not entirely surprising, since it is unphysical for more than all of the particles to diffuse out of a particular bin at each timestep.
+	% subsection simulating_1d_diffusion (end)
+		
+	\subsection{Transformational Diffusion} % (fold)
+	\label{sub:transformational_diffusion}
+    \subsubsection{Algorithm Overview} % (fold)
+    \label{ssub:algorithm_overview}
+  	  Our goal is to develop an iterative process that `diffuses' each histological slice image toward its neighbours, in order to smooth out high-frequency transformational noise, whilst maintaining the low-frequency underlying geometry of the volume. An ITK transform $\mathbf{T}$ acting on a point $\mathbf{p}$ maps points in the resampling space to points in the original image space:
+		  
+  		\begin{equation}
+  			\mathbf{p'} = \mathbf{Tp}.
+  		\end{equation}
       
+  		At iteration $n$ of the proposed process, each slice $i$ in a reconstructed histological stack has associated with it an invertible transform $\mathbf{T}_i^n$. We define the `diffusion transform' $\mathbf{\Delta T}_i^{n,n+1}$, which is formulated to move slice $i$ towards slices $i-1$ and $i+1$, based on the results of registrations between adjacent slices. $\mathbf{\Delta T}_i^{n,n+1}$ is pre-applied to a point in the resampling space of $i$ before $\mathbf{T}_i^n$ to give the adjusted transform $\mathbf{T}_i^{n+1}$, such that
+		  
+    	\begin{equation}
+  			\mathbf{T}_i^{n+1} = \mathbf{T}_i^n \mathbf{\Delta T}_i^{n,n+1}. \label{eqn:adjusted_transforms}
+  		\end{equation}
+		  
+	  How would this $\mathbf{\Delta T}_i^{n,n+1}$ be defined?
+		
+    % subsubsection algorithm_overview (end)
+    
+    \subsubsection{Formulating the Diffusion Transforms} % (fold)
+    \label{ssub:formulating_the_diffusion_transforms}
+      In the case of 1-dimensional diffusion, we can reformulate the right hand side of (\ref{eqn:diffusion_1d}) into two separate terms thusly:
+     
+	  \begin{align}
+	    f(x_i, t_{n+1}) &= f(x_i, t_n) + \alpha ((f(x_{i+1}, t_n) - f(x_i, t_n)) - (f(x_{i-1}, t_n) - f(x_i, t_n)) \\
+			\Delta f_i^{n,n+1} &= \alpha (\Delta f_{i,i+1}^n - \Delta f_{i-1,i}^n) \\
+			                   &= \alpha \Delta f_{i,i-1}^n + \alpha \Delta f_{i,i+1}^n, \label{eqn:1d_diffusion_operator}
+		\end{align}
+		
+    where $\Delta f_i^{m,n}$ is the difference in $f$ at position $i$ between timestep $m$ and timestep $n$, and $\Delta f_{i,j}^m$ is the difference in $f$ between position $i$ and position $j$ at timestep $m$. From (\ref{eqn:1d_diffusion_operator}), we can see that at each timestep, the concentration at each bin moves towards its left and right neighbour by a proportion $\alpha$ of its difference from each, respectively.
+		
+	  We might, then, propose analogously that
+		
+		\begin{equation}
+		 	\mathbf{\Delta T}_i^{n,n+1} = \alpha \cdot \mathbf{\Delta T}_{i,i+1}^n \oplus \alpha \cdot \mathbf{\Delta T}_{i,i-1}^n, \label{eqn:transformational_placeholder}
+		\end{equation}
+	 	
+	 	where $\mathbf{\Delta T}_{i,j}^n = (\mathbf{\Delta T}_{j,i}^n)^{-1}$ is defined as the transformation that registers a histological slice $i$ to slice $j$ at iteration $n$, operator $\cdot$ is a placeholder for a binary operator on a scalar and a transform, and operator $\oplus$ is a placeholder for a binary operator on a pair of transforms. We are now equipped to calculate the transforms for progressively smoother and smoother volumes, by first registering each slice to its neighbour to obtain $\mathbf{\Delta T}_{i,i+1}^n$, then computing the diffusion transforms $\mathbf{\Delta T}_i^{n,n+1}$ through \labelcref{eqn:transformational_placeholder}, and finally applying them to the original transforms through \labelcref{eqn:adjusted_transforms} to obtain $\mathbf{T}_i^{n+1}$. The question now emerges: what precise form do the two binary operators take? We will start by outlining their desirable properties, and then discuss implementations that satisfy these constraints.
+    % subsubsection formulating_the_diffusion_transforms (end)
+		
+    \subsubsection{Formulating the Transform Operators} % (fold)
+    \label{ssub:formulating_the_transform_operators}
+		The operator $\cdot$ takes two operands: a scalar and a transform. We would like $0$ to be the null operand on $\mathbf{T}$, so that when $\alpha = 0$, no diffusion occurs. We would like $1$ to be the identity operand on $\mathbf{T}$, so that when $\alpha = 1$, the transform from each term in (\ref{eqn:transformational_placeholder}) would diffuse the slice exactly to the position of its equivalent neighbour. Ideally, we would also like addition of the scalar operand to distribute over the serial application of the resultant transforms, so that transforms vary smoothly and naturally with respect to the scalar operand. This final condition can be satisfied for certain transforms, such as linear transforms and vector field transforms, but cannot be satisfied in general for others, such as b-spline transforms. To summarise in mathematical form, we would like the following to hold:
+		
+		\begin{gather}
+			0 \cdot \mathbf{T} = \mathbf{I} \label{eqn:null} \\
+			1 \cdot \mathbf{T} = \mathbf{T} \label{eqn:identity} \\
+			(\alpha \cdot \mathbf{T}) (\beta \cdot \mathbf{T}) = (\alpha + \beta) \cdot \mathbf{T} \label{eqn:distributivity}
+		\end{gather}
+	 	
+	  The operator $\oplus$ takes two transform operands. Commutativity must hold if the diffusion is to be symmetric i.e. behave identically if the order of the slices is reversed. If statistics are to be calculated on more than two transformations, it is also necessary for associativity to hold, so that the order of application of operator $\oplus$ is not preferential to any subset of transform operands. That is,
+		
+		\begin{gather}
+			\forall \mathbf{S}, \mathbf{T} : \mathbf{S} \oplus \mathbf{T} = \mathbf{T} \oplus \mathbf{S} \label{eqn:commutativity} \\
+			\forall \mathbf{S}, \mathbf{T} : (\mathbf{S} \oplus \mathbf{T}) \oplus \mathbf{U} = \mathbf{S} \oplus (\mathbf{T} \oplus \mathbf{U}). \label{eqn:associativity}
+		\end{gather}
+		
+		Unfortunately, commutativity rules out the straightforward serial application of transforms. For example, in the general case of matrix multiplication, $AB \ne BA$. One solution is to use the transform that is equivalent to returning the Euclidian midpoint of $\mathbf{Sp}$ and $\mathbf{Tp}$ for all $\mathbf{p}$. However, the result may not always be representable by some types of transform (notably b-spline transforms), and further, it may be dependent on the order that the $\oplus$ operator is applied. In group theoretical terms, two axioms of the group $(\mathbf{T},\oplus)$ are violated: closure and associativity. Aside from anything else, the Euclidian midpoint approach leads in many cases to unnatural results, such as the `bulging' effect noted in \cite{Arsigny2005a}, and the null matrix in 2D between transforms separated by a rotation of $\pi$.
+        
+        In the case of rotation matrices, it seems sensible to return the sum of the two angles; and for similarity transforms, the product of the two enlargement factors. Inductively therefore, the operator $\oplus$ would do well to return the summation of some appropriate parameterisation of the operand transforms. The challenge is set to find that parameterisation.
+		
+	  It is elucidating to consider the general mathematical form constrained by \labelcref{eqn:null,eqn:identity,eqn:distributivity,eqn:commutativity,eqn:distributivity} applied to concrete classes of transform, in order of increasing complexity: translation transforms, rotation transforms, similarity transforms, affine transforms and more general deformable transforms. An ITK affine transform $\mathbf{T}$ acting on a point $\mathbf{p}$ consists of a matrix transformation $\mathbf{M}$, followed by a translation by an offset vector $\mathbf{o}$:
+		
+		\begin{equation}
+			\mathbf{p'} = \mathbf{Tp}= \mathbf{Mp} + \mathbf{o}.
+		\end{equation}
+		
+		In the simplest case of translation transforms, where $\mathbf{M}$ is the identity matrix $\mathbf{I}$ i.e. $\mathbf{Tp} = \mathbf{p} + \mathbf{o}$, the two translation parameters are independent and individually identical to the 1-dimensional diffusion in (\ref{eqn:1d_diffusion_operator}). Operator $\cdot$ is a scalar multiplication of each offset parameter, and operator $\oplus$ is the commutative serial application of the transforms (or equivalently, addition of the respective parameters):
+		
+		\begin{align}
+			(\alpha \cdot \mathbf{T}) \mathbf{p} &= \mathbf{p} + \alpha\mathbf{o} \label{eqn:translation_cdot}\\
+			(\mathbf{S} \oplus \mathbf{T}) \mathbf{p} &= \mathbf{STp} \\
+			                                          &= \mathbf{p} + \mathbf{o_S} + \mathbf{o_T} \label{eqn:translation_oplus}
+		\end{align}
+		
+		Clearly, these two operators satisfy \labelcref{eqn:null,eqn:identity,eqn:distributivity,eqn:commutativity,eqn:associativity}. (\ref{eqn:transformational_placeholder}) becomes
+		
+		\begin{align}
+		 	\mathbf{\Delta T}_i^{n,n+1} \mathbf{p} &= (\alpha \mathbf{\Delta T}_{i,i-1}^n) (\alpha \mathbf{\Delta T}_{i,i+1}^n) \mathbf{p} \\
+			\mathbf{p} + \mathbf{o}_i^{n,n+1} &= \mathbf{p} + \alpha \mathbf{o}_{i,i-1}^n + \alpha \mathbf{o}_{i,i+1}^n \\
+			\mathbf{o}_i^{n,n+1} &= \alpha (\mathbf{o}_{i,i-1}^n + \mathbf{o}_{i,i+1}^n) 
+		\end{align}
+		
+		The offsets are therefore trivially analogous to (\ref{eqn:1d_diffusion_operator}).
+		
+		In the case of rigid transforms, $\mathbf{M}$ is a rotation matrix
+		
+		\begin{equation}
+			\mathbf{R}(\theta) = \left( \begin{matrix}
+			  										 \cos \theta & -\sin\theta \\
+														 \sin\theta & \cos\theta
+					                 \end{matrix} \right) .
+		\end{equation}
+		
+		In 2 dimensions, rotation matrices commute, and the result of their multiplication is simply a rotation matrix with angle equal to the sum of the operands' angles; in the special case where there are no offsets, then serial application of the transforms is a candidate for operator $\oplus$ according to (\ref{eqn:commutativity}):
+		
+		\begin{equation}
+			\mathbf{S} \oplus \mathbf{T} = \mathbf{R}(\theta_\mathbf{S})\mathbf{R}(\theta_\mathbf{T}) = \mathbf{R}(\theta_\mathbf{S} + \theta_\mathbf{T}) = \mathbf{T} \oplus \mathbf{S}
+		\end{equation}
+		
+		
+		In a similar vein, an operator $\cdot$ that multiplies the angle of the input transform with $\alpha$ fulfils criteria \labelcref{eqn:null,eqn:identity,eqn:distributivity}:
+    
+    \begin{equation}
+      \alpha \cdot \mathbf{T} = R(\alpha\theta).
+    \end{equation}
+		
+        In the case of similarity transforms with no offset, $\mathbf{M}$ is a rotation matrix $\mathbf{R}$ multiplied by an enlargement $\sigma$:
+        
+        \begin{equation}
+            \mathbf{T} = \sigma\mathbf{R}(\theta).
+        \end{equation}
+        
+        Since scalar multiplications commute with matrix transformations, if the operator $\cdot$ is constructed to scale geometrically, the situation is very similar to that of rotation matrices and \labelcref{eqn:null,eqn:identity,eqn:distributivity,eqn:commutativity,eqn:associativity} still apply:
+        
+        \begin{gather}
+            \alpha \cdot \mathbf{T} = e^{\alpha\ln\sigma}R(\alpha\theta) \\
+            (\alpha \cdot \mathbf{T})(\beta \cdot \mathbf{T}) = e^{(\alpha + \beta)\ln\sigma}R((\alpha + \beta)\theta) = (\alpha + \beta) \cdot \mathbf{T} \\
+			\mathbf{S} \oplus \mathbf{T} = \sigma_\mathbf{S}\mathbf{R}(\theta_\mathbf{S})\sigma_\mathbf{T}\mathbf{R}(\theta_\mathbf{T}) = \sigma_\mathbf{S}\sigma_\mathbf{T}\mathbf{R}(\theta_\mathbf{S} + \theta_\mathbf{T}) = \mathbf{T} \oplus \mathbf{S} \\
+			(\mathbf{S} \oplus \mathbf{T}) \oplus \mathbf{U} = \sigma_\mathbf{S}\sigma_\mathbf{T}\sigma_\mathbf{U}\mathbf{R}(\theta_\mathbf{S} + \theta_\mathbf{T} + \theta_\mathbf{U}) = \mathbf{S} \oplus (\mathbf{T} \oplus \mathbf{U}).
+        \end{gather}
+		
+		In the more general case of diagonalisable affine matrix transformations, in the absence of translations, and when $\mathbf{S}$ and $\mathbf{T}$ can be diagonalised by the same matrix $\mathbf{V}$ i.e. $\mathbf{S} = \mathbf{VD_SV}^{-1}$ and $\mathbf{T} = \mathbf{VD_TV}^{-1}$, commutativity still holds for serial application:
+        
+        \begin{equation}
+			\mathbf{S} \oplus \mathbf{T} = \mathbf{ST} = \mathbf{VD_SV}^{-1}\mathbf{VD_TV}^{-1} = \mathbf{VD_SD_TV}^{-1} =\mathbf{VD_TD_SV}^{-1} = \mathbf{T} \oplus \mathbf{S},
+        \end{equation}
+        
+        with associativity of course holding for the serial application of affine transformations in general. However, when $\mathbf{M_S}$ and $\mathbf{M_T}$ no longer commute, serial application of transforms is no longer sufficient. There is also no obvious form of operator $\cdot$ which satisfies \labelcref{eqn:null,eqn:identity,eqn:distributivity}. We must take recourse to a more general formulation of operators $\cdot$ and $\oplus$.
+        
+        It is here that we must introduce the concept of the matrix exponential:
+        
+        \begin{equation}
+          e^{\mathbf{M}} = \sum_{k=0}^{\infty}\frac{1}{k!}\mathbf{M}^k. \label{eqn:matrix_exponential}
+        \end{equation}
+        
+        Conversely, a logarithm $\mathbf{L}$ of a matrix $\mathbf{M}$ is another matrix such that $e^\mathbf{L} = \mathbf{M}$. For any invertible matrix $\mathbf{Y}$, it is clear that
+        
+        \begin{gather}
+          (\mathbf{YM}\mathbf{Y}^{-1})^n = \mathbf{Y}\mathbf{M}^n\mathbf{Y}^{-1}, n \in \mathbb{N}.
+        \end{gather}
+        
+        It then follows from (\ref{eqn:matrix_exponential}) that
+        
+        \begin{align}
+          \mathbf{Y}e^{\mathbf{M}}\mathbf{Y}^{-1} &= \mathbf{Y}\left(\sum_{k=0}^{\infty}\frac{1}{k!}\mathbf{M}^k\right)\mathbf{Y}^{-1} \\
+                                                  &= \sum_{k=0}^{\infty}\frac{1}{k!}\mathbf{Y}\mathbf{M}^k\mathbf{Y}^{-1} \\
+                                                  &= \sum_{k=0}^{\infty}\frac{1}{k!}(\mathbf{YM}\mathbf{Y}^{-1})^k \label{eqn:diagonal_exp} \\
+                                                  &= e^{\mathbf{YM}\mathbf{Y}^{-1}}.
+        \end{align}
+        
+        If $\mathbf{M}$ is diagonalisable, and we choose a $\mathbf{Y}$ that diagonalises $\mathbf{M}$, such that $\mathbf{D} = \mathbf{YMY}^{-1}$, (\ref{eqn:diagonal_exp}) becomes trivially analogous to the Taylor expansion for a scalar exponential, and we can then simply compute the exponential of each diagonal element of $\mathbf{D}$. It follows that the logarithm of a positive definite diagonal matrix can be computed by taking the logarithm of each of its elements.
+        
+        It turns out that when a matrix $\mathbf{M}$ has a logarithm $\mathbf{L}$, $\mathbf{M}$ is in a Lie group --- a group on a smooth manifold. $\mathbf{L}$ is the corresponding element of the associated Lie algebra. $\mathbf{L}$ is an `infinitessimal generator', and its value determines the tangent space at the identity $\mathbf{I}$. Informally, this means that there exists a matrix $\mathbf{I} + \epsilon \mathbf{L}$ that is extremely close to the identity, such that when applied repeatedly an extremely large number of times i.e. $(\mathbf{I} + \epsilon \mathbf{L})^n$, the result eventually becomes $\mathbf{M}$.
+        
+        If we define operator $\cdot$ in terms of the exponential and the logarithm of $\mathbf{M}$, \labelcref{eqn:null,eqn:identity,eqn:distributivity} are all satisfied:
+        
+        \begin{gather}
+          \alpha \cdot \mathbf{M} = e^{\alpha\ln\mathbf{M}} \\
+          0 \cdot \mathbf{M} = e^0 = \mathbf{I} \\
+          1 \cdot \mathbf{M} = e^{\ln\mathbf{M}} = \mathbf{M} \\
+          (\alpha \cdot \mathbf{M})(\beta \cdot \mathbf{M}) = e^{\alpha\ln\mathbf{M}}e^{\beta\ln\mathbf{M}}
+                                                            = e^{(\alpha + \beta)\ln\mathbf{M}}
+                                                            = (\alpha + \beta) \cdot \mathbf{M}.
+        \end{gather}
+        
+        We can define operator $\oplus$ as a simple addition of the matrix logarithms in log-Euclidian space, followed by a mapping back to transform space with the exponential operator:
+        
+        \begin{equation}
+          \mathbf{M_S} \oplus \mathbf{M_T} = e^{\ln\mathbf{M_S} + \ln\mathbf{M_T}}
+        \end{equation}
+        
+        Because all operations are homomorphic with Euclidian vector space, this operator always fulfils the commutativity and associativity criteria
+        
+        \begin{gather}
+          \mathbf{M_S} \oplus \mathbf{M_T} = e^{\ln\mathbf{M_S} + \ln\mathbf{M_T}} = \mathbf{M_T} \oplus \mathbf{M_S} \\
+          (\mathbf{M_S}\oplus\mathbf{M_T})\oplus\mathbf{M_U} = e^{\ln\mathbf{M_S} + \ln\mathbf{M_T} + \ln\mathbf{M_U}} = \mathbf{M_S}\oplus(\mathbf{M_T}\oplus\mathbf{M_U})
+        \end{gather}
+        
+        It is pleasing to note that this new formula coincides with the special cases of rotation, similarity and diagonalisability discussed previously, since whenever the two matrices commute,
+        
+        \begin{equation}
+          \mathbf{M_SM_T} = e^{\ln\mathbf{M_S}}e^{\ln\mathbf{M_T}} = e^{\ln\mathbf{M_S} + \ln\mathbf{M_T}} = \mathbf{M_S} \oplus \mathbf{M_T}.
+        \end{equation}
+        
+        This `log-Euclidian' approach is expounded with Titanic mathematical rigour in \cite{Arsigny2005}. However, being motivated by the interpolation of MRI data, the treatise is limited to tensors; that is, symmetric matrices with no translation.
+        
+		    So far, the discussion has been limited to cases with zero offset. When offsets are introduced, even when their respective matrices commute, the commutativity of transforms in (\ref{eqn:commutativity}) no longer holds when serial action akin to (\ref{eqn:translation_oplus}) is introduced na\"ively:
+		    
+        \begin{equation}
+          (\mathbf{S} \oplus \mathbf{T})\mathbf{p} = (\mathbf{M_S} \oplus \mathbf{M_T})\mathbf{p} + \mathbf{M_So_T} + \mathbf{o_S} \ne (\mathbf{T} \oplus \mathbf{S})\mathbf{p}.
+        \end{equation}
+        
+        If commutivity is forced, by averaging the offset contributions from both permutations of the operands i.e.
+        
+        \begin{equation}
+          (\mathbf{S} \oplus \mathbf{T})\mathbf{p} = (\mathbf{T} \oplus \mathbf{S})\mathbf{p} = (\mathbf{M_S} \oplus \mathbf{M_T})\mathbf{p} + \frac{1}{2}\left(\left( \mathbf{M_S} + \mathbf{I} \right) \mathbf{o_T} + \mathbf{o_S}\right),
+        \end{equation}
+        
+        then associativity breaks down. The same underlying structure precludes a linear interpolation in operator $\cdot$ akin to \labelcref{eqn:translation_cdot} in the presence of a non-identical matrix:
+        
+        \begin{gather}
+          (\alpha \cdot \mathbf{T})(\beta \cdot \mathbf{T})\mathbf{p} = \mathbf{M}_{\alpha+\beta}\mathbf{p} + \beta\mathbf{M}_{\alpha}\mathbf{o} + \alpha\mathbf{o} \ne (\alpha + \beta) \cdot \mathbf{T}
+        \end{gather}
+        
+        When $\mathbf{I} - \mathbf{M}$ is invertible --- that is, when none of the eigenvalues of $\mathbf{M}$ are equal to 1 --- we can express a transform as a matrix transformation about a single invariant centre, with no offset:
+        
+        \begin{gather}
+          \mathbf{Tp} = \mathbf{Mp} + \mathbf{o} = \mathbf{M}(\mathbf{p}-\mathbf{c}) + \mathbf{c} \\
+          \mathbf{o} = (\mathbf{I} - \mathbf{M})\mathbf{c} \\
+          \mathbf{c} = (\mathbf{I} - \mathbf{M})^{-1}\mathbf{o}.
+        \end{gather}
+        
+        We can then reformulate operator $\cdot$ as a log-Euclidian transformation about this invariant centre and satisfy distributivity:
+        
+        \begin{gather}
+          \alpha \cdot \mathbf{T} = e^{\alpha\ln\mathbf{M}}(p - c) + c \label{eqn:affine_cdot} \\
+          \begin{split}
+            (\alpha \cdot \mathbf{T})(\beta \cdot \mathbf{T}) &= e^{\alpha\ln\mathbf{M}}((e^{\beta\ln\mathbf{M}}(p - c) + c) - c) + c \\
+                                                              &= e^{\alpha\ln\mathbf{M}}(e^{\beta\ln\mathbf{M}}(p - c)) + c \\
+                                                              &= e^{(\alpha + \beta)\ln\mathbf{M}}(p - c) + c \\
+                                                              &= (\alpha + \beta) \cdot \mathbf{T}
+          \end{split}
+        \end{gather}
+        
+        With this condition satisfied, $\alpha\cdot\mathbf{T}$ is equivalent to $\mathbf{T}^{\alpha}$. In order to derive the common centre of the two operands of operator $\oplus$, let us consider the infinitesimal case
+        
+        \begin{gather}
+          \delta \cdot \mathbf{U} = (\delta \cdot \mathbf{S}) \oplus (\delta \cdot \mathbf{T}) \approx (\delta \cdot \mathbf{S}) (\delta \cdot \mathbf{T}) \\
+          \begin{split}
+            e^{\delta(\ln \mathbf{M_S} + \ln \mathbf{M_T})}\mathbf{p} + (\mathbf{I} - e^{\delta(\ln \mathbf{M_S} + \ln \mathbf{M_T})})\mathbf{c_U} =
+              &e^{\delta \ln \mathbf{M_S}}e^{\delta \ln \mathbf{M_T}}\mathbf{p} \\
+              &+ e^{\delta \ln \mathbf{M_S}}(\mathbf{I} - e^{\delta \ln \mathbf{T}})\mathbf{c_T} \\
+              &+ (\mathbf{I} - e^{\delta \ln \mathbf{M_S}})\mathbf{c_S}. \label{eqn:infinitesimal_oplus}
+          \end{split}
+        \end{gather}
+        
+        We can see from the series in (\ref{eqn:matrix_exponential}) that
+        
+        \begin{equation}
+          e^{\delta \ln \mathbf{M}} = \mathbf{I} + \delta \ln \mathbf{M} + \mathcal{O}((\delta \ln \mathbf{M})^2).
+        \end{equation}
+        
+        Applying this to (\ref{eqn:infinitesimal_oplus}), we obtain
+        
+        \begin{equation}
+          (\ln\mathbf{M_S} + \ln\mathbf{M_T})\mathbf{c_U} = (\ln\mathbf{M_S})\mathbf{c_S} + (\ln\mathbf{M_T})\mathbf{c_T}.
+        \end{equation}
+        
+        The general form of operator $\oplus$ is then finally
+        
+        \begin{gather}
+          \mathbf{S} \oplus \mathbf{T} = e^{\ln\mathbf{M_S} + \ln\mathbf{M_T}}(\mathbf{p} - \mathbf{c}) + \mathbf{c}, \nonumber \\
+          \mathbf{c} = (\ln\mathbf{M_S} + \ln\mathbf{M_T})^{-1}((\ln\mathbf{M_S})\mathbf{c_S} + (\ln\mathbf{M_T})\mathbf{c_T}). \label{eqn:affine_oplus}
+        \end{gather}
+        
+        Commutativity is evident by inspection, and associativity is simply demonstrated:
+        
+        \begin{gather}
+          \begin{split}
+            (\mathbf{S} \oplus \mathbf{T}) \oplus \mathbf{U} &= \exp(\ln(e^{\ln\mathbf{M_S} + \ln\mathbf{M_T}}) + \ln\mathbf{M_U})(\mathbf{p} - \mathbf{c}) + \mathbf{c} \\
+                                                             &= e^{\ln\mathbf{M_S} + \ln\mathbf{M_T} + \ln\mathbf{M_U}}(\mathbf{p} - \mathbf{c}) + \mathbf{c},
+          \end{split} \\
+          \begin{split}
+            \mathbf{c} &= (\ln\mathbf{M_{S \oplus T}} + \ln\mathbf{M_U})^{-1}((\ln\mathbf{M_{S \oplus T}})\mathbf{c_{S \oplus T}} + (\ln\mathbf{M_U})\mathbf{c_U}) \\
+                       &= (\ln\mathbf{M_S} + \ln\mathbf{M_T} + \ln\mathbf{M_U})^{-1}((\ln\mathbf{M_U})\mathbf{c_S} + (\ln\mathbf{M_U})\mathbf{c_T} + (\ln\mathbf{M_U})\mathbf{c_U}).
+          \end{split}
+        \end{gather}
+        
+        As a last algebraic-structural perk, it can be shown from \labelcref{eqn:affine_cdot,eqn:affine_oplus} that the operation of $\cdot$ by a scalar distributes over the operation of $\oplus$ on two affine transformations. In particular,
+        
+        \begin{equation}
+          (\alpha \cdot \mathbf{S}) \oplus (\alpha \cdot \mathbf{T}) = \alpha \cdot (\mathbf{S} \oplus \mathbf{T}).
+        \end{equation}
+        
+        In the case where $\mathbf{M} - \mathbf{I}$ is singular and there is no central invariate coordinate along the singular dimensions, it is of course natural that operator $\cdot$ interpolates the translation coordinates linearly along those dimensions as in (\ref{eqn:translation_cdot}), and that operator $\oplus$ sums translations arithmetically as in (\ref{eqn:translation_oplus}).
+        
+        A similar Lie theoretical approach must be taken when implementing operators $\cdot$ and $\oplus$ for more general non-rigid transforms, such as displacement field transforms. However, any differentiable transform will approximate an affine transformation at scales smaller than its curvature, and the implementations expounded here will suffice to smooth out those smaller subregions.
+    % subsubsection formulating_the_transform_operators (end)
+	% subsection transformational_diffusion (end)
+	
+  \subsection{Simulating Transformational Diffusion} % (fold)
+  \label{sub:simulating_transformational_diffusion}
+  
+  In order to test the efficacy of the algorithm in a quantitative way, it was necessary to devise several test geometries. Four stacks of 200 identical slices were constructed: one straight column with identical transforms for each slice; one column with sinusoidal, snake-like translation added; one column with sinusoidal rotation added; and one column incorporating both a translational and a rotational signal. The transform parameters of each slice were then purturbed by random Gaussian noise, with $\sigma$ equal to the amplitude of the translational and rotational signal, respectively.
+  
+  % colour slice differences
   \begin{figure}[htbp]
     \centering
-    \includegraphics[width=\pagewidth]{Ch6/Figs/diagnostics/0562_contour.png}
-    \caption{Contours of the progress volume of 1500 iterations of slice 0562 in blue, and of the fixed eqiuvalent block face image in yellow. Isosurfaces were extracted from volumes built from manual segmentations of both the block face and the slice image.}
-    \label{fig:progress_contour}
+    \subfigure[][unperturbed image]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/colour_perfect_slice}} \quad
+    \subfigure[][image with transformational noise]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/colour_noisy_slice}} \\
+    \subfigure[][Red-blue channels of intensities]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/colour_red_blue_diff}} \quad
+    \subfigure[][squared differences in intensities]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/colour_squared_diff}}
+    \caption{Slice 200 from the Rat 28 dataset, the image used used for all test geometries. \textbf{(a)} shows the original image, whilst a small random affine transformation has been applied to \textbf{(b)}. \textbf{(c)} and \textbf{(d)} combine the two slices in two ways, in order to highlight their difference. The mean squared pixel intensity difference in \textbf{(d)} is 61.53.}
+    \label{fig:original_displacement}
   \end{figure}
-      
-  \begin{figure}[p]
+  
+  % segmentation slice differences
+  \begin{figure}[htbp]
     \centering
-    \subfigure[][]{\includegraphics[width=0.9\pagewidth]{Ch6/Figs/diagnostics/0562_correlation}}
-    \subfigure[][]{\includegraphics[width=0.9\pagewidth]{Ch6/Figs/diagnostics/0562_delta_correlation}}
-    \caption{Metric values and delta metric values during the rigid registration of slice 0562.}
-    \label{fig:0562_correlation}
+    \subfigure[][unperturbed image]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/segmentation_perfect_slice}} \quad
+    \subfigure[][image with transformational noise]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/segmentation_noisy_slice}} \\
+    \subfigure[][Red-blue channels of intensities]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/segmentation_red_blue_diff}} \quad
+    \subfigure[][squared differences in intensities]{\includegraphics[height=0.365\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/segmentation_squared_diff}}
+    \caption{A manual segmentation of the same slice from Figure~\ref{fig:original_displacement}, with the same perturbation applied. The noise in the squared intensity differences in Figure~\ref{fig:original_displacement}~\textbf{(d)} are no longer present. This leads to a much smoother cost function, with much fewer local minima, and thus a more reliable registration. The improvement is reflected in the lower mean squared pixel intensity difference in \textbf{(d)} of 12.93.}
+    \label{fig:segmented_displacement}
   \end{figure}
-	
-	Para on single slice.
-	Figures~\labelcref{fig:progress_cross_sections,fig:progress_contour,fig:0562_correlation} showcase the diagnostics for a single representative slice during rigid registration. Figures~\labelcref{fig:progress_cross_sections,fig:progress_contour} are representations of the progress volume: a stack of the same 0562 image, transformed by the updating rigid transform at each of the 1500 steps in the registration. The rotation angle is quickly optimised in the first 100 iterations at the base. A flatter, slower translational optimisation ensues, which finally reaches a stationary minimum over the last iterations at the top. The top of Figure~\ref{fig:progress_contour} shows a very close fit compared with the starting point. The distinct phases of the registration are mirrored in the metric values of Figure~\ref{fig:0562_correlation}. The rapid rotational phase is seen again in the first 100 steps, with the largest metric gradients of the whole registration. a smooth, monotonic translational phasefor the next 700 iterations accelerates as it gets close to the optimum, until coming to rest at around 1450 iterations.
-	
-	% initialisation figure
-	\begin{sidewaysfigure}[htbp]
-	  \centering
-	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/geometric_0_235}}
-	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/geometric_1_287}}
-	  \caption{Central cross-sections of the slice image stack before registration.}
-	  \label{fig:geometric_initialisation}
-	\end{sidewaysfigure}
+  
+  The process of registration between slices, of obtaining the values $\mathbf{\Delta T}_{i,i+1}^n$, is orthogonal to the calculation of the diffusion transforms $\mathbf{\Delta T}_i^{n,n+1}$ and subsequent adjustment of each slice transform $\mathbf{T}_i^{n+1}$. The first attempt to test the algorithm used the original heart slice image shown in Figure~\ref{fig:original_displacement}. Although the algorithm was reliably stable in smoothing the small amplitudes of noise it was designed to correct for, it was found that much larger perturbations could be damped by the algorithm, limited only by the success of the individual registrations. All registrations were therefore performed using the manual segmentations shown in Figure~\ref{fig:segmented_displacement}, with which much larger displacements could be corrected. As will be seen, cross-sections were then reconstructed from the original images, to show the effects of correction on the fine detail of the tissue, whilst clean volume isosurfaces were constructed from the segmentation.
+  
+  % straight
+  \begin{figure}[htbp]
+    \centering
+    % filename format: cross_section_200_alpha0.4_ITERATION_DIMENSION_SLICE
+    \subfigure[][with noise (0 iterations)]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4_0_0_352}\label{fig:subfig1}}
+    \subfigure[][1 iteration]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4_1_0_352}\label{fig:subfig2}}
+    \subfigure[][3 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4_3_0_352}\label{fig:subfig3}}
+    \subfigure[][8 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4_8_0_352}\label{fig:subfig4}}
+    \subfigure[][20 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4_20_0_352}\label{fig:subfig4}}
+    % filename format: cross_section_perfect_200_alpha0.4_DIMENSION_SLICE
+    \subfigure[][without noise]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_perfect_200_alpha0.4_0_352}}
+    \caption{Cross-sections of the straight volume, perpendicular to the x-axis.}
+    \label{fig:cross_section_0}
+  \end{figure}
+  
+  \begin{figure}[htbp]
+    \centering
+    \subfigure[][0 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4_0_1_431}}
+    \subfigure[][1 iteration]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4_1_1_431}}
+    \subfigure[][3 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4_3_1_431}}
+    \subfigure[][8 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4_8_1_431}}
+    \subfigure[][20 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4_20_1_431}}
+    \subfigure[][without noise]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_perfect_200_alpha0.4_1_431}}
+    \caption{Cross-sections of the straight volume, perpendicular to the y-axis.}
+    \label{fig:cross_section_1}
+  \end{figure}
+    
+  % rotated
+  \begin{figure}[htbp]
+    \centering
+    \subfigure[][0 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4r_0_0_352}}
+    \subfigure[][1 iteration]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4r_1_0_352}}
+    \subfigure[][3 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4r_3_0_352}}
+    \subfigure[][8 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4r_8_0_352}}
+    \subfigure[][20 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4r_20_0_352}}
+    \subfigure[][without noise]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_perfect_200_alpha0.4r_0_352}}
+    \caption{Cross-sections of the rotating volume, perpendicular to the x-axis.}
+    \label{fig:cross_section_0r}
+  \end{figure}
+  
+  \begin{figure}[htbp]
+    \centering
+    \subfigure[][0 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4r_0_1_431}}
+    \subfigure[][1 iteration]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4r_1_1_431}}
+    \subfigure[][3 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4r_3_1_431}}
+    \subfigure[][8 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4r_8_1_431}}
+    \subfigure[][20 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4r_20_1_431}}
+    \subfigure[][without noise]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_perfect_200_alpha0.4r_1_431}}
+    \caption{Cross-sections of the rotating volume, perpendicular to the y-axis.}
+    \label{fig:cross_section_1r}
+  \end{figure}
+  
+  % translated
+  \begin{figure}[htbp]
+    \centering
+    \subfigure[][0 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4t_0_0_352}}
+    \subfigure[][1 iteration]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4t_1_0_352}}
+    \subfigure[][3 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4t_3_0_352}}
+    \subfigure[][8 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4t_8_0_352}}
+    \subfigure[][20 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4t_20_0_352}}
+    \subfigure[][without noise]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_perfect_200_alpha0.4t_0_352}}
+    \caption{Cross-sections of the translating volume, perpendicular to the x-axis.}
+    \label{fig:cross_section_0t}
+  \end{figure}
+  
+  \begin{figure}[htbp]
+    \centering
+    \subfigure[][0 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4t_0_1_431}}
+    \subfigure[][1 iteration]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4t_1_1_431}}
+    \subfigure[][3 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4t_3_1_431}}
+    \subfigure[][8 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4t_8_1_431}}
+    \subfigure[][20 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4t_20_1_431}}
+    \subfigure[][without noise]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_perfect_200_alpha0.4t_1_431}}
+    \caption{Cross-sections of the translating volume, perpendicular to the y-axis.}
+    \label{fig:cross_section_1t}
+  \end{figure}
+    
+  % rotated and translated
+  \begin{figure}[htbp]
+    \centering
+    \subfigure[][0 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4rt_0_0_352}}
+    \subfigure[][1 iteration]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4rt_1_0_352}}
+    \subfigure[][3 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4rt_3_0_352}}
+    \subfigure[][8 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4rt_8_0_352}}
+    \subfigure[][20 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4rt_20_0_352}}
+    \subfigure[][without noise]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_perfect_200_alpha0.4rt_0_352}}
+    \caption{Cross-sections of the rotating and translating volume, perpendicular to the x-axis.}
+    \label{fig:cross_section_0rt}
+  \end{figure}
+  
+  \begin{figure}[htbp]
+    \centering
+    \subfigure[][0 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4rt_0_1_431}}
+    \subfigure[][1 iteration]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4rt_1_1_431}}
+    \subfigure[][3 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4rt_3_1_431}}
+    \subfigure[][8 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4rt_8_1_431}}
+    \subfigure[][20 iterations]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_200_alpha0.4rt_20_1_431}}
+    \subfigure[][without noise]{\includegraphics[height=0.4\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/cross_section_perfect_200_alpha0.4rt_1_431}}
+    \caption{Cross-sections of the rotating and translating volume, perpendicular to the y-axis.}
+    \label{fig:cross_section_1rt}
+  \end{figure}
+  
+  The central cross-sections perpendicular to the x- and y-axes of the four regimes are exhibited in Figures~\labelcref{fig:cross_section_0,fig:cross_section_1,fig:cross_section_0r,fig:cross_section_1r,fig:cross_section_0t,fig:cross_section_1t,fig:cross_section_0rt,fig:cross_section_1rt}. The first section in each is of the original unsmoothed noisy volume, and the last of the volume before noise was added. Four images are sandwiched by these two extremes, of sections smoothed 1, 3, 8 and 20 times. The smoothing performs extremely well on two fronts. By iteration 20, a smooth, continuous section with the appearance of an original histology slice has been recovered from an unrecognisably noisy volume. Secondly and crucially, the underlying geometry of the tissue has been preserved, and the sections appear very similar to the ground truth sections before the noise had been added.
+  
+  % mean squared differences 3D
+  \begin{sidewaysfigure}[htbp]
+    \centering
+    \subfigure[][straight column]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/segmentation_mean_square_differences_3D}}
+    \subfigure[][rotation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/segmentation_mean_square_differences_3Dr}}
+    \subfigure[][translation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/segmentation_mean_square_differences_3Dt}}
+    \subfigure[][rotation and translation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/segmentation_mean_square_differences_3Drt}}
+    \caption{The 3D evolution of mean squared pixel intensity differences between adjacent slices for each of the four geometrical regimes.}
+    \label{fig:mean_squared_differences_3D}
+  \end{sidewaysfigure}
+  
+  Registration was performed using the mean square difference metric, and Figure~\ref{fig:mean_squared_differences_3D} graphs the evolving mean squared pixel intensity difference between each slice and its successor after repeated applications of the smoothing algorithm. In all four geometrical regimes, and for all slices away from the boundaries, the metric is greatly reduced, evidence that each slice is much more closely aligned with its neighbours. Just as in the case of 1D diffusion, most of the reduction is yielded in the earlier iterations, when the highest frequencies are damped most easily. Registrations were verified to be successful in the overwhelming majority of cases, ending with an oscillation around a consistent, very low mean squared difference value.
+  
+  % mean squared differences 2D
+  \begin{sidewaysfigure}[htbp]
+    \centering
+    \subfigure[][straight column]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/segmentation_mean_square_differences_2D}}
+    \subfigure[][rotation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/segmentation_mean_square_differences_2Dr}}
+    \subfigure[][translation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/segmentation_mean_square_differences_2Dt}}
+    \subfigure[][rotation and translation]{\includegraphics[height=0.33\textheight,type=pdf,ext=.pdf,read=.pdf]{Ch6/Figs/dummies/segmentation_mean_square_differences_2Drt}}
+    \caption{The initial (blue) and final (green) mean squared pixel intensities between adjacent pairs for each of the four geometrical regimes.}
+    \label{fig:mean_squared_differences_2D}
+  \end{sidewaysfigure}
 
-	% x slices
-	\begin{figure}[htbp]
-	  \centering
-	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/rigid_0_235}}
-	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/size_0_235}}
-	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/affine_0_235}}
-	  \caption{Cross-sections of the rigid, similarity and affine volumes perpendicular to the x-axis.}
-	  \label{fig:hires_0_235}
-	\end{figure}
+  Figure~\ref{fig:mean_squared_differences_2D} graphs the initial and final metric values between adjacent pairs for the four test regimes. Note that each blue (resp. green) line is equivalent to the starting values on the left (resp. right) face of the corresponding plot in Figure~\ref{fig:mean_squared_differences_3D}. Almost ubiquitously, the the value is substantially lower after transformational diffusion, with the green lines appearing much smoother after the high frequency spectrum has been preferentially damped.
+  
+  There is one notable example of a registration that has failed to reach a good alignment, manifested in Figure~\ref{fig:mean_squared_differences_3D}~\textbf{(a)} as a large spike in the metric value of slice 152 at iteration 6. The deviation is also visible in Figures~\labelcref{fig:cross_section_0,fig:cross_section_1}~\textbf{(d)} at iteration 8, as a large displacement two thirds of the way up from the base. At each iteration of the algorithm, the slices have moved relative to each other, and hence are initialised outside of any preceding local minimum trap. In this way, all adjacent slices are given multiple chances to become aligned, conferring to this method a great deal of robustness not present in any previous technique in the literature. By iteration 20 in Figures~\labelcref{fig:cross_section_0,fig:cross_section_1}~\textbf{(d)}, the abberation is imperceptible, and we can see from Figure~\ref{fig:mean_squared_differences_3D}~\textbf{(a)} that the erroneous metric value has returned to a level comparable with its neighbours after just four iterations.
+  
+  % full contours
+  \begin{figure}[htbp]\texttt{}
+    \centering
+    \subfigure[][0 iterations]{\includegraphics[width=0.3\pagewidth]{Ch6/Figs/dummies/contours/whole_surface_0}}
+    \subfigure[][1 iteration]{\includegraphics[width=0.3\pagewidth]{Ch6/Figs/dummies/contours/whole_surface_1}}
+    \subfigure[][3 iterations]{\includegraphics[width=0.3\pagewidth]{Ch6/Figs/dummies/contours/whole_surface_3}}
+    \subfigure[][8 iterations]{\includegraphics[width=0.3\pagewidth]{Ch6/Figs/dummies/contours/whole_surface_8}}
+    \subfigure[][20 iterations]{\includegraphics[width=0.3\pagewidth]{Ch6/Figs/dummies/contours/whole_surface_20}}
+    \caption{Isosurfaces of the perturbed straight volume in red at several stages of smoothing, overlayed with the unperturbed volume in green.}
+    \label{fig:dummy_contour}
+  \end{figure}
+  
+  \begin{figure}[htbp]
+    \centering
+    \subfigure[][0 iterations]{\includegraphics[width=0.3\pagewidth]{Ch6/Figs/dummies/contours/whole_surfacer_0}}
+    \subfigure[][1 iteration]{\includegraphics[width=0.3\pagewidth]{Ch6/Figs/dummies/contours/whole_surfacer_1}}
+    \subfigure[][3 iterations]{\includegraphics[width=0.3\pagewidth]{Ch6/Figs/dummies/contours/whole_surfacer_3}}
+    \subfigure[][8 iterations]{\includegraphics[width=0.3\pagewidth]{Ch6/Figs/dummies/contours/whole_surfacer_8}}
+    \subfigure[][20 iterations]{\includegraphics[width=0.3\pagewidth]{Ch6/Figs/dummies/contours/whole_surfacer_20}}
+    \caption{Isosurfaces of the rotating volume.}
+    \label{fig:dummy_contourr}
+  \end{figure}
+  
+  \begin{figure}[htbp]
+    \centering
+    \subfigure[][0 iterations]{\includegraphics[width=0.3\pagewidth]{Ch6/Figs/dummies/contours/whole_surfacet_0}}
+    \subfigure[][1 iteration]{\includegraphics[width=0.3\pagewidth]{Ch6/Figs/dummies/contours/whole_surfacet_1}}
+    \subfigure[][3 iterations]{\includegraphics[width=0.3\pagewidth]{Ch6/Figs/dummies/contours/whole_surfacet_3}}
+    \subfigure[][8 iterations]{\includegraphics[width=0.3\pagewidth]{Ch6/Figs/dummies/contours/whole_surfacet_8}}
+    \subfigure[][20 iterations]{\includegraphics[width=0.3\pagewidth]{Ch6/Figs/dummies/contours/whole_surfacet_20}}
+    \caption{Isosurfaces of the translating volumes.}
+    \label{fig:dummy_contourt}
+  \end{figure}
+  
+  \begin{figure}[htbp]
+    \centering
+    \subfigure[][0 iterations]{\includegraphics[width=0.3\pagewidth]{Ch6/Figs/dummies/contours/whole_surfacert_0}}
+    \subfigure[][1 iteration]{\includegraphics[width=0.3\pagewidth]{Ch6/Figs/dummies/contours/whole_surfacert_1}}
+    \subfigure[][3 iterations]{\includegraphics[width=0.3\pagewidth]{Ch6/Figs/dummies/contours/whole_surfacert_3}}
+    \subfigure[][8 iterations]{\includegraphics[width=0.3\pagewidth]{Ch6/Figs/dummies/contours/whole_surfacert_8}}
+    \subfigure[][20 iterations]{\includegraphics[width=0.3\pagewidth]{Ch6/Figs/dummies/contours/whole_surfacert_20}}
+    \caption{Isosurfaces of the translating and rotating volumes.}
+    \label{fig:dummy_contourrt}
+  \end{figure}
+  
+  The nature of the 3-D geometry of the volumes --- the rotation and translation signals, and the transformational noise --- is most clearly understood from the segmentation volume isosurfaces in Figures~\labelcref{fig:dummy_contour,fig:dummy_contourr,fig:dummy_contourt,fig:dummy_contourrt}. Each of the 5 levels of smoothing depicted by Figures~\labelcref{fig:cross_section_0,fig:cross_section_1,fig:cross_section_0r,fig:cross_section_1r,fig:cross_section_0t,fig:cross_section_1t,fig:cross_section_0rt,fig:cross_section_1rt} are overlayed in red with their equivalent unperturbed volumes in green. Again, the smoothing brings the noisy volume much more closely in line with the ground truth, with the largest effect on the higher frequencies of noise. The conservation of the underlying structure is most evident in Figure~\ref{fig:dummy_contourrt}~(e), where the red isosurface deviates almost imperceptibly from the green.
+  
+  Parameters used the registration are listed in Table~\ref{tab:dummy_histo_to_histo}. It is worth noting that as long as the registration process is refined enough to arrive dependably near the global minimum, the adjustment algorithm itself is stable with much larger levels of noise than showcased here. For example, one approach might be to preprocess images and tune parameters to cope with large displacements for the first few smoothing iterations, and then tune for smaller displacements during the finer smoothing in the later iterations. Yet, this kind of approach requires heavy manual intervention, and is highly specific to the problem at hand.
+  % subsection simulating_transformational_diffusion (end)
+% section methods (end)
 
-	% y slices
-	\begin{figure}[htbp]
-	  \centering
-	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/rigid_1_287}}
-	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/size_1_287}}
-	  \subfigure[][]{\includegraphics[height=0.31\textheight]{Ch6/Figs/affine_1_287}}
-	  \caption{Cross-sections of the rigid, similarity and affine volumes perpendicular to the y-axis.}
-	  \label{fig:hires_1_287}
-	\end{figure}
+\section{Results} % (fold)
+\label{sec:results}
+  \subsection{Global Diffusion} % (fold)
+  \label{sub:global_diffusion}
+    % x slices
+    \begin{figure}[htbp]
+      \centering
+      \subfigure[][0 iterations (unsmoothed affine volume)]{\includegraphics[height=0.31\textheight]{Ch6/Figs/adjusted_0_0_235}}
+      \subfigure[][1 iteration]{\includegraphics[height=0.31\textheight]{Ch6/Figs/adjusted_1_0_235}}
+      \subfigure[][20 iterations]{\includegraphics[height=0.31\textheight]{Ch6/Figs/adjusted_20_0_235}}
+      \caption{Cross-sections of the full Rat28 volume perpendicular to the x-axis, after 0, 1 and 20 iterations of diffusion.}
+      \label{fig:adjusted_0_235}
+    \end{figure}
 
-	Central cross-sections of the geometrically initialised volume before registration are shown in Figure~\ref{fig:geometric_initialisation}, and cross-sections after each stage of the registration are shown in Figures~\labelcref{fig:hires_0_235,fig:hires_1_287}. The incoherent volumes in Figure~\ref{fig:geometric_initialisation} are brought into alignment by rigid registration, with small incremental improvements from similarity and affine. The improvements in the later stages are most evident at the extremeties to the left and right of the figures, where the effects of small changes in parameters are most evident; edges are smoother, tissue microstructure is more clearly discerned and large displacements are mostly removed. Discontinuities in intensity between block face images, visible in Figure~\ref{fig:LoRes_cross_sections}, are mirrored in the registration. It is also clear that registration has failed from slice 600 upwards.
-	
-	% geometric contours
-	\begin{sidewaysfigure}[p]
-	  \centering
-	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_geometric}
-	  \caption{Geometric slice volume, viewed along the positive x direction.}
-	  \label{fig:positive_x_geometric_contour}
-	\end{sidewaysfigure}
+    % y slices
+    \begin{figure}[htbp]
+      \centering
+      \subfigure[][0 iterations (unsmoothed affine volume)]{\includegraphics[height=0.31\textheight]{Ch6/Figs/adjusted_0_1_287}}
+      \subfigure[][1 iteration]{\includegraphics[height=0.31\textheight]{Ch6/Figs/adjusted_1_1_287}}
+      \subfigure[][20 iterations]{\includegraphics[height=0.31\textheight]{Ch6/Figs/adjusted_20_1_287}}
+      \caption{Cross-sections of the full Rat28 volume perpendicular to the y-axis.}
+      \label{fig:adjusted_1_287}
+    \end{figure}
+    
+    20 iterations of smoothing were applied to the affine registered full-heart volume from Section~\ref{sec:registration_results}, and Figures~\labelcref{fig:adjusted_0_235,fig:adjusted_1_287} compare the central cross-sections of the volume before smoothing, after 1 iteration and after all 20 iterations. A subtle, but unmistakable improvement in coherence is observed; internal and external edges are smoother, especially towards the extremities of the heart, and clear, waving sheet structure has emerged, previously indistinguishable beyond the high-frequency zig-zagging noise.
+    
+    % lower 100 slices zoom
+    % x slices
+    \begin{sidewaysfigure}[htbp]
+      \centering
+      \subfigure[][0 iterations (unsmoothed affine volume)]{\includegraphics[height=0.12\textheight]{Ch6/Figs/adjusted_0_0_235_zoomed}}
+      \subfigure[][1 iteration]{\includegraphics[height=0.12\textheight]{Ch6/Figs/adjusted_1_0_235_zoomed}}
+      \subfigure[][20 iterations]{\includegraphics[height=0.12\textheight]{Ch6/Figs/adjusted_20_0_235_zoomed}}
+      \caption{Cross-sections of the lower 100 slices perpendicular to the x-axis.}
+      \label{fig:adjusted_bottom_vessels_0_235}
+    \end{sidewaysfigure}
 
-	\begin{sidewaysfigure}[p]
-	  \centering
-	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_geometric}
-	  \caption{Geometric slice volume, viewed along the negative x direction.}
-	  \label{fig:negative_x_geometric_contour}
-	\end{sidewaysfigure}
+    % y slices
+    \begin{sidewaysfigure}[htbp]
+      \centering
+      \subfigure[][0 iterations (unsmoothed affine volume)]{\includegraphics[height=0.12\textheight]{Ch6/Figs/adjusted_0_1_287_zoomed}}
+      \subfigure[][1 iteration]{\includegraphics[height=0.12\textheight]{Ch6/Figs/adjusted_1_1_287_zoomed}}
+      \subfigure[][20 iterations]{\includegraphics[height=0.12\textheight]{Ch6/Figs/adjusted_20_1_287_zoomed}}
+      \caption{Cross-sections of the lower 100 slices perpendicular to the y-axis.}
+      \label{fig:adjusted_bottom_vessels_1_287}
+    \end{sidewaysfigure}
+    
+    The effect is clearer in an enlargement of the bottom 100 slices in Figures~\labelcref{fig:adjusted_bottom_vessels_0_235,fig:adjusted_bottom_vessels_1_287}. The outer walls are several orders of magnitude less noisy in both figures, and internal vessel walls are much more coherent, most notably the epicardial vessels on the left and right of Figure~\ref{fig:adjusted_bottom_vessels_1_287}~(c). Sheet structure that started to surface from obscurity after just one iteration has been well resolved after 20 iterations. Figures~\labelcref{fig:whole_positive_x_diffused,fig:whole_negative_x_diffused,fig:whole_positive_y_diffused,fig:whole_positive_z_diffused} depict the smoother global contour after 20 iterations from several angles.
+    
+    % diffused contours
+    \begin{sidewaysfigure}[p]
+      \centering
+      \includegraphics[width=0.9\textheight]{Ch6/Figs/Rat28/contours/whole_positive_x_diffused}
+      \caption{Globally smoothed slice volume, viewed along the positive x direction.}
+      \label{fig:whole_positive_x_diffused}
+    \end{sidewaysfigure}
 
-	\begin{sidewaysfigure}[p]
-	  \centering
-	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_geometric}
-	  \caption{Geometric slice volume, viewed along the positive y direction.}
-	  \label{fig:positive_y_geometric_contour}
-	\end{sidewaysfigure}
+    \begin{sidewaysfigure}[p]
+      \centering
+      \includegraphics[width=0.9\textheight]{Ch6/Figs/Rat28/contours/whole_negative_x_diffused}
+      \caption{Globally smoothed slice volume, viewed along the negative x direction.}
+      \label{fig:whole_negative_x_diffused}
+    \end{sidewaysfigure}
 
-	\begin{sidewaysfigure}[p]
-	  \centering
-	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_geometric}
-	  \caption{Geometric slice volume, viewed along the positive z direction.}
-	  \label{fig:positive_z_geometric_contour}
-	\end{sidewaysfigure}
+    \begin{sidewaysfigure}[p]
+      \centering
+      \includegraphics[width=0.9\textheight]{Ch6/Figs/Rat28/contours/whole_positive_y_diffused}
+      \caption{Globally smoothed slice volume, viewed along the positive y direction.}
+      \label{fig:whole_positive_y_diffused}
+    \end{sidewaysfigure}
 
-	% rigid contours
-	\begin{sidewaysfigure}[p]
-	  \centering
-	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_rigid}
-	  \caption{Rigid slice volume, viewed along the positive x direction.}
-	  \label{fig:positive_x_rigid_contour}
-	\end{sidewaysfigure}
+    \begin{sidewaysfigure}[p]
+      \centering
+      \includegraphics[width=0.9\textheight]{Ch6/Figs/Rat28/contours/whole_positive_z_diffused}
+      \caption{Globally smoothed slice volume, viewed along the positive z direction.}
+      \label{fig:whole_positive_z_diffused}
+    \end{sidewaysfigure}
+  % subsection global_diffusion (end)
+  
+  \subsection{Regional Diffusion} % (fold)
+  \label{sub:regional_diffusion}
+    \begin{figure}[p]
+      \centering
+      \subfigure[][Original block face registration]{\includegraphics[height=0.21\textheight]{Ch6/Figs/bottom_vessels/unsmoothed_vessel_0_2875}}
+      \subfigure[][Globally smoothed registration]{\includegraphics[height=0.21\textheight]{Ch6/Figs/bottom_vessels/globally_smoothed_vessel_0_2875}}
+      \subfigure[][Regionally smoothed registration]{\includegraphics[height=0.21\textheight]{Ch6/Figs/bottom_vessels/regionally_smoothed_vessel_0_2875}}
+      \caption{Central cross sections of the region around an epicardial vessel, perpendicular to the x axis. Cross-sections are compared before smoothing, after global smoothing and after smoothing applied to this region.}
+      \label{fig:vessel_cross_section_x}
+    \end{figure}
+    
+    \begin{figure}[p]
+      \centering
+      \subfigure[][Original block face registration]{\includegraphics[height=0.21\textheight]{Ch6/Figs/bottom_vessels/unsmoothed_vessel_1_2125}}
+      \subfigure[][Globally smoothed registration]{\includegraphics[height=0.21\textheight]{Ch6/Figs/bottom_vessels/globally_smoothed_vessel_1_2125}}
+      \subfigure[][Regionally smoothed registration]{\includegraphics[height=0.21\textheight]{Ch6/Figs/bottom_vessels/regionally_smoothed_vessel_1_2125}}
+      \caption{Central cross sections of the region around an epicardial vessel, perpendicular to the y axis.}
+      \label{fig:vessel_cross_section_y}
+    \end{figure}
+    
+    \begin{sidewaysfigure}[p]
+      \centering
+      \includegraphics[width=\textwidth]{Ch6/Figs/bottom_vessels/regionally_smoothed_vessel_2_046}
+      \caption{Full resolution image of the central slice of the epicardial vessel region.}
+      \label{fig:vessel_cross_section_z}
+    \end{sidewaysfigure}
+    
+    \begin{figure}[p]
+      \centering
+      \includegraphics[width=\textwidth]{Ch6/Figs/bottom_vessels/cropped_regionally_smoothed_vessel_2_046}
+      \caption{Zoomed full resolution image of the geometric centre of Figure~\ref{fig:vessel_cross_section_z}.}
+      \label{fig:cropped_vessel_cross_section_z}
+    \end{figure}
+    
+    A regional registration around an epicardial vessel yields even further improvement, when at this smaller scale, curvature and distortions not represented by an affine transformation become less significant. The final transforms from the global smoothings were used to initialise the regional smoothings, with the centre of transformation moved to the geometric centre of the region. In order to smooth the cost function adequately for the optimiser, the images used to perform the regisration were Gaussian smoothed and downsampled by a factor of 8: a level optimal to resolve features the size of an epicardial vessel. Figures~\labelcref{fig:vessel_cross_section_x,fig:vessel_cross_section_y} show two central perpendicular cross-sections of the epicardial region before smoothing, after global smoothing and after an additional regional smoothing. Figures~\labelcref{fig:vessel_cross_section_z,fig:cropped_vessel_cross_section_z} remind us of the order-of-magnitude greater resolution in plane with respect to the vertical out-of-plane resolution in Figures~\labelcref{fig:vessel_cross_section_x,fig:vessel_cross_section_y}, displaying the central slice of the region at full resolution.
+  % subsection regional_diffusion (end)
 
-	\begin{sidewaysfigure}[p]
-	  \centering
-	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_rigid}
-	  \caption{Rigid slice volume, viewed along the negative x direction.}
-	  \label{fig:negative_x_rigid_contour}
-	\end{sidewaysfigure}
-
-	\begin{sidewaysfigure}[p]
-	  \centering
-	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_rigid}
-	  \caption{Rigid slice volume, viewed along the positive y direction.}
-	  \label{fig:positive_y_rigid_contour}
-	\end{sidewaysfigure}
-
-	\begin{sidewaysfigure}[p]
-	  \centering
-	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_rigid}
-	  \caption{Rigid slice volume, viewed along the positive z direction.}
-	  \label{fig:positive_z_rigid_contour}
-	\end{sidewaysfigure}
-
-	% size contours
-	\begin{sidewaysfigure}[p]
-	  \centering
-	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_size}
-	  \caption{Similarity slice volume, viewed along the positive x direction.}
-	  \label{fig:positive_x_similarity_contour}
-	\end{sidewaysfigure}
-
-	\begin{sidewaysfigure}[p]
-	  \centering
-	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_size}
-	  \caption{Similarity slice volume, viewed along the negative x direction.}
-	  \label{fig:negative_x_similarity_contour}
-	\end{sidewaysfigure}
-
-	\begin{sidewaysfigure}[p]
-	  \centering
-	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_size}
-	  \caption{Similarity slice volume, viewed along the positive y direction.}
-	  \label{fig:positive_y_similarity_contour}
-	\end{sidewaysfigure}
-
-	\begin{sidewaysfigure}[p]
-	  \centering
-	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_size}
-	  \caption{Similarity slice volume, viewed along the positive z direction.}
-	  \label{fig:positive_z_similarity_contour}
-	\end{sidewaysfigure}
-
-	% affine contours
-	\begin{sidewaysfigure}[p]
-	  \centering
-	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_x_affine}
-	  \caption{Affine slice volume, viewed along the positive x direction.}
-	  \label{fig:positive_x_affine_contour}
-	\end{sidewaysfigure}
-
-	\begin{sidewaysfigure}[p]
-	  \centering
-	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_negative_x_affine}
-	  \caption{Affine slice volume, viewed along the negative x direction.}
-	  \label{fig:negative_x_affine_contour}
-	\end{sidewaysfigure}
-
-	\begin{sidewaysfigure}[p]
-	  \centering
-	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_y_affine}
-	  \caption{Affine slice volume, viewed along the positive y direction.}
-	  \label{fig:positive_y_affine_contour}
-	\end{sidewaysfigure}
-
-	\begin{sidewaysfigure}[p]
-	  \centering
-	  \includegraphics[width=0.9\textheight]{Ch7/Figs/Rat28/contours/whole_positive_z_affine}
-	  \caption{Affine slice volume, viewed along the positive z direction.}
-	  \label{fig:positive_z_affine_contour}
-	\end{sidewaysfigure}
-	
-	Threshold segmentation contours illustrate further in Figures~\labelcref{fig:positive_x_geometric_contour,fig:negative_x_geometric_contour,fig:positive_y_geometric_contour,fig:positive_z_geometric_contour,fig:positive_x_rigid_contour,fig:negative_x_rigid_contour,fig:positive_y_rigid_contour,fig:positive_z_rigid_contour,fig:positive_x_similarity_contour,fig:negative_x_similarity_contour,fig:positive_y_similarity_contour,fig:positive_z_similarity_contour,fig:positive_x_affine_contour,fig:negative_x_affine_contour,fig:positive_y_affine_contour,fig:positive_z_affine_contour}. In all cases, contours were generated from a threshold segmentation with intensity limits 0 to 240, using the original slice images, Gaussian smoothed by a kernel of standard deviation 64, because the detail from a simple threshold on nonsmoothed images generated egregiously convoluted surfaces. Because this smoothing only operates within the plane of the slices, individual displacements between edges of adjacent slices is still clearly visible. After segmentation, a label map filter was applied to remove all but the largest connected component. This went some way to removing bubbles and other artefacts obscuring the surface of the heart. In Figures~\labelcref{fig:positive_x_geometric_contour,fig:negative_x_geometric_contour,fig:positive_y_geometric_contour,fig:positive_z_geometric_contour}, the y-dimension of the geometry bounding box is extended from 575 to 700 to encompass the increased spread of the slices. The improvements from each stage are most perceptible here, with the smoothest and most coherent surfaces in Figures~\labelcref{fig:positive_x_affine_contour,fig:negative_x_affine_contour,fig:positive_y_affine_contour,fig:positive_z_affine_contour}.
-	
 % section results (end)
 
 \section{Discussion} % (fold)
 \label{sec:discussion}
-  We have constructed a comprehensive, generic and flexible pipeline to register histological slices to block face images, that can be configured to generate rapid results on the broadest spectrum of computational facilities, from laptop, to cluster, to shared memory supercomputer. A high resolution rat heart volume has been reconstructed, with coherence approximating the tissue microstructure. With recent advances in the field of histological image acquisition, and with datasets of higher and higher quality, a simple application of this pipeline will lead to even better results.
-	
-	An effort to apply coarse and fine grained B-spline registrations to the dataset was made. It was found that in certain regions, no matter how the system was parameterised, deformations would vary wildly from what was reasonable or physical, let alone precise. In future, it might be worthwhile to introduce constraints analogous to the physical forces and relaxations that lead to the deformations in the first place. A rudimentary framework for partial differential equations exists in ITK, and if images could be segmented to identify tissue, and physical properties such as elasticity could introduce strain terms into the cost function being optimised, results could perhaps be refined. However, the implementation would be a large undertaking, and so for the purposes of this thesis we proposed that in smaller regions, the deformations are quasi-linear, much as they are in a Reimannian manifold. This being the case, tools were developed to perform regional refined registrations with the same affine transforms, initialised by the results of full heart registrations, and these tools will be put to use in Chapter~\ref{cha:diffusion_smoothing_registration_of_high_resolution_rat_histology}.
-    
-  It has not escaped us that the method for choosing the various components and optimising their registration parameters is a crude and intuitive version of the optimisation algorithms applied to the image registrations. If one were to attempt to automate some of this process, at least partially, it would not easily be possible to calculate the gradient of a final in parameter space. One could perhaps develop an algorithm to perturb coordinates along the basis axes, such as the parameter scaling, the choice of metric or optimiser, the gradient descent learning rate, the regular step gradient descent relaxation factor, whether to prenormalise images etc. Two salient strategies present themselves: to split the space heirarchically into two groups of `preferred' axes, and secondary axes, then perform a prototype parameter explorative search in the preferred subspace, and for each preferred coordinate perform a cheaper, iterative optimisation in the secondary space. Alternatively, one could simply perform an iterative stochastic search across the whole space. The feasibility of this approach is unclear. In particular, the `quality' measure to be optimised is somewhat subjective, based on the goals and requirements of the scientist, and requiring detailed examination of the final volumes.
+  We have invented a robust and mathematically elegant method of resolving volumes from noisy 2-dimensional image slices, transferring transformational information between neighbouring slices. It excels any current technique in the literature at providing smooth, continuous volumes, whilst preserving underlying geometry. Further, its iterative nature confers to it a resilience to the trap of local minima, to registration failures and to outliers, which is unmatched by contemporary methods; even when the cost function of a registration is spiky, and results of a single run are sensitive to initialisation, the diffusion algorithm provides multiple opportunities to escape local basins in the cost function, having shifted the cost landscape each time. Contrastingly in the case of banana registration, the displacement from one unsuccessful registration is propagated to \emph{every} subsequent slice in the volume.
   
-  Some approaches relinquished for this dataset may yield much better results in other contexts. For example, when histogram matching was tested on this dataset, there was no monotonic mapping between the intensity in the lores and that of the hires, with tissue and with non-tissue. With mutual information, a mapping need not be monotonic, but must only be one-to-one. In fact, this constraint did not hold either, since many regions of tissue in the block face images occupy the same intensity range as non-tissue.
-	
-	Whilst much progress has been made with traditional registration techniques in this chapter, the final volumes are still jagged and noisy. This approach is essentially a series of independent two-dimensional registrations; information flow is restricted to the two dimensions within the plane of the images, with no use of or reference to the neighbouring slices to strengthen and refine the results. In the next chapter, a new algorithm is developed, particular to this method of image acquisition, that registers adjacent slices together and uses the results of these registrations to `diffuse' each slice toward its neighbours.
-
+  One might reasonably consider, as an alternative implementation, the registration of more than just the nearest neighbours at each iteration, but the \emph{k}-nearest neighbours, followed by the application of some (binomial) weighted mean of the results:
+  
+  \begin{equation}
+    \mathbf{\Delta T}_i^{n,n+1} = \sum_{j=-k}^k \binom{2k}{j+k}\alpha \cdot \mathbf{\Delta T}_{i,i+j}^n,
+  \end{equation}
+  
+  where we define the sum operator $\sum$ as
+  
+  \begin{equation}
+    \sum_{i=0}^n \mathbf{T}_i = \mathbf{T}_0 \oplus \mathbf{T}_1 \oplus \ldots \oplus \mathbf{T}_n.
+  \end{equation}
+  
+  Indeed, in 1-dimensional diffusion, $n$ iterations of nearest neighbour diffusion (where $k=1$) is equivalent to a single binomial iteration across a larger neighbourhood ($k=n$). There are three reasons why this approach is suboptimal. Firstly, inaccurate or erroneous registrations --- most likely to occur in the earliest stages with the most noise --- are given fewer chances to be mitigated by later iterations. Equivalently from another perspective, more registrations are performed under higher levels of perturbation than necessary. Secondly, the further away two histological slices are from each other, the more different they appear, and thus a successful registration between them is less likely. Thirdly, no computational time is saved, as the same total number of slice-to-slice registrations must be performed for a given level of smoothing. In fact, total computation is likely to be extended, as the more challenging registrations that are introduced will take longer to reach an optimum.
+  
+  As was mentioned at the end of Section~\ref{ssub:formulating_the_transform_operators}, this diffusion technique could be extended easily to more complex transforms, as long as that set of transformations form a Lie group. Many transforms commonly used in registration, such as b-spline and other piecewise transforms, are excluded from this classification. In practice, the markedly lax constraint for improvement --- that the algorithm must simply  move each slice somewhat closer to its neighbours --- coupled with the fact that all transforms approximate a Lie group in the small limit, mean that a trivial linear interpolation of any transform's parameters will lead to reliable and geometrically faithful smoothing for noise levels significantly smaller than the scale of the registration.
+    
+  Just as in the case of 1-dimensional diffusion, true underlying high-frequency signal will be smoothed indiscriminately along with noise. For example, any sharp curvature in the cardiac geometry of Section~\ref{sub:regional_diffusion} expressed across fewer than $\sim$5 slices will be smoothed significantly after 20 iterations. Where the banana problem erroneously symmetrises a geometry, diffusion smoothing can erroneously symmetrise the \emph{curvature} of a geometry, if applied too heavily.
+  
+  Anisotropic diffusion based either upon some scalar measure of the magnitude of the transforms between slices, or upon the images or pairs of images themselves, could well be employed to dampen the diffusive coefficient $\alpha$ adaptively, in regions of strong variation where curvature must be preserved. Anisotropic diffusion is used widely in order to clear up noise in the intensity of images, and ~\cite{Arsigny2005} apply anisotropic diffusion to tensor images through a log-Euclidian framework.
+  
+  Going forward, log-Euclidean statistics could be used for averaging pair-wise registrations between 3D data sets, for example between a set of rat hearts. A single representative map could then be developed from the whole dataset, and statistics such as anatomical variation extracted from it. The diffusion framework could also be used to smooth out jolting or high-frequency transformational noise in 4D time-series datasets, whilst maintaining the overall positioning of features in space.
+  
+  Now that we have constructed a smooth, continuous 3-D image of cardiac tissue, it remains to extract anatomical information from this volume, with a view to building anatomically-based models for simulation. In the next chapter, we explore the feasibility of such a development.
 % section discussion (end)
 
-% chapter coregistration_of_high_resolution_rat_histology (end)
+% chapter diffusion_smoothing_registration_of_high_resolution_rat_histology (end)
