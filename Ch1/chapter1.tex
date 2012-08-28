@@ -2,54 +2,18 @@
 \chapter{Introduction and Aims}
 \dblspace
 
-General intro ...
-
 \section{Motivation}
 \label{sec:intro:motivation}
-CONFIRMATION
-
-      This introductory chapter begins to lay out the motivation for the work to be undertaken, from the widest perspective of the fight against heart disease, narrowing down through the computational study of arrhythmia, to the specific role of microstructure in cardiac propagation dynamics and arrhythmogenesis.
-      
-CONFIRMATION
-
-TRANSFER THESIS
   Sudden cardiac death is the leading global cause of mortality, accounting for 39\% of all deaths in the UK. The economic cost due to the disease totals \pounds9 billion in this country alone. Ventricular fibrillation is a central aspect to many of these fatalities. However, many of the fundamental mechanisms underlying their onset, maintenance and termination are poorly understood, and effective therapies based on this understanding remain out of reach.
   
   Over the last century, experimental investigations into cardiac function during physiological and pathological conditions have allowed the general processes which produce arrhythmias to be characterised. In recent decades, experimental investigations have been complemented by computational and mathematical models which aim to simulate the electrical and mechanical function of the heart. The frequent validation of computational models with experimental data and use of modelling to guide new experimentation is bringing a new level to the understanding of cardiac function. This marriage of in silico and experimental investigation has made increasingly clear the important large-scale functional effects of small-scale anatomical structure. Very recently, several experimental techniques have provided high resolution data on both myocardial tissue structure and on healthy and pathological wavefront dynamics \cite{Burton2006,Plank2009,Bishop2009}. These advances notwithstanding, fine anatomical detail remains absent from the latest models and the effect of structure on wavefront dynamics has yet to be computationally investigated. This investigation will bring us closer to a profound and predictive understanding of arrhythmia and will eventually lead to more effective therapies to combat acute heart disease.
-TRANSFER THESIS
-
-This thesis is concerned with ...
 
 \section{Aims}
 \label{sec:intro:aims}
-It is the wider aim of the thesis to develop a framework via which the role of microstructure in arrhythmia and electrophysiological pathology may be investigated, based upon information from the latest imaging techniques and leveraging state of the art high performance computing facilities. The chapter concludes by delineating the specific thesis aims and summarising the document structure.
-
-TRANSFER THESIS
-
-
-It is the aim of this thesis to investigate the role of microstructure in cardiac propagation dynamics and arrhythmia. Guided by experimental findings, we aim to demonstrate the importance of blood vessels and myocardial anisotropy in electropropagation. We aim to extract accurately the makeup of myocardial sections from high quality image data, and to generate 3-D tissue models based on this characterisation. To do so, new tools and algorithms need to be developed. Using these models, we aim to quantify and classify the relative wavefront propagative changes due to epicardial vessels, myocardial fibres and tissue distributions. In the longer term, it is our goal to build a model of the whole heart which includes a representation of microstructure. Applying both focussed and organ scale simulation, we aim to explore how anatomical detail feeds into the prevention, the onset, the stabilisation and the subsequent rectification of arrythmias.
-
-TRANSFER THESIS
+It is the wider aim of the thesis to develop a framework via which the role of microstructure in arrhythmia and electrophysiological pathology may be investigated, based upon information from the latest imaging techniques and leveraging state of the art high performance computing facilities. The chapter concludes by delineating the specific thesis aims and summarising the document structure. Guided by experimental findings, we aim to demonstrate the importance of blood vessels and myocardial anisotropy in electropropagation. We aim to construct accurate and detailed 3-D images from high quality histology data at the tissue and whole-organ scale, and then to generate 3-D tissue models based on this characterisation. To do so, new tools and algorithms need to be developed. Using these models, we aim to quantify and classify the relative wavefront propagative changes due to epicardial vessels, myocardial fibres and tissue distributions. In the longer term, it is our goal to build a model of the whole heart which includes a representation of microstructure. Applying both focussed and organ scale simulation, we aim to explore how anatomical detail feeds into the prevention, the onset, the stabilisation and the subsequent rectification of arrythmias.
 
 \section{Exegesis}
 \label{sec:intro:exegesis}
-TRANSFER THESIS
- A thorough literature review follows, showcasing the experimental and computational evidence that inhomogeneities in tissue direct electrical dynamics. It also outlines the state of the art in computational modelling and simulation, and reviews the attempts made so far in the imaging of cardiac tissue. Chapter 3 describes an initial study that reflects experimental findings, showing that epicardial arteries anchor phase singularities and prolong arrhythmic episodes, but that this anchoring is reduced by the smooth negotiation of myocardial fibres around the vessels. Chapter 4 discusses the current progress in the construction of a coherent 3-D histological tissue map. Chapter 5 concludes with a summary of the future directions stemming from the roots of progress presented in the previous chapters.
-TRANSFER THESIS
-
-
-A summary of the structure of the document.
-
-After this brief introduction, Chapter 2 ...
-
-In Chapter 3 ...
-
-Chapters 4 and 5 investigate ...
-
-...
-
-Conclusions are drawn at the end of each chapter,
-but Chapter 8 draws the various threads together to ...
-Future work ..
-
+  The next chapter introduces some central underpinnings of the thesis, with an overview of cardiac anatomy and electrophysiology, and of modelling and imaging techniques. A thorough literature review follows in Chapter~3, showcasing the experimental and computational evidence that inhomogeneities in tissue direct electrical dynamics. It also outlines the state of the art in computational modelling and simulation, and reviews the attempts made so far in the imaging of cardiac tissue. Chapter~4 describes an initial study that reflects experimental findings, showing that epicardial arteries anchor phase singularities and prolong arrhythmic episodes, but that this anchoring is reduced by the smooth negotiation of myocardial fibres around the vessels. Chapter~5 presents the automated construction of a geometrically precise 3-D histological tissue map, based on a set of coherent block face reference images. Chapter~6 leads directly from here, detailing a novel, robust and highly-performant registration method that improves greatly upon the results from Chapter~5. Chapter~7 concludes with a brief feasibility analysis of the extraction of microstructural features for simulation.
+   % and a summary of the future directions stemming from the roots of progress presented in the previous chapters.
 
