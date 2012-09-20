@@ -3,7 +3,7 @@
 \label{cha:coregistration_of_high_resolution_rat_histology}
 % If you like chapter abstracts ...
 \dblspace
-% \begin{quote}{\em \input{Ch5/abstract6}}\end{quote}
+\begin{quote}{\em \input{Ch5/abstract5}}\end{quote}
 
 \section{Aims} % (fold)
 \label{sec:aims}
@@ -57,9 +57,9 @@
   
   \subsection{Image Preparation} % (fold)
   \label{sub:image_preparation}
-  	The digital camera used to obtain the images created files with four channels: red, green, blue and alpha. Since transparency is meaningless in the context of a photograph, the alpha channel was uniformly black. Unfortunately, the implementation of the RGBA BMP reader in ITK labels the channels incorrectly. To correct for this, channels were explicitly permuted and the redundant alpha channel removed.
-  
-    On occasion, part way through image acquisition, the block face camera would be moved relative to the surface of the wax block. All images acquired from then on had to be translated and rotated to compensate for this movement. At each perturbation, the two slices between which the camera had moved were registered in order to calculate the corrective transform, which was then applied to all subsequent slices. Figure~\ref{fig:LoRes_cross_sections} depicts the results of these corrections, and the isosurface of the corrected segmented volume are shown from 6 sides in Figures~\labelcref{fig:LoRes_positive_x,fig:LoRes_negative_x,fig:LoRes_positive_y,fig:LoRes_negative_y,fig:LoRes_positive_z,fig:LoRes_negative_z}. The isosurface was generated from a threshold segmentation of the intensity magnitude of the volume. A dense cloud of wax bubbles and other small artefacts obscured the main surface of the heart, and so a binary shape opening filter was applied to remove all but the largest connected region from the segmentation before the contour was extracted.
+  	The digital camera used to obtain the images created files with four channels: red, green, blue and alpha. Since transparency is meaningless in the context of a photograph, the fourth alpha channel was uniformly black. Unfortunately, the implementation of the RGBA BMP reader in ITK labels the channels incorrectly, so that the black alpha channel is interpreted as red, the red as green, the green as blue, and the blue as alpha. To correct for this, channels were explicitly permuted and the redundant alpha channel removed.
+    
+    On occasion, part way through image acquisition, the block face camera would be moved relative to the surface of the wax block. All images acquired from then on had to be translated and rotated to compensate for this movement. At each perturbation, the two slices between which the camera had moved were registered in order to calculate the corrective transform, which was then applied to all subsequent slices. In each case, the parameters from \ref{tab:block_face_to_block_face} were used to optimise a centred rigid transform. Figure~\ref{fig:LoRes_cross_sections} depicts the results of these corrections, and the isosurface of the corrected segmented volume are shown from 6 sides in Figures~\labelcref{fig:LoRes_positive_x,fig:LoRes_negative_x,fig:LoRes_positive_y,fig:LoRes_negative_y,fig:LoRes_positive_z,fig:LoRes_negative_z}. The isosurface was generated from a threshold segmentation of the intensity magnitude of the volume. A dense cloud of wax bubbles and other small artefacts obscured the main surface of the heart, and so a binary shape opening filter was applied to remove all but the largest connected region from the segmentation before the contour was extracted.
     
     % lores cross sections
     \begin{sidewaysfigure}[htbp]
@@ -117,7 +117,7 @@
     
 	As is evident from Figures~\labelcref{fig:original_lores_images,fig:original_hires_images} for one slice, the vast majority of slices had been flipped over between sectioning from the block surface and being photographed. Slice images were therefore reflected across one axis in order to restore geometric parity with the associated block face image.
 	
-	 Several sets of downsamples of varying factors were generated, the lowest of which were used for debugging and testing, working up in detail, size and computational expense as the techniques were perfected. Before downsampling, a Gaussian smoothing was applied in each case, with sigma equal to the new larger pixel spacing. In this way, all original pixels in the region of a large downsampled pixel contribute to its final value, and aliasing noise problems associated with frthe Nyquist frequency are avoided. This results in a smoother and more accurate cost function. Figures~\labelcref{fig:original_lores_images,fig:original_hires_images} juxtapose the full images with various levels of downsampling.
+	 Several sets of downsamples of varying factors were generated, the lowest of which were used for debugging and testing, working up in detail, size and computational expense as the techniques were perfected. Before downsampling, a Gaussian smoothing was applied in each case, with sigma equal to the new larger pixel spacing. In this way, all original pixels in the region of a large downsampled pixel contribute to its final value, and aliasing noise problems associated with frequencies higher than half the downsampled pixel spacing are avoided. This results in a smoother and more accurate cost function. Figures~\labelcref{fig:original_lores_images,fig:original_hires_images} juxtapose the full images with various levels of downsampling.
 	 
 	 When registering two images, it is important that they are of comparable resolution, in order to minimise processing time and to ensure the smoothest possible cost function. In Figure~\ref{fig:downsample_zooms}, the effects of the downsampling can be seen more clearly. Individual cell nuclei are resolved at the highest resolution of slice image, but the maximum resolution block face images are of much lower detail. Clearly, the original slice images, with 1.1$\mu$m pixel spacings, are needlessly detailed compared to their block face counterparts, with a mere 26.6$\mu$m. As is discussed in Section~\ref{ssub:multiresolution_registration}, it is therefore appropriate to register slice images at a factor of 8 times more downsampled than the block face images.
     
@@ -486,6 +486,48 @@
 	  \caption{Affine slice volume, viewed along the positive y direction.}
 	  \label{fig:positive_y_affine_contour}
 	\end{sidewaysfigure}
+
+  blah
+
+  blah
+
+  blah
+
+  blah
+
+  blah
+
+  blah
+
+  blah
+
+  blah
+
+  blah
+
+  blah
+
+  blah
+
+  blah
+
+  blah
+
+  blah
+
+  blah
+
+  blah
+
+  blah
+
+  blah
+
+  blah
+
+  blah
+
+  blah
 
 	\begin{sidewaysfigure}[p]
 	  \centering

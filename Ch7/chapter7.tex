@@ -1,6 +1,10 @@
 %!TEX root = ../thesis.tex
-\chapter{Extraction of 3D Anatomical Structure}
+\chapter{Extraction of 3D Anatomical Structure} % (fold)
+\label{cha:extraction_of_3d_anatomical_structure}
+
+% If you like chapter abstracts ...
 \dblspace
+\begin{quote}{\em \input{Ch7/abstract7}}\end{quote}
 
 \section{Aims} % (fold)
 \label{sec:aims}
@@ -36,9 +40,9 @@
   
   The structure tensor $S_w$ is a matrix derived from this Cartesian product of the gradient of an image, which gives a measure of the magnitude and coherence of changes in intensity across a small image region. It is defined as the weighted mean of $S_0$ within a surrounding window $w$ of a given point in $I$. Equivalently, it is the convolution of $S_0$ with the windowing function.
   
-  If the gradients are all coherently aligned well within a window, the largest eigenvector of the resulting $S_w$ will be much greater than the other eigenectors, and in 3-D, the tensor will take a long, thin shape. Clearly, $S_0$ is itself perfectly coherent. Gradients may also be distributed throughout a subspace of the entire space; in 3-D, gradients varying evenly within a 2-D plane will result in a flat, disc-shaped tensor, with one small eigenvalue associated with a vector perpendicular to that plane. If gradients are more isotropic, then all eigenvalues will be of a similar magnitude, giving a spherical tensor, and a zero tensor can only obtained if the gradient is zero throughout the windowing region.
+  If the gradients are all coherently aligned well within a window, the largest eigenvector of the resulting $S_w$ will be much greater than the other eigenvectors, and in 3-D, the tensor will take a long, thin shape. Clearly, $S_0$ is itself perfectly coherent. Gradients may also be distributed throughout a subspace of the entire space; in 3-D, gradients varying evenly within a 2-D plane will result in a flat, disc-shaped tensor, with one small eigenvalue associated with a vector perpendicular to that plane. If gradients are more isotropic, then all eigenvalues will be of a similar magnitude, giving a spherical tensor, and a zero tensor can only obtained if the gradient is zero throughout the windowing region.
   
-  In a perfectly registered histological volume, and at the scale of individual myocardial cells, the smallest intensity gradients will be found parallel to the fibre direction, and the largest in the plane perpendicular to them. The structure tensors should therefore appear disc-shaped, with their short axis aligned with the muscle fibres.
+  In a perfectly registered histological volume, and at the scale of individual myocardial cells, the smallest intensity gradients will be found parallel to the fibre direction, and the largest in the plane perpendicular to them. The structure tensors should therefore appear disc-shaped, with their short axis aligned with the muscle fibres. At the larger scale of myocardial sheets, we would expect javelin-shaped tensors with one eigenvalue much larger than the other two, oriented perpendicularly to the sheet plane. In this case, and depending on scale and smoothing, we might expect that the smallest eigenvalue would be oriented in the predominant fibre direction.
   
   We apply the structure tensor to the regionally registered block from Section~\ref{sub:regional_diffusion}. It is important to have the same sampling rate within the plane of the slices as between them, so that artificial anisotropy is not introduced. A volume is therefore constructed from slice images that are downsampled and Gaussian smoothed so as to have the same spatial resolution of 10$\mu$m as the slicing. A Gaussian windowing kernel is applied to the structure tensor volume, with $\sigma$ equal to the pixel spacing.
 % section methods (end)
@@ -62,7 +66,7 @@
     \label{fig:eigencomponents}
   \end{figure}
   
-  Figure~\ref{fig:structure_tensor_glyphs} illustrates the form of the structure tensor across the central histological slice of the epicardial block. A regular grid of spheroid glyphs are plotted at each pixel of the slice, with principal axes aligned and proportional to the eigenvectors and eigenvalues of the structure tensor. It is evident that the largest tensors are not, as expected, disc-like, but in fact javelin-like, as one eigenvalue greatly exceeds the other two. It is also evident the larger tensors are oriented predominantly in the z-direction perpendicular to the plane. Figure~\ref{fig:eigencomponents} echoes this finding, showing grayscale images of the magnitudes of the three components of the largest eigenvector. By far the brightest image is that of the z-component. This dominance is also expressed in the largely blue appearance of Figure~\ref{fig:eigencomponents}(d), with only small tinges of red and green.
+  Figure~\ref{fig:structure_tensor_glyphs} illustrates the form of the structure tensor across the central histological slice of the epicardial block. A regular grid of spheroid glyphs are plotted at each pixel of the slice, with principal axes aligned and proportional to the eigenvectors and eigenvalues of the structure tensor. It is evident that the largest tensors are not, as expected, disc-like, but in fact javelin-like, as one eigenvalue greatly exceeds the other two. It is also evident that larger tensors are oriented predominantly in the z-direction perpendicular to the plane. Figure~\ref{fig:eigencomponents} echoes this finding, showing grayscale images of the magnitudes of the three components of the largest eigenvector. By far the brightest image is that of the z-component. This dominance is also expressed in the largely blue appearance of Figure~\ref{fig:eigencomponents}(d), with only small tinges of red and green.
 % section results (end)
 
 \section{Discussion} % (fold)
@@ -71,3 +75,5 @@
 \label{sec:discussion}
   
 % section discussion (end)
+
+% chapter extraction_of_3d_anatomical_structure (end)
