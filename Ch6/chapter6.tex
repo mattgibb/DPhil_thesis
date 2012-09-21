@@ -45,30 +45,26 @@
 	  \end{equation}
 	  since there are $\binom{N}{k}$ possible ways of taking $k$ and $N - k$ steps of $-1$ and $+1$, respectively. At each independent step, the probability of taking one or the other direction is $\frac{1}{2}$, leading to the product $\frac{1}{2}^N$.
   
-	  Applying Stirling's approximation:
-	  \begin{align}
-	    \label{eq:registration:stirling}
-	    \ln \left( n! \right) &= n\ln n - n + O(\ln n) \notag \\
-	           &\approx n\ln n - n \quad \text{as}\: n \to \infty,
-	  \end{align}
-  
-	  we can see that in the limit of large $N$, the distribution of $k$ and thus $S_N$ tend to Gaussian:
+	  The de Moivre-Laplace Theorem states that in the limit of large $N$, and in the neighbourhood of $N/2$, the binomial distribution of $k$, and thus of $S_N$, approximates a Gaussian. That is,
+    
 	  \begin{equation}
 	    \label{eq:registration:gaussian-approximation}
 	    \binom{N}{k}\left(\frac{1}{2}\right)^N \approx \sqrt{\frac{2}{\pi N}} \
 	      e^{-2(k - \frac{N}{2})^2/N}.
 	  \end{equation}
-  
-	  \emph{Possibly include proof of de Moivre-Laplace theorem?}
-	  % Proof can be found here:
-	  % http://en.wikipedia.org/wiki/De_Moivre%E2%80%93Laplace_theorem
-  
-	  We might consider a concentration of particles $f$ over a discrete 1-dimensional grid $x$. After a discretised timestep $\Delta t$, a proportion $2\alpha$ of the particles have taken one step, such that half of them have diffused to the left and half to the right:
+    
+	  We might consider a concentration of particles $f$ over a discrete 1-dimensional grid $x$, where a proportion $\alpha$ of the particles at each point jump to each of the two neighbouring points per unit time:
+    
+    \begin{equation}
+	    \frac{d f(x, t)}{d t} = \alpha (f(x - \Delta x, t) - 2f(x, t) + f(x + \Delta x, t)).
+    \end{equation}
+    
+    After a small discretised timestep $\Delta t$, and to first order approximation, a proportion $2\alpha \Delta t$ of the particles have taken one step, such that half of them have diffused to the left and half to the right:
   	
-	  \begin{align}
-	    f(x_i, t_{n+1}) &= f(x_i, t_n) + \alpha (f(x_{i-1}, t_n) - 2f(x_i, t_n) + f(x_{i+1}, t_n)), \label{eqn:diffusion_1d} \\
-	    \frac{\Delta f(x, t + \Delta t)}{\Delta t} &= \alpha (f(x - \Delta x, t) - 2f(x, t) + f(x + \Delta x, t)).
-		\end{align}
+	  \begin{gather}
+	    \Delta f(x, t + \Delta t) = \alpha \Delta t(f(x - \Delta x, t) - 2f(x, t) + f(x + \Delta x, t)). \\
+	    f(x_i, t_{n+1}) = f(x_i, t_n) + \alpha (f(x_{i-1}, t_n) - 2f(x_i, t_n) + f(x_{i+1}, t_n)), \label{eqn:diffusion_1d}.
+		\end{gather}
   	
 	  This diffusion will of course act to smooth and homogenise $f$, since regions of high concentration relative to their neighbours will be reduced, and those of low concentration augmented. It is also clear from (\ref{eq:registration:gaussian-approximation}) that multiple application of this smoothing operation approximates a Gaussian diffusion smoothing.
 		
@@ -570,7 +566,7 @@
     \label{fig:mean_squared_differences_2D}
   \end{sidewaysfigure}
 
-  Figure~\ref{fig:mean_squared_differences_2D} graphs the initial and final metric values between adjacent pairs for the four test regimes. Note that each blue (resp. green) line is equivalent to the starting values on the left (resp. right) face of the corresponding plot in Figure~\ref{fig:mean_squared_differences_3D}. Almost ubiquitously, the the value is substantially lower after transformational diffusion, with the green lines appearing much smoother after the high frequency spectrum has been preferentially damped.
+  Figure~\ref{fig:mean_squared_differences_2D} graphs the initial and final metric values between adjacent pairs for the four test regimes. Note that each blue (resp. green) line is equivalent to the starting values on the left (resp. right) face of the corresponding plot in Figure~\ref{fig:mean_squared_differences_3D}. Almost ubiquitously, the value is substantially lower after transformational diffusion, with the green lines appearing much smoother after the high frequency spectrum has been preferentially damped.
   
   There is one notable example of a registration that has failed to reach a good alignment, manifested in Figure~\ref{fig:mean_squared_differences_3D}~\textbf{(a)} as a large spike in the metric value of slice 152 at iteration 6. The deviation is also visible in Figures~\labelcref{fig:cross_section_0,fig:cross_section_1}~\textbf{(d)} at iteration 8, as a large displacement two thirds of the way up from the base. At each iteration of the algorithm, the slices have moved relative to each other, and hence are initialised outside of any preceding local minimum trap. In this way, all adjacent slices are given multiple chances to become aligned, conferring to this method a great deal of robustness not present in any previous technique in the literature. By iteration 20 in Figures~\labelcref{fig:cross_section_0,fig:cross_section_1}~\textbf{(d)}, the abberation is imperceptible, and we can see from Figure~\ref{fig:mean_squared_differences_3D}~\textbf{(a)} that the erroneous metric value has returned to a level comparable with its neighbours after just four iterations.
   
@@ -635,7 +631,7 @@
       \subfigure[][0 iterations (unsmoothed affine volume)]{\includegraphics[height=0.31\textheight]{Ch6/Figs/adjusted_0_0_235}}
       \subfigure[][1 iteration]{\includegraphics[height=0.31\textheight]{Ch6/Figs/adjusted_1_0_235}}
       \subfigure[][20 iterations]{\includegraphics[height=0.31\textheight]{Ch6/Figs/adjusted_20_0_235}}
-      \caption{Cross-sections of the full Rat28 volume perpendicular to the x-axis, after 0, 1 and 20 iterations of diffusion.}
+      \caption{Cross-sections of the full Rat28 volume perpendicular to the x-axis, after 0, 1 and 20 iterations of diffusion. The yellow boxes highlight the zoomed regions in Figure~\ref{fig:adjusted_bottom_vessels_0_235}.}
       \label{fig:adjusted_0_235}
     \end{figure}
 
@@ -645,7 +641,7 @@
       \subfigure[][0 iterations (unsmoothed affine volume)]{\includegraphics[height=0.31\textheight]{Ch6/Figs/adjusted_0_1_287}}
       \subfigure[][1 iteration]{\includegraphics[height=0.31\textheight]{Ch6/Figs/adjusted_1_1_287}}
       \subfigure[][20 iterations]{\includegraphics[height=0.31\textheight]{Ch6/Figs/adjusted_20_1_287}}
-      \caption{Cross-sections of the full Rat28 volume perpendicular to the y-axis.}
+      \caption{Cross-sections of the full Rat28 volume perpendicular to the y-axis, after 0, 1 and 20 iterations of diffusion. The yellow boxes highlight the zoomed regions in Figure~\ref{fig:adjusted_bottom_vessels_1_287}.}
       \label{fig:adjusted_1_287}
     \end{figure}
     
@@ -658,7 +654,7 @@
       \subfigure[][0 iterations (unsmoothed affine volume)]{\includegraphics[height=0.12\textheight]{Ch6/Figs/adjusted_0_0_235_zoomed}}
       \subfigure[][1 iteration]{\includegraphics[height=0.12\textheight]{Ch6/Figs/adjusted_1_0_235_zoomed}}
       \subfigure[][20 iterations]{\includegraphics[height=0.12\textheight]{Ch6/Figs/adjusted_20_0_235_zoomed}}
-      \caption{Cross-sections of the lower 100 slices perpendicular to the x-axis.}
+      \caption{Cross-sections of the lower 100 slices perpendicular to the x-axis. The blue arrows highlight blue-stained interstitial tissue around vessels, the green arrow epicardial vessels and the yellow arrow enhanced sheet structure.}
       \label{fig:adjusted_bottom_vessels_0_235}
     \end{sidewaysfigure}
 
@@ -668,7 +664,7 @@
       \subfigure[][0 iterations (unsmoothed affine volume)]{\includegraphics[height=0.12\textheight]{Ch6/Figs/adjusted_0_1_287_zoomed}}
       \subfigure[][1 iteration]{\includegraphics[height=0.12\textheight]{Ch6/Figs/adjusted_1_1_287_zoomed}}
       \subfigure[][20 iterations]{\includegraphics[height=0.12\textheight]{Ch6/Figs/adjusted_20_1_287_zoomed}}
-      \caption{Cross-sections of the lower 100 slices perpendicular to the y-axis.}
+      \caption{Cross-sections of the lower 100 slices perpendicular to the y-axis. The green arrows highlight epicardial vessels and the yellow arrow enhanced sheet structure.}
       \label{fig:adjusted_bottom_vessels_1_287}
     \end{sidewaysfigure}
     
@@ -680,20 +676,6 @@
       \includegraphics[width=0.9\textheight]{Ch6/Figs/Rat28/contours/whole_positive_x_diffused}
       \caption{Globally smoothed slice volume, viewed along the positive x direction.}
       \label{fig:whole_positive_x_diffused}
-    \end{sidewaysfigure}
-
-    \begin{sidewaysfigure}[p]
-      \centering
-      \includegraphics[width=0.9\textheight]{Ch6/Figs/Rat28/contours/whole_negative_x_diffused}
-      \caption{Globally smoothed slice volume, viewed along the negative x direction.}
-      \label{fig:whole_negative_x_diffused}
-    \end{sidewaysfigure}
-
-    \begin{sidewaysfigure}[p]
-      \centering
-      \includegraphics[width=0.9\textheight]{Ch6/Figs/Rat28/contours/whole_positive_y_diffused}
-      \caption{Globally smoothed slice volume, viewed along the positive y direction.}
-      \label{fig:whole_positive_y_diffused}
     \end{sidewaysfigure}
 
     \begin{sidewaysfigure}[p]
