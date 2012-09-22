@@ -720,19 +720,25 @@
       \label{fig:cropped_vessel_cross_section_z}
     \end{figure}
     
+    \begin{figure}[p]
+      \centering
+      \subfigure[][Unsmoothed segmentation]{\includegraphics[width=0.7\textwidth]{Ch6/Figs/bottom_vessels/unsmoothed_segmentation}}
+      \subfigure[][Globally smoothed segmentation]{\includegraphics[width=0.7\textwidth]{Ch6/Figs/bottom_vessels/globally_smoothed_segmentation}}
+      \subfigure[][Locally smoothed segmentation]{\includegraphics[width=0.7\textwidth]{Ch6/Figs/bottom_vessels/locally_smoothed_segmentation}}
+      \caption{Separate these into 4 figures. Notice the disturbance near the top of (b) has been smoothed in c. Notice the both the vessel and pericardial surface is progressively smoother in a, b, c, and in c is almost totally smooth, with only the inherent stepping of each individual histology slice visible. Original adjacent slice abberations in (a) reached ~450$\mu$m. Notice that much more of the smaller vasculature could be segmented in (c), when the relative registration error is reduced below the diameter of even the smallest vessels, by inspection less than 5 microns in the large majority of cases - smaller than the width of a single myocyte. In (d), the three vessel segmentations have been overlayed, with the unsmoothed vessel in red, the globally smoothed vessel in amber and the regionally smoothed vessel in green. The overall shape of the green vessel precisely intersects the disconnected set of red discs, demonstrating that the underlying vessel geometry has been recovered with remarkable accuracy.}
+      \label{fig:vessel_segmentations}
+    \end{figure}
+    
     \begin{sidewaysfigure}[p]
       \centering
-      \subfigure[][Unsmoothed segmentation]{\includegraphics[width=0.4\textwidth]{Ch6/Figs/bottom_vessels/unsmoothed_segmentation}}
-      \subfigure[][Globally smoothed segmentation]{\includegraphics[width=0.4\textwidth]{Ch6/Figs/bottom_vessels/globally_smoothed_segmentation}}
-      \subfigure[][Locally smoothed segmentation]{\includegraphics[width=0.4\textwidth]{Ch6/Figs/bottom_vessels/locally_smoothed_segmentation}}
-      \subfigure[][Overlay of vessel segmentations]{\includegraphics[width=0.4\textwidth]{Ch6/Figs/bottom_vessels/vessel_overlay}}
-      \caption{Separate these into 4 figures. Notice the disturbance near the top of (b) has been smoothed in c. Notice the both the vessel and pericardial surface is progressively smoother in a, b, c, and in c is almost totally smooth, with only the inherent stepping of each individual histology slice visible. Original adjacent slice abberations in (a) reached ~450$\mu$m. Notice that much more of the smaller vasculature could be segmented in (c), when the relative registration error is reduced below the diameter of even the smallest vessels, by inspection less than 5 microns in the large majority of cases - smaller than the width of a single myocyte. In (d), the three vessel segmentations have been overlayed, with the unsmoothed vessel in red, the globally smoothed vessel in amber and the regionally smoothed vessel in green. The overall shape of the green vessel precisely intersects the disconnected set of red discs, demonstrating that the underlying vessel geometry has been recovered with remarkable accuracy.}
+      \includegraphics[width=0.9\textwidth]{Ch6/Figs/bottom_vessels/vessel_overlay}
+      \caption{Overlay of vessel segmentations}
       \label{fig:vessel_segmentations}
     \end{sidewaysfigure}
     
-    A regional registration around an epicardial vessel yields even further improvement, when at this smaller scale, curvature and distortions not represented by an affine transformation become less significant. The final transforms from the global smoothings were used to initialise the regional smoothings, with the centre of transformation moved to the geometric centre of the region. In order to smooth the cost function adequately for the optimiser, the images used to perform the regisration were Gaussian smoothed and downsampled by a factor of 8: a level optimal to resolve features the size of an epicardial vessel. Figures~\labelcref{fig:vessel_cross_section_x,fig:vessel_cross_section_y} show two central perpendicular cross-sections of the epicardial region before smoothing, after global smoothing and after an additional regional smoothing. Figures~\labelcref{fig:vessel_cross_section_z,fig:cropped_vessel_cross_section_z} remind us of the order-of-magnitude greater resolution in plane with respect to the vertical out-of-plane resolution in Figures~\labelcref{fig:vessel_cross_section_x,fig:vessel_cross_section_y}, displaying the central slice of the region at full resolution.
+    A regional registration around an epicardial vessel yields even further improvement, when at this smaller scale, curvature and distortions not represented by an affine transformation become less significant. The final transforms from the global smoothings were used to initialise the regional smoothings, with the centre of transformation moved to the geometric centre of the region. In order to smooth the cost function adequately for the optimiser, the images used to perform the regisration were Gaussian smoothed and downsampled by a factor of 8: a level optimal to resolve features the size of an epicardial vessel. Figures~\labelcref{fig:vessel_cross_section_x,fig:vessel_cross_section_y} show two central perpendicular cross-sections of the epicardial region before smoothing, after global smoothing and after an additional regional smoothing. Figures~\labelcref{fig:vessel_cross_section_z,fig:cropped_vessel_cross_section_z} remind us of the order-of-magnitude greater resolution in plane (1.1$\mu$m) with respect to the vertical out-of-plane resolution (10$\mu$m) in Figures~\labelcref{fig:vessel_cross_section_x,fig:vessel_cross_section_y}, displaying the central slice of the region at full resolution.
     
-    A connected componenet segementation was employed to generate the segementations in Figure~\ref{fig:vessel_segmentations}, which, unlike methods such as level set segmentation or neighbourhood filters, does not introduce any artificial surface smoothing.
+    A connected component segementation was employed to generate the segmentations in Figure~\ref{fig:vessel_segmentations}, which, unlike methods such as level set segmentation or neighbourhood filters, does not introduce any artificial surface smoothing.
   % subsection regional_diffusion (end)
 
 % section results (end)
