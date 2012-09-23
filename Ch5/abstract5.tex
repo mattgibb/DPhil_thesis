@@ -1,7 +1,4 @@
 %!TEX root = ../thesis.tex
+The automated registration of hundreds of histological slices to a set of references requires a great measure of experimentation, parameterisation and tuning. This chapter contributes the tools and methods to reconstruct sub-cellular resolution whole-organ histological volumes, based on coherent block face images and accurately faithful to the true geometry of the organ.
 
-explicitly state what is my contribution. 
-Defined the methods and optimised the parameters for this particular application
-developed a toolset based on ITK that implements the methods, and allows for visualisation of the data
-Developed diagnostic tools to allow quantitative insight, and optimisation...
-
+We develop an incremental pipeline for the particular application of an entire rat heart volume. We list a range of appropriate preprocessing steps and evaluate two methods of transform initialisation. We discuss which metrics and optimisation strategies prove most successful in this context. We outline the most important architectural patterns which lead to code quality and maintainability, and which facilitate rapid prototyping and feedback with limited and diverse computational resources. We develop diagnostic tools to gain deep quantitative insight into the evolution of the registration algorithm, and with the indispensible information gleaned from them, we illustrate a solid general approach to parameter tuning. We showcase the registered rat heart volume, to serve as an anatomical reference, to validate current anatomical models used in simulation, and to inform future experimental and computational technique.
