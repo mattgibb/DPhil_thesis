@@ -1,6 +1,6 @@
 # define common constants
 THESIS_PATH=$( cd "$( dirname "$0" )/.." && pwd )
-REGISTRATION_PATH="/Users/Matt/Code/imaging/registration/"
+REGISTRATION_PATH="/Users/matt/Code/imaging/registration/"
 BINARY_PATH="$REGISTRATION_PATH/itk_release/"
 
 # compile binaries
