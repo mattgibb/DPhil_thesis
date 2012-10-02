@@ -10,7 +10,7 @@
 
   Having shown in an idealised geometry that fibre direction could have a significant effect on propagation, the challenge is set to characterise cardiac tissue at sufficient detail to resolve both fibre direction and other microstructure. Cell type distribution, the shape of tissue boundaries, the Purkinje fibre network, sheet structure and vasculature all affect macroscopic wave propagation, and must therefore be incorporated into electrophysiological models.
 	
-	Attempts have been made to construct volumes from block face images, but aside from the low resolutions and optical transmission problems, there is no way to distinguish between tissue types with the use of dyes. Attempts have also been made to coregister high resolution histological slice images together, but the results suffer from what is known as `the banana problem', and provide geometries unrepresentative of the original tissue.
+	TODO: LEAVE THIS SENTENCE IN? Attempts have been made to construct volumes from block face images, but aside from the low resolutions and optical transmission problems, there is no way to distinguish between tissue types with the use of dyes. Attempts have also been made to coregister high resolution histological slice images together, but the results suffer from what is known as `the banana problem', and provide geometries unrepresentative of the original tissue.
 	
   The aim of this chapter is to develop an automated pipeline to register high resolution rat cardiac datasets robustly and accurately, and generate for the first time coherent subcellular resolution 3-D cardiac histological images. One full rat heart dataset will be processed through the pipeline to provide registered volumes. These images will serve both as an authoritative anatomical reference, and as the basis for anatomically based models in simulation studies, laying the foundations for the investigation of the role of microstructure in propagation dynamics.
 	
@@ -192,6 +192,8 @@
     
     \subsubsection{Multiresolution Registration} % (fold)
     \label{ssub:multiresolution_registration}
+      TODO: AUGUST PAPER `Overall dataset sizes (up to 50 GB per rat heart; exceeding 1.5 TB per rabbit) pose significant challenges for subsequent visualization [32] and computational processing.'
+    
 			The total size of the block face and slice images approaches two terabytes. Even with an 8x downsampled slice dataset, one full rigid registration to test one parameter set would take nearly 100 hours on a modern quad core processor. An affine registration performed with a regular step gradient descent optimizer is parameterised in 10 dimensions. Rapid feedback is required if the right parameters are to be found in any reasonable time, and so a multiresolution approach must be taken. There are 2 ways to reduce the resolution of the dataset: in-plane downsampling and out-of-plane slice selection.
 			
       In-plane downsampling and Gaussian smoothing not only reduces time, but smooths the cost function and can lead to more robust registration results. In multiresolution registration, the resulting transforms can then be used to initialise a more accurate but more fragile registration at a higher resolution.
@@ -232,22 +234,19 @@
   
   \subsection{Diagnostics and Parameter Tuning} % (fold)
     \label{sub:diagnostics}
-      For almost a year and a half, it was very difficult to see why registration was failing to yield robustly accurate results. The output of raw parameters was somewhat elucidating, but only for obvious issues such as parameter scaling and step length, where almost zero change in some or all parameters signalled what to adjust. The space of possible parameters was enormous, and the computing time before feedback significant. With visual representation of nothing but the final result, divining which parameters to change and how was perhaps analogous to deciding how each player in a sports team could improve given only the final scores.
+      For almost a year and a half, it was very difficult to see why registration was failing to yield robustly accurate results. The output of raw parameters was somewhat elucidating, but only for obvious issues such as parameter scaling and step length, where almost zero change in some or all parameters signalled what to adjust. The space of possible parameters was enormous, and the computing time before feedback significant. With visual representation of nothing but the final result, determining which parameters to change and how was perhaps analogous to deciding how each player in a sports team could improve given only the final scores.
       
       Armed with the intermediate transforms and metric values discussed in Section~\ref{ssub:events_checkpointing_and_io}, the causes of the suboptimal registration results were immediately apparent. The progression of metric values for all slices could be plotted in graphs like those in Figures~\labelcref{fig:rigid_metric_values,fig:similarity_metric_values,fig:affine_metric_values,fig:affine_metric_value_differences}. Progress volumes of a particular slice could be constructed as seen in Figures~\labelcref{fig:progress_cross_sections,fig:progress_contour}.
 			
 			The regular step gradient descent optimiser is parameterised with four values: two behavioural values (maximum step length and relaxation factor), and two cutoff values (minimum step length and gradient magnitude tolerance). Bad behavioural values manifest in static or `zigzagging' unstable progress volumes and metric values, whilst premature or overcautious cutoff values yield either no region or a needlessly large region of equilibrium at the end. Bad parameter scaling is not evident solely from the intermediate metric values, which can still remain smoothly increasing with a quasi-equilibrated final section. However, the progress volume will appear restricted in one or more dimension. For example, the slice may rotate freely, but remain at a fixed translation, despite an obvious translational cost gradient.
 			
 			Not all symptoms could be diagnosed. In rare cases, the metric value would gradually and consistently worsen, and it was unclear why this was happening. Perhaps an oddly shaped cost basin or saddle point was to blame, deepening steeply along one dimension and shallowly along a perpendicular one.
-			
-      Interestingly, before an upgrade to ITKv4, the registration algorithm would often not optimise, but rather diffuse in a seemingly random way between metric values. Even though the upgrade should not have affected the registration outcome, but just the speed of the code, results were suddenly much better.
-      
     % subsection diagnostics (end)
 % section methods (end)
    
 \section{Results} % (fold)
 \label{sec:registration_results}
-	The work leading up to this chapter is composed of a great many dead ends and failed experiments, and the result presented here is merely the best outcome. Details of computation times are followed by the plotting of intermediate and final metric values. The progress of a single representative slice is scrutinised, ending with cross-sections and contours of the registered histological volumes after each successive registration.
+	The work leading up to this chapter is composed of a great many dead ends and failed experiments, but consequently, we can assert with confidence that the results presented here are the best that can be achieved with these methods. Details of computation times are followed by the plotting of intermediate and final metric values. The progress of a single representative slice is scrutinised, ending with cross-sections and contours of the registered histological volumes after each successive registration.
 	
   To begin with, lower resolution images were used to approximate parameters in reasonable time, but all registrations shown here were performed with the full resolution block face images and 8x downsampled slice images. On a MacBook Pro with a 2.4GHz Intel Quad Core i7 processor, registering the original block face image to an 8x downsampled slice image took approximately 0.25 seconds per iteration. For the 1500 iterations required for rigid registration, and for 900 slices, this extrapolates to 93 hours total run time. When jobs were distributed on the cluster, 12 parallel registrations could be run concurrently in times of low demand. The total registration time was reduced from 93 hours to just below 7 hours.
 	
