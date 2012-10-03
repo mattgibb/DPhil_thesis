@@ -95,7 +95,7 @@
   
   \subsection{3D Volumes} % (fold)
   \label{sub:3d_volumes}
-    Motivated by the findings from the 2D analysis, we apply the structure tensor to the regionally registered block from Section~\ref{sub:regional_diffusion}. However, before any orientation analysis can be performed, it is crucial to ensure the same sampling rate within the plane of the slices as is between them, so that artificial anisotropy is not introduced. A volume is therefore constructed from slice images that are downsampled and Gaussian smoothed so as to have the same spatial resolution of 10$\mu$m as the slicing. The structure tensor is computed across the isotropic volume, and a Gaussian windowing kernel is then applied to the tensor, with $\sigma$ equal to the pixel spacing.
+    Motivated by the findings from the 2D analysis, we apply the structure tensor to the regionally registered block from Section~\ref{sub:regional_diffusion}. However, before any orientation analysis can be performed, it is crucial to ensure the same sampling rate within the plane of the slices as is between them, so that artificial anisotropy is not introduced. A volume is therefore constructed from slice images that are downsampled and Gaussian smoothed so as to have the same spatial resolution of 10$\mu$m as the slicing. The structure tensor is computed across the isotropic volume, and a Gaussian windowing kernel is then applied to the tensor, with $\sigma$ equal 50$\mu$m.
   
     All the 3D processing code presented here can be obtained at \url{http://github.com/mattgibb/registration}.
   % subsection 3d_volumes (end)
@@ -113,19 +113,30 @@
       \label{fig:2D_angles}
     \end{figure}
     
-    The local angle of orientation has been extracted through the application of the structure tensor in Figure~\ref{fig:2D_angles} with prominent success.
+    \begin{figure}[htbp]
+      \centering
+      \includegraphics[width=0.8\textwidth]{Ch7/Figs/angles_and_coherences_vs_e}
+      \caption{The variation of principal angle and of angular coherence with respect to the transmural parameter $e$. Structure tensors within 100 equispaced bins from $e=0$ to $e=1$ were summed, and the angles plotted are those of the smallest eigenvalue $\lambda_{\text{smaller}}$ with respect to the transmural gradient. The coherences are calculated with the formula $(1 - \lambda_{\text{smaller}}/\lambda_{\text{larger}})^2$.}
+      \label{fig:angles_and_coherences_vs_e}
+    \end{figure}
     
+    The local angle of orientation has been extracted through the application of the structure tensor in Figure~\ref{fig:2D_angles} with prominent success. There is a very clear relationship of the orientation of the extracted clefts to their colouring. The discrete-layered, zig-zagging transmural pattern of cleft orientation has been conspicuously highlighted. Figure~\ref{fig:angles_and_coherences_vs_e} shows the relationship of the average and the spread of transmural angle to the transmural depth. The zig-zagging trend is somewhat reflected here, but unfortunately, the relationship is much less clear, with the low coherence values alluding to a small correlation of $e$ with angle. Referring back to Figure~\ref{fig:2D_angles}, we can see that despite the presence of clear orientational layers, the layers themselves move gradually through the wall from the top to the bottom of the Figure. When the angles are aggregated, therefore, the relationship is obscured.
   % subsection 2d_slices (end)
   
   \subsection{3D volumes} % (fold)
   \label{sub:3d_volumes}
-  
-  
     \begin{sidewaysfigure}[htbp]
       \centering
       \includegraphics[width=\textwidth]{Ch7/Figs/structure_tensor_glyphs}
       \caption{The central slice through the epicardial vessel region from Section~\ref{sub:regional_diffusion}, overlayed with spheroid glyphs, scaled and oriented by the structure tensor of the pixel intensities. The 2D slice image is presented in Figure~\ref{fig:vessel_cross_section_z}.}
       \label{fig:structure_tensor_glyphs}
+    \end{sidewaysfigure}
+    
+    \begin{sidewaysfigure}[htbp]
+      \centering
+      \includegraphics[width=\textwidth]{Ch7/Figs/structure_tensor_glyphs_zoom}
+      \caption{A closer view of the lower right hand region of Figure~\ref{fig:structure_tensor_glyphs}, where the individual shape of the spheroid glyphs are made clearer.}
+      \label{fig:structure_tensor_glyphs_zoom}
     \end{sidewaysfigure}
     
     \begin{figure}[htbp]
@@ -134,23 +145,21 @@
       \subfigure[][y]{\includegraphics[width=0.45\textwidth]{Ch7/Figs/y_eigencomponent.png}}
       \subfigure[][z]{\includegraphics[width=0.45\textwidth]{Ch7/Figs/z_eigencomponent.png}}
       \subfigure[][combined]{\includegraphics[width=0.45\textwidth]{Ch7/Figs/rgb_eigencomponents.png}}
-      \caption{\textbf{(a)}, \textbf{(b)} and \textbf{(c)} map the absolute magnitudes of the x-, y- and z- components of the largest eigenvector of the structure tensor, of the same central slice from Figure~\ref{fig:structure_tensor_glyphs}. The volumewise maximums for the x-, y-, and z- components were 15.8, 14.6 and 68.7, respectively; the intensities have thus been scaled from 0 (black) to 68.7 (white). \textbf{(d)} combines the intensities in an RGB image, with red x, green y and blue z.}
+      \caption{\textbf{(a)}, \textbf{(b)} and \textbf{(c)} map the absolute magnitudes of the x-, y- and z- components of the largest eigenvector of the structure tensor, of the same central slice from Figure~\ref{fig:structure_tensor_glyphs}. The volumewise maximums for the x-, y-, and z- components were 15.4, 39.9 and 70.1, respectively; the intensities have thus been scaled from 0 (black) to 70.1 (white). \textbf{(d)} combines the intensities in an RGB image, with red x, green y and blue z.}
       \label{fig:eigencomponents}
     \end{figure}
     
-    Figure~\ref{fig:structure_tensor_glyphs} illustrates the form of the structure tensor across the central histological slice of the epicardial block. A regular grid of spheroid glyphs are plotted at each pixel of the slice, with principal axes aligned and proportional to the eigenvectors and eigenvalues of the structure tensor. It is evident that the largest tensors are not, as expected, disc-like, but in fact javelin-like, as one eigenvalue greatly exceeds the other two. It is also evident that larger tensors are oriented predominantly in the z-direction perpendicular to the plane. Figure~\ref{fig:eigencomponents} echoes this finding, showing grayscale images of the magnitudes of the three components of the largest eigenvector. By far the brightest image is that of the z-component. This dominance is also expressed in the largely blue appearance of Figure~\ref{fig:eigencomponents} (d), with only small tinges of red and green. Unfortunately in this case, even extremely small displacements of the slices relative to each other has been enough to drown the gradient signal from the fibre direction.
+    Figures~\ref{fig:structure_tensor_glyphs} and \ref{fig:structure_tensor_glyphs_zoom} illustrate the form of the structure tensor across the central histological slice of the epicardial block. A regular grid of spheroid glyphs are plotted at each pixel of the slice, with principal axes aligned and proportional to the eigenvectors and eigenvalues of the structure tensor. It is evident that the largest tensors are, as expected, javelin-like, as one eigenvalue greatly exceeds the other two perpendicular to the clefts. It is also evident that larger tensors are oriented predominantly in the z-direction perpendicular to the plane, a phenomenon that increases visibly with distance from the epicardial wall. Figure~\ref{fig:eigencomponents} echoes these findings, showing grayscale images of the magnitudes of the three components of the largest eigenvector. By far the brightest image is that of the z-component. This dominance is also expressed in the largely blue appearance of Figure~\ref{fig:eigencomponents} (d), with only small tinges of red and green. Unfortunately in this case, even extremely small displacements of the slices relative to each other has been enough to drown the gradient signal from the fibre direction.
   % subsection 3d_volumes (end)
   
 % section results (end)
 
 \section{Discussion} % (fold)
-  2D: We surveyed X number of slices in 4 regions, but the results were too noisy to draw reasonable conclusions from.
+  We have outlined a method for the extraction of microstucture from high resolution histological images, and demonstrated its application on both 2-dimensional slices and registered tissue volumes. We have encountered a high level of organised layered structure, and have made way towards quantifying the relationship between angle and transmural position. We have established that the success of this quantification depends on the choice and size of region, through the presence or absence of slowly-varying transmural meandering of the discrete layers. We have made progress towards characterising this layered structure in 3 dimensions, and shown that very tiny aberrations in the tissue images and positions contribute a considerable level of noise in this regard. If this noise can be ameliorated, then intricate microstructure can be resolved.
   
-  The dominance of intensity gradient in the z-direction is a result of slices being very slightly out of alignment with each other, by the distance of the width of a cell or greater. Unfortunately, the misalignment often leads to a `zig-zagging' of intensities perpendicular to the slices and at the frequency of the slicing, which manifests as an inflated z-gradient. An attempt to extract fibre direction and incorporate this information into a model would sadly be fruitless in this context.
+  In developing the 2-dimensional techniques, we surveyed 40 central slices from 2 rat hearts in 4 separate regions: the upper and lower free wall of the left ventricle, and the upper and lower septum. It was found that local sheet orientation was resolved well in almost all regions. Lamentably however, in the large majority of cases, the results suffered from the same aggregation problems manifest in Figure~\ref{fig:angles_and_coherences_vs_e} and were too blurred to draw reasonable conclusions from, as layers meandered intramurally across a range of $e$ values.
   
-  There are a number of things which can be explored to correct for this z-dominance. Filter things so that the gradient components in all directions are approximately similar, either by rescaling the gradients or by 
-  
-  For 3D: This is the preliminary work for this, rather than saying `this cannot work'.
+  In the 3D volume, the dominance of intensity gradient in the z-direction is a result of very small internal distortions, discontinuities and fractures within slices not represented by the affine transformations. Unfortunately, the misalignment often leads to a `zig-zagging' of intensities perpendicular to the slices and at the frequency of the slicing, which manifests as an inflated z-gradient. There are a number of things which can be explored to correct for this z-dominance. Experimentation with a range of edge-preserving smoothing filters, configured so that the gradient components in all directions are approximately similar, may well provide stronger feature extraction. 
 \label{sec:discussion}
   
 % section discussion (end)
