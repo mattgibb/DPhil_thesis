@@ -112,6 +112,19 @@ The heart walls are comprised mostly of striated muscular tissue known as myocar
   
   \subsection{Segmentation} % (fold)
   \label{sub:segmentation}
-  
+    The simplest segmentation algorithm is known as threshold segmentation. Pixels are grouped into two or more segments, based solely on their intensities. The boundaries between the segment intensity ranges are known as thresholds. 
+    
+    Region growing segmentation algorithms are a class of iterative methods that start from a seed region or set of regions, and evaluate neighbouring pixels in order determine whether to absorb them into the region. When an iteration passes without changing a single pixel of the segmentation, the algorithm is terminated. The exact implementation of region growing algorithms can vary through the criteria for inclusion, the definition of neighbours and the strategy used to visit neighbouring pixels. The connected threshold algorithm includes pixels that fall within a prespecified intensity range, whereas the confidence connected threshold algorithm defines the range dynamically, based on the mean and standard deviation of the current region. 
+    
+    Level set segmentation is a method to evolve the contour or surface of a region, based not only on the characteristics of the image, but also on the morphology of the region boundary. The image boundary is embedded as the zero level-set in a higher dimensional function called the level-set function $\psi(\mathbf{X}, \mathbf{t})$. $\mathbf{\psi}$ is then evolved via a differential equation:
+    
+    \begin{equation}
+      \frac{d\psi}{dt} = -\alpha\mathbf{A}(\mathbf{x}) \cdot \nabla \psi - \beta P(\mathbf{x})|\nabla\psi| + \gamma\mathbf{Z}(\mathbf{x})\kappa|\nabla\psi|,
+    \end{equation}
+    
+    where the first term moves the level-set according to the vector field \textbf{A}, the second term propagates the level-set normal to its boundary based on an input image $P$, and the third based on the curvature $\kappa$ of the boundary and a spatial modifier image $Z$. A particular level set algorithm might use one or more of these terms, and the scalar constants $\alpha$, $\beta$ and $\gamma$ should be scaled according to the properties of the image and of the initialisation, and the morphology of the underlying object.
+    
+    The concepts of erosion and dilation are closely tied to that of segmentation, and are in fact implicit in some segmentation implementations. In dilation, a segmentation is expanded to include the neighbours of every pixel within a region. The neighbours are defined by a binary shape function, often circular or square, and of the dimensions of just a few pixels. Erosion is the complementary process, and is equivalent to the dilation of the pixels outside of the region. Morphological opening is the dilation of an erosion of a segmentation. In this way, detailed features of a segmentation such as filaments, edges and regions smaller than the shape function are removed, and the boundary is smoothed. Closing, conversely, is equivalent to a dilation followed by an erosion and, rather than small objects, acts to remove small holes from within the segmented region. Small regions and holes can also be identified by the number of contiguous pixels they are comprised of, and removed without altering the shape of their larger siblings.
+    
   % subsection segmentation (end)
 % section introduction (end)
