@@ -232,7 +232,7 @@
 		In a similar vein, an operator $\cdot$ that multiplies the angle of the input transform with $\alpha$ fulfils criteria \labelcref{eqn:null,eqn:identity,eqn:distributivity}:
     
     \begin{equation}
-      \alpha \cdot \mathbf{T} = R(\alpha\theta).
+      \alpha \cdot \mathbf{T} = \mathbf{R}(\alpha\theta).
     \end{equation}
 		
         In the case of similarity transforms with no offset, $\mathbf{M}$ is a rotation matrix $\mathbf{R}$ multiplied by an enlargement $\sigma$:
@@ -244,8 +244,8 @@
         Since scalar multiplications commute with matrix transformations, if the operator $\cdot$ is constructed to scale geometrically, the situation is very similar to that of rotation matrices and \labelcref{eqn:null,eqn:identity,eqn:distributivity,eqn:commutativity,eqn:associativity} still apply:
         
         \begin{gather}
-            \alpha \cdot \mathbf{T} = e^{\alpha\ln\sigma}R(\alpha\theta) \\
-            (\alpha \cdot \mathbf{T})(\beta \cdot \mathbf{T}) = e^{(\alpha + \beta)\ln\sigma}R((\alpha + \beta)\theta) = (\alpha + \beta) \cdot \mathbf{T} \\
+            \alpha \cdot \mathbf{T} = \sigma^{\alpha}\mathbf{R}(\alpha\theta) \\
+            (\alpha \cdot \mathbf{T})(\beta \cdot \mathbf{T}) = \sigma^{\alpha + \beta}\mathbf{R}((\alpha + \beta)\theta) = (\alpha + \beta) \cdot \mathbf{T} \\
 			\mathbf{S} \oplus \mathbf{T} = \sigma_\mathbf{S}\mathbf{R}(\theta_\mathbf{S})\sigma_\mathbf{T}\mathbf{R}(\theta_\mathbf{T}) = \sigma_\mathbf{S}\sigma_\mathbf{T}\mathbf{R}(\theta_\mathbf{S} + \theta_\mathbf{T}) = \mathbf{T} \oplus \mathbf{S} \\
 			(\mathbf{S} \oplus \mathbf{T}) \oplus \mathbf{U} = \sigma_\mathbf{S}\sigma_\mathbf{T}\sigma_\mathbf{U}\mathbf{R}(\theta_\mathbf{S} + \theta_\mathbf{T} + \theta_\mathbf{U}) = \mathbf{S} \oplus (\mathbf{T} \oplus \mathbf{U}).
         \end{gather}
