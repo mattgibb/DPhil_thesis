@@ -44,4 +44,3 @@ def extract_contour(segmentation_path, contour_path, rgb_data=False):
     Delete(calculator)
     Delete(segmentation)
     del writer, contour, calculator, segmentation
- 

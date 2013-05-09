@@ -1,5 +1,5 @@
 # path helpers
-results_root = "/Users/Matt/Code/imaging/registration/results/"
+results_root = "/Users/matt/Code/imaging/registration/results/"
 dummy_root   = results_root + "dummy/"
 Rat28_root   = results_root + "Rat28/"
 thesis_root  = "/Users/Matt/Documents/DPhil/written_work/thesis/"
