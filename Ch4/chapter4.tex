@@ -25,7 +25,7 @@
 		\subfigure[][]{\includegraphics[height=55ex]{Ch4/Figs/histology}}
 		\qquad
     \subfigure[][]{\includegraphics[height=55ex]{Ch4/Figs/cylinder}}
-    \caption{\textbf{(a)} A 10µm-thick histological image of rabbit mid-myocardial wall long-axis slice, provided by \cite{Burton2006}. \textbf{(b)} The equipotentials (vertical lines) and field lines (horizontal with arrow heads) of a conducting circle in an infinite uniform field derived from the analytical solution to Eq. \ref{eqn:potential}.}
+    \caption{\textbf{(a)} A 10$\mu$m-thick histological image of rabbit mid-myocardial wall long-axis slice, provided by \cite{Burton2006}. \textbf{(b)} The equipotentials (vertical lines) and field lines (horizontal with arrow heads) of a conducting circle in an infinite uniform field derived from the analytical solution to Eq. \ref{eqn:potential}.}
 	  \label{fig:vessel}
 	\end{figure}
   
@@ -157,7 +157,7 @@
   
   \subsubsection{Calculating $\nabla\Phi$}
   \label{sub:calculating_nablaphi}
-    Fibres must always lie within the lamina surface and are therefore perpendicular to the potential gradient. This gradient can be obtained simply by differentiating equation~\ref{eqn:potential_3D}; the results are visualised in Figure~\ref{fig:del_phi}.
+    Fibres must always lie within the lamina surface and are therefore perpendicular to the potential gradient. This gradient can be obtained simply as the spatial differential of equation~\ref{eqn:potential_3D}; the results are visualised in Figure~\ref{fig:del_phi}.
     
     \begin{figure}[htbp]
       \centering
@@ -256,7 +256,11 @@
   
   \subsubsection{Normalising the Cross Product} % (fold)
   \label{sub:normalising_the_cross_product}
-    The final stage in defining fibre direction is to calculate the normalised cross-product of the results from the previous two sections: $\nabla\Phi$, the 3D gradient of equation~\ref{eqn:potential_3D}; and $\nabla\Psi$, the 3D vector constructed from the 2D gradient of equation~\ref{eqn:potential_projected} in the $x$- and $z$-directions and zero in the $y$-direction. At any point in the tissue, the resulting fibre vector will lie tangential to the lamina. A vector will also lie tangential to the vessel boundary, should it reside there. Figures~\ref{fig:oblique_vessel} and \ref{fig:oblique_no_vessel} display the final results from three different viewpoints.
+    The final stage in defining fibre direction is to calculate $\chi$ the normalised cross-product of the results from the previous two sections: 
+    \begin{equation}
+      \chi = \frac{\nabla\Phi \times \nabla\Psi}{\lvert\nabla\Phi \times \nabla\Psi\rvert},
+    \end{equation}
+      where $\nabla\Phi$ is the 3D gradient of equation~\ref{eqn:potential_3D} and $\nabla\Psi$ is the 3D vector constructed from the 2D gradient of equation~\ref{eqn:potential_projected} in the $x$- and $z$-directions and zero in the $y$-direction. At any point in the tissue, the resulting fibre vector will lie tangential to the lamina. A vector will also lie tangential to the vessel boundary, should it reside there. Figures~\ref{fig:oblique_vessel} and \ref{fig:oblique_no_vessel} display the final results from three different viewpoints.
     
     \begin{figure}[htbp]
       \centering
@@ -300,7 +304,7 @@
     \label{fig:tarantula}
   \end{figure}
   
-  There were several formatting issues associated with the final workflow. Once Tarantula had generated a tetrahedral mesh from the voxel image file built in Matlab, a C++ script written by Anton Prassl was used to convert the various Tarantula file formats so that they could be interpreted by the electrophysiological simulation package CARP (Cardiac Arrhythmias Research Package) \cite{Vigmond2003}. Tarantula generates both an intracellular (tissue) mesh and a surrounding extracellular box, so CARP was then used to extract out just the intracellular space from the total mesh, for the purposes of monodomain simulations.
+  There were several formatting issues associated with the final workflow. Once Tarantula had generated a tetrahedral mesh from the voxel image file built in Matlab, a C++ script written by Anton Prassl was used to convert the various Tarantula file formats so that they could be interpreted by the electrophysiological simulation package CARP (Cardiac Arrhythmias Research Package) \cite{Vigmond2003}. Tarantula generates both an intracellular (tissue) mesh and a surrounding extracellular box, so CARP was then used to extract just the intracellular space from the total mesh, for the purposes of monodomain simulations.
   
 \subsection{Evaluating the Fibre Direction at the Element Centroids} % (fold)
 \label{sec:evaluating_the_fibre_direction_at_the_element_centroids}
@@ -328,7 +332,7 @@
 
 \subsection{Electrophysiological Simulation} % (fold)
 \label{sec:electrophysiological_simulation}  
-  Once each tetrahedron has been assigned a conductivity tensor, based on the modelled fibre direction at its centroid, simulations were run in CARP, using the UCLA rabbit ventricular action potential model \cite{Mahajan2008}. Simulations were run in parallel on the Oxford OeRC cluster and took approximately a few hundred seconds to compute 300ms of activation on 32 cores.
+  Once each tetrahedron has been assigned a conductivity tensor, based on the modelled fibre direction at its centroid, simulations were run in CARP, using the UCLA rabbit ventricular action potential model \cite{Mahajan2008}. CARP was chosen because at the time, it was the only cardiac simulation package that fully supported bidomain simulations. Simulations were run in parallel on the Oxford OeRC cluster and took approximately a few hundred seconds to compute 300ms of activation on 32 cores.
   
 % section methods (end)
 
