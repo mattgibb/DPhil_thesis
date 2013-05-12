@@ -129,7 +129,7 @@
     & = -E_0h\cos\phi,
   \end{align}
   
-  where $\phi$ is the angle between the y-axis and the vessel axis. the planar potential can then be described by the 2D solution \ref{eqn:potential} (graphically displayed in Figure~\ref{fig:vessels}(b)), with a factor to account for the angle between the plane and the uniform field direction $\mathbf{e}_y$:
+  where $\phi$ is the angle between the y-axis and the vessel axis. The planar potential can then be described by the 2D solution \ref{eqn:potential} (graphically displayed in Figure~\ref{fig:vessels}(b)), with a factor to account for the angle between the plane and the uniform field direction $\mathbf{e}_y$:
   
   \begin{align}
     \Phi_{\text{plane}} &= -aE_0\left( \frac{r}{a} - \frac{a}{r} \right) \cos \theta \left(\mathbf{e}_{r0} \cdot \mathbf{e}_y \right) \\
@@ -179,7 +179,7 @@
       \label{fig:projected}
     \end{figure}
 
-    The questions remains, in which orientation should solution~\ref{eqn:potential} be mapped? The following cubic dependency of overall fibre direction on depth of myocardial tissue is observed experimentally \cite{Potse2006,StreeterJr1969}. Let $e$ be a tissue depth parameter
+    The questions remains, in which orientation should solution~\ref{eqn:potential} be mapped? The following cubic dependency of overall fibre direction on depth of myocardial tissue has been observed experimentally \cite{Potse2006,StreeterJr1969}. Let $e$ be a tissue depth parameter
 
     \begin{equation}
       e = \frac{\Phi_\text{endo}}{\Phi_\text{endo}+\Phi_\text{epi}}\,,
@@ -323,7 +323,7 @@
 		\subfigure[][Vertical MRI slice.]{\includegraphics[height=51ex]{Ch4/Figs/vertical_mri}}
 		\qquad
     \subfigure[][Extracted vascular tree.]{\includegraphics[height=51ex]{Ch4/Figs/extracted_vessels}}
-    \caption{\textbf{(a)} A 2D image in the coronal plane from a 3D Rabbit MRI dataset at resolution 26.4×26.4×24.4$\mu$m from \cite{Burton2006}. Circular and elliptical cavities distributed within the myocardium can be observed.  These are the major vessels supplying the heart. \textbf{(b)} The vascular tree was extracted from the MRI dataset by Bishop et al \cite{Bishop2009}. The main vessels are positioned either sub-epicardially or transmurally.}
+    \caption{\textbf{(a)} A 2D image in the coronal plane from a 3D Rabbit MRI dataset at resolution $26.4\times26.4\times24.4\mu$m from \cite{Burton2006}. Circular and elliptical cavities distributed within the myocardium can be observed.  These are the major vessels supplying the heart. \textbf{(b)} The vascular tree was extracted from the MRI dataset by Bishop et al \cite{Bishop2009}. The main vessels are positioned either sub-epicardially or transmurally.}
 	  \label{fig:vessels}
 	\end{figure}
   
@@ -415,7 +415,9 @@
 
 \section{Discussion} % (fold)
 \label{sec:discussion}
-  We have investigated the effects of blood vessels and fibre orientation around them on propagation patterns. We have shown that the activation patterns around blood vessels are similar for bidomain and monodomain simulations. We conclude that inhomogeneities in cardiac tissue such as blood vessels can cause sharp wavefront curvature. We find that this curvature is less pronounced when fibre direction is modelled accurately around the vessels, as the wavefront is guided around the vessel by the curving fibres. Finally, we find that contrary to what we had hypothesised, negotiation of fibres around vessels actually diminishes vessel anchoring by funnelling the wavefront around the vessel, lessening its retarding and fragmenting effect.
+  We have investigated the effects of large blood vessels and fibre orientation around them on propagation patterns. We have shown that the activation patterns around blood vessels are similar for bidomain and monodomain simulations. We conclude that inhomogeneities in cardiac tissue such as blood vessels can cause sharp wavefront curvature. We find that this curvature is less pronounced when fibre direction is modelled accurately around the vessels, as the wavefront is guided around the vessel by the curving fibres. Finally, we find that contrary to what we had hypothesised, negotiation of fibres around vessels actually diminishes vessel anchoring by funnelling the wavefront around the vessel, lessening its retarding and fragmenting effect.
+  
+  Although in this study, the effect of vessel diameter on propagation and anchoring was not examined explicitly, it is likely that the largest of vessels as modelled here have the largest effect. Since anchoring was triggered with a contrived stimulation protocol, and remained stable for a maximum of just 2.1 seconds, it may well be the case that the largest vessels dominate in contribution to arrhythmogenesis and stabilisation.
 
-  Despite its findings, the study is limited in many respects. The model makes several fundamental assumptions. The tissue is modelled as homogenous, with a single tissue type and no interstitial spaces or smaller vasculature. Even the ‘accurate’ model is highly speculative and inflexible in its current form, and the model geometry is simplistic. Overall, it is patent that the accurate representation of cardiac tissue structure is important in the understanding of electrophysiological pathologies. The next challenge is to provide this accurate representation, and that will be the focus of the next chapter.
+  Despite its findings, the study is limited in many respects. The model makes several fundamental assumptions. The tissue is modelled as homogenous, with a single tissue type and no interstitial spaces or smaller vasculature. Even the ‘accurate’ model is highly speculative and inflexible in its current form, and the model geometry is simplistic and constricted to a volume much smaller than a heart. Overall, it is patent that the accurate representation of cardiac tissue structure is important in the understanding of electrophysiological pathologies. The next challenge is to provide this accurate representation, and that will be the focus of the next chapter.
 % section discussion (end)
