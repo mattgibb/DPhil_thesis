@@ -128,7 +128,7 @@ The heart walls are comprised mostly of striated muscular tissue known as myocar
     % subsubsection metrics (end)
   
     \subsubsection{Optimisation} % (fold)
-    \label{ssub:optimisation}
+    \label{ssub:intro_optimisation}
     The optimiser iteratively moves through the space defined by the transform parameters from a set of initial coordinates, in an attempt to minimise the cost function evaluated by the metric. ITK provides a range of algorithms to achieve this task in the most efficient and reliable way possible. Throughout the registration process, the Gradient Descent (GD) and Regular Step Gradient Descent (RSGD) optimisers were employed. GD is a robust, general purpose algorithm that requires little configuration. Since locally, a multivariate cost function $F(\mathbf{x})$ reduces fastest in the opposite direction to its derivative, the optimisation proceeds at each iteration $i$ from $\mathbf{x}_i$ to $\mathbf{x}_{i+1}$ by taking a step in the direction of negative gradient, proportional to the gradient magnitude by a tunable factor $\gamma$:
       \begin{equation}
         \mathbf{x}_{i+1} = \mathbf{x}_{i} - \gamma \nabla F(\mathbf{x}_{i}).
